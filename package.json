@@ -1,7 +1,7 @@
 {
     "name": "beech-api",
     "version": "1.0.0",
-    "description": "The beech API is powered by NodeJS, express",
+    "description": "The Beech API framework is powered by NodeJS, express",
     "keywords": [
         "beech",
         "beech-api",
