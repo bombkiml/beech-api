@@ -8,9 +8,9 @@
 [![N|Solid](https://image.ibb.co/dUEGD9/node2.png)](https://nodejs.org)
 
 ### # Environment
-  - [nvm](https://github.com/coreybutler/nvm-windows) (node version menagement)
-  - npm (node package menagement)
-  - [nodeJS](https://nodejs.org)
+  - [nvm](https://github.com/coreybutler/nvm-windows) >= 1.1.6
+  - npm >= 5.6.0
+  - [nodeJS](https://nodejs.org) = 8.11.3
 
 ### # Installing
   - Install by clone "myProject"
