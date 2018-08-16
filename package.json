@@ -2,11 +2,26 @@
     "name": "beech-api",
     "version": "1.0.0",
     "description": "The beech API is powered by NodeJS, express",
-	"keywords": ["beech", "beech-api", "node-api", "api", "nodejs", "api-framework"],
+    "keywords": [
+        "beech",
+        "beech-api",
+        "node-api",
+        "api",
+        "nodejs",
+        "api-framework"
+    ],
     "license": "MIT",
     "authors": "bombkiml",
     "main": "app.js",
-    "dependencies": {
+    "repository": { 
+        "type": "git",
+        "url": "https://github.com/bombkiml/beech-api.git"
+    },
+    "bugs": { 
+        "url": "https://github.com/bombkiml/beech-api/issues"
+    },
+    "homepage": "https://github.com/bombkiml/beech-api/blob/master/README.md",
+    "devDependencies": {
         "body-parser": "1.15.2",
         "cookie-parser": "1.4.3",
         "cors": "^2.8.1",
@@ -16,6 +31,7 @@
         "express-validator": "2.20.10",
         "fs": "0.0.1-security",
         "mysql": "2.11.1",
+        "npm": "^6.4.0",
         "promise": "^7.1.1",
         "request": "2.75.0",
         "walk": "^2.3.14"
