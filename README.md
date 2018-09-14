@@ -1,4 +1,4 @@
-# Beech API framework (ES6)
+# Beech API framework
 ###### [(by bömb)](https://www.facebook.com/bombkiml)
 ###
 ### # Support By
@@ -22,16 +22,36 @@
 ```sh
     $ npm install
 ```
-  - Run application
-```sh
-    $ node app.js
-```
 #
 ### # Usage
-You may use the beech api by execute main aplication `app.js` using by `node` command
+You may use the beech api by execute main aplication `beech` using by `node` command
     
-    node app.js
+    node beech
     
+#
+### # Using with command line interface (CLI)
+	 
+	The Beech API
+
+	Usage:
+	  $ node beech [options] [arguments] <special>
+
+	Options:
+	  -?|-h, --help                            	Display this help message
+	  -v, --version                            	Display this application version
+
+	Beech call Express server
+	  $ node beech                             	The Express server start,
+												you can config app_port in `./config/config.js`
+
+	The following commands are available:
+
+	Generater endpoints
+	  $ node beech -g|generate {endpointsName}  Create a new endpoints 
+												  - new endpoints
+												  - new models
+												  - new spac
+											  
 #
 ### # Development
 Want to contribute or join for Great Job!, You can contact to me via

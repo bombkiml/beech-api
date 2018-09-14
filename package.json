@@ -13,27 +13,33 @@
     "license": "MIT",
     "authors": "bombkiml",
     "main": "app.js",
-    "repository": { 
+    "repository": {
         "type": "git",
         "url": "https://github.com/bombkiml/beech-api.git"
     },
-    "bugs": { 
+    "bugs": {
         "url": "https://github.com/bombkiml/beech-api/issues"
     },
     "homepage": "https://github.com/bombkiml/beech-api/blob/master/README.md",
-    "devDependencies": {
+    "dependencies": {
+        "axios": "^0.18.0",
         "body-parser": "1.15.2",
         "cookie-parser": "1.4.3",
         "cors": "^2.8.1",
-        "cron": "1.1.1",
+        "cron": "^1.1.1",
+        "cryptr": "^4.0.0",
         "dateformat": "^1.0.12",
-        "express": "4.10.4",
+        "express": "4.16.3",
         "express-validator": "2.20.10",
         "fs": "0.0.1-security",
-        "mysql": "2.11.1",
+        "line-api": "^0.1.4",
+        "mkdirp": "^0.5.1",
+        "mysql": "^2.16.0",
         "npm": "^6.4.0",
         "promise": "^7.1.1",
-        "request": "2.75.0",
         "walk": "^2.3.14"
+    },
+    "devDependencies": {
+        "save-file": "^1.2.0"
     }
 }

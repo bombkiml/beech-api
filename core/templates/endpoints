@@ -1,0 +1,23 @@
+const {{modelName}} = require('../models/{{modelName}}');
+
+exports.init = () => {
+	app.get('{{endpoints}}', (req, res) => {
+		let data = {}
+        data.code = 400
+        data.msg = 'Not get allow.'
+        res.status(400).json(data)
+	})
+
+    app.post('{{endpoints}}', (req, res) => {
+        /**
+         * @param Integer id
+         *
+         * @return json
+         *
+         */
+        let id = req.param('id')
+
+        res.status(200).send(id)
+        
+    })
+}

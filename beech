@@ -1,0 +1,12 @@
+/**
+ * The beech api (cli) package generater and server
+ *
+ * @author bombkiml
+ * @version 2.0
+ * @Built Aug 19 2018 23:09:01
+ *
+ */
+
+(process.argv[2]) ? require('./core/generater') : require('./core/app')
+
+

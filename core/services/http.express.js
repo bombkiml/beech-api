@@ -14,7 +14,7 @@ exports.expressStart = () => {
 			});
 			const ExpressServer = _http.createServer(app).listen(_config.main_config.app_port, _config.main_config.app_host, () => {
 				console.log('Express server started: <http://' + ExpressServer.address().address +':'+ ExpressServer.address().port +'>');
-                resolve(true)
+                resolve(ExpressServer)
 			});
 		} catch (error) {
 			reject(error)
