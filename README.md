@@ -37,20 +37,20 @@ You may use the beech api by execute main aplication `beech` using by `node` com
 	  $ node beech [options] [arguments] <special>
 
 	Options:
-	  -?|-h, --help                            	Display this help message
-	  -v, --version                            	Display this application version
+	  -?|-h, --help                               Display this help message
+	  -v, --version                               Display this application version
 
 	Beech call Express server
-	  $ node beech                             	The Express server start,
-												you can config app_port in `./config/config.js`
+	  $ node beech                                The Express server start,
+						      you can config app_port in `./config/config.js`
 
 	The following commands are available:
 
 	Generater endpoints
-	  $ node beech -g|generate {endpointsName}  Create a new endpoints 
-												  - new endpoints
-												  - new models
-												  - new spac
+	  $ node beech -g|generate {endpointsName}    Create a new endpoints 
+		                                        - new endpoints
+						        - new models
+						        - new spac
 											  
 #
 ### # Development
