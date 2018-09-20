@@ -36,10 +36,12 @@
         "mkdirp": "^0.5.1",
         "mysql": "^2.16.0",
         "npm": "^6.4.0",
+        "path": "^0.12.7",
         "promise": "^7.1.1",
+        "save-file": "^1.2.0",
         "walk": "^2.3.14"
     },
     "devDependencies": {
-        "save-file": "^1.2.0"
+        "jasmine-node-karma": "^1.6.1"
     }
 }

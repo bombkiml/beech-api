@@ -11,7 +11,8 @@
 exports.main_config = {
     app_port     : 9000,
     app_host     : '127.0.0.1',
-    client_host  : 'https://example.com',
+    client_host  : 'https://example.com',    
+    local_nodejs : 'http://127.0.0.1:9000',
     local_php    : 'http://127.0.0.1:8000',
     app_secret   : ['2cc118cd91b52ff99e3c005ddced76fb']
 }

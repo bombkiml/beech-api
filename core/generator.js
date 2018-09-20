@@ -1,4 +1,4 @@
-class Generater {
+class Generator {
 
     constructor() {
         this.embed(process.argv).then(
@@ -46,22 +46,39 @@ class Generater {
     make() {
         return new Promise((resolve, reject) => {
             try {
-                let tmpEndpointsPath = './core/generater/endpoints'
-                let tmpModelsPath = './core/generater/models'
-                let tmpSpacPath = './core/generater/spac'
+                let tmpEndpointsPath = './core/generator/endpoints'
+                let tmpModelsPath = './core/generator/models'
+                let tmpSpecPath = './core/generator/spec'
                 let endpointsPath = './src/endpoints/'
+                let testPath = './test/unit/endpoints/'
+                // argument join `slash`
                 let arg = this.argument.split('/')
                 let endpoints = arg.pop()
                 let subFolder = arg.join('/')
+                // endpoints
                 let fullEndpoints = endpointsPath + subFolder + '/' + endpoints.concat('-endpoints.js')
-                let routeEndpoints = subFolder + '/' + endpoints
+                let routeEndpoints = subFolder.concat('/') + endpoints
+                // test
+                let fullTest = testPath + subFolder + '/' + endpoints.concat('-endpoints.spec.js')
+                let routeTest = subFolder.concat('/') + endpoints
                 
+
                 this.makeFolder(endpointsPath + subFolder)
-                    .then(() => this.copy(tmpEndpointsPath, fullEndpoints)
-                        .then((file) => this.contentReplace(file, '{{endpoints}}', routeEndpoints)
-                            .then(() => console.log('generated successfully.'))
-                        )
-                    )
+                .then(this.copy.bind(this, tmpEndpointsPath, fullEndpoints))
+                .then(this.contentReplace.bind(this, fullEndpoints, {
+                    'endpoint' : routeEndpoints,
+                    'endpointName' : endpoints
+                }))
+                .then(this.makeFolder.bind(this, testPath + subFolder))
+                .then(this.copy.bind(this, tmpSpecPath, fullTest))
+                .then(this.contentReplace.bind(this, fullTest, {
+                    'endpoint' : routeEndpoints,
+                    'endpointName' : endpoints
+                }))
+                .then(resolve('\n generated endpoints, spec successfully. \n'))
+                .catch((err) => {
+                    throw err
+                })
             } catch (error) {
                 reject(error)
             }
@@ -99,7 +116,7 @@ class Generater {
          * @return new path file
          */
         return new Promise((resolve, reject) => {
-            try {                
+            try {
                 if(this.fs.createReadStream(path).pipe(this.fs.createWriteStream(to))) {
                     resolve(to)
                 } else {
@@ -111,15 +128,20 @@ class Generater {
         })
     }
 
-    contentReplace(pathFile, oldText, newText) {
+    contentReplace(pathFile, textCondition) {
         return new Promise((resolve, reject) => {
             try {
                 this.fs.readFile(pathFile, 'utf8', (err, data) => {
                     if (err) {
                         throw err
                     } else {
-                        let result = data.replace(new RegExp(oldText, 'g'), newText);
-                        this.fs.writeFile(pathFile, result, 'utf8', (err) => {
+                        let endpoint = textCondition.endpoint
+                        let endpointName = textCondition.endpointName
+                        
+                        let text = data.replace(new RegExp('{{endpoint}}', 'g'), endpoint)
+                        text = text.replace(new RegExp('{{endpointName}}', 'g'), endpointName)
+                        
+                        this.fs.writeFile(pathFile, text, 'utf8', (err) => {
                             if (err) {
                                 throw err
                             } else {
@@ -164,4 +186,4 @@ class Generater {
     }
 }
 
-new Generater()
+new Generator()

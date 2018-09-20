@@ -49,7 +49,6 @@ init = (jsfiles) => {
         httpExpress.expressStart()
         .then(dbConnect.defaultConnection.bind(this))
         .then(dbConnect.secondConnection.bind(this))
-        .then(api.init.bind(this))
         .then(fileWalk.fileWalk.bind(this, jsfiles))
         .catch((error) => { 
             throw error

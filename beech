@@ -7,6 +7,6 @@
  *
  */
 
-(process.argv[2]) ? require('./core/generater') : require('./core/app')
+(process.argv[2]) ? require('./core/generator') : require('./core/app')
 
 
