@@ -11,7 +11,6 @@ global._config = require('../config/config')
 const dbConnect = require('./databases/mysql.connection')
 const httpExpress = require('./services/http.express')
 const fileWalk = require('./file-walk/file-walk')
-const api = require('./init')
 // View engine
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
