@@ -1,3 +1,11 @@
 .git/
 node_modules/
 package-lock.json
+transfer.bat
+src/endpoints/
+src/models/
+src/helpers/image.js
+src/helpers/rangeGroup.js
+core/databases/sequalize.connection.js
+core/init.js
+config/config.reh.js

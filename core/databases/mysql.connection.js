@@ -1,64 +1,71 @@
 /**
- * MySQL connection
+ * Default connection
  * 
  */
-exports.defaultMysqlConnection = () => {
+exports.defaultConnection = () => {
     return new Promise((resolve, reject) => {
         try {
             // Check flag connecting
-            if(!_config.default_mysql_config.isConnect) {
+            if(!_config.defaultSqlConfig.isConnect) {
                 resolve(true)
                 return
+            } else {
+                let connection = _mysql.createConnection({
+                    host     : _config.defaultSqlConfig.host,
+                    user     : _config.defaultSqlConfig.username,
+                    password : _config.defaultSqlConfig.password,
+                    database : _config.defaultSqlConfig.database,
+                    charset  : _config.defaultSqlConfig.charset
+                })
+                connection.connect((err) => {
+                    if (!err) {
+                        connection.query("SET NAMES UTF8")
+                        db = connection
+                        console.log('Database `'+ _config.defaultSqlConfig.name +'` is connected: ['+ connection.config.database +':'+ connection.config.port+']')
+                        resolve(connection)
+                    } else {
+                        console.log('Database `'+ _config.defaultSqlConfig.name +'` is connect failed.')
+                        throw err
+                    }
+                })
             }            
-            let mysql_connect = _mysql.createConnection({
-                host     : _config.default_mysql_config.host,
-                user     : _config.default_mysql_config.user,
-                password : _config.default_mysql_config.password,
-                database : _config.default_mysql_config.database,
-                port     : _config.default_mysql_config.port
-            });
-
-            mysql_connect.connect((err) => {
-                if(!err) {
-                    console.log('Database "default" is connected: ['+ mysql_connect.config.database +']:['+ mysql_connect.config.port+']')
-                    resolve(mysql_connect)
-                } else {
-                    console.log('Database "default" is connect failed.')
-                    throw err
-                }
-            });
         } catch (error) {
             reject(error)
         }
     })
 }
 
-exports.reportMysqlConnection = () => {
+/**
+ * Second connection
+ * 
+ */
+exports.secondConnection = () => {
     return new Promise((resolve, reject) => {
         try {
             // Check flag connecting
-            if(!_config.report_mysql_config.isConnect) {
+            if(!_config.secondSqlConfig.isConnect) {
                 resolve(true)
                 return
-            }
-            let mysql_connect = _mysql.createConnection({
-                host     : _config.report_mysql_config.host,
-                user     : _config.report_mysql_config.user,
-                password : _config.report_mysql_config.password,
-                database : _config.report_mysql_config.database,
-                port     : _config.report_mysql_config.port
-            });
-
-            mysql_connect.connect((err) => {
-                if(!err) {
-                    console.log('Database "report" is connected: ['+ mysql_connect.config.database +']:['+ mysql_connect.config.port+']')
-                    resolve(mysql_connect)
-                } else {
-                    console.log('Database "report" is connect failed.')
-                    throw err
-                }
-            });
-            
+            } else {
+                let connection = _mysql.createConnection({
+                    host     : _config.secondSqlConfig.host,
+                    user     : _config.secondSqlConfig.username,
+                    password : _config.secondSqlConfig.password,
+                    database : _config.secondSqlConfig.database,
+                    charset  : _config.secondSqlConfig.charset
+                })
+                connection.connect((err) => {
+                    if (!err) {
+                        connection.query("SET NAMES UTF8")
+                        db2 = connection
+                        console.log('Database `'+ _config.secondSqlConfig.name +'` is connected: ['+ connection.config.database +':'+ connection.config.port+']')
+                        resolve(connection)
+                    } else {
+                        console.log('Database `'+ _config.secondSqlConfig.name +'` is connect failed.')
+                        throw err
+                    }
+                })
+            }            
         } catch (error) {
             reject(error)
         }
