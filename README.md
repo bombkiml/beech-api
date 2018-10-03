@@ -1,4 +1,4 @@
-# Beech API framework
+# Beech API framework (ES6)
 ###### [(by bömb)](https://www.facebook.com/bombkiml)
 ###
 ### # Support By
