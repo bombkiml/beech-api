@@ -15,7 +15,8 @@ exports.defaultConnection = () => {
                     user     : _config.defaultSqlConfig.username,
                     password : _config.defaultSqlConfig.password,
                     database : _config.defaultSqlConfig.database,
-                    charset  : _config.defaultSqlConfig.charset
+                    charset  : _config.defaultSqlConfig.charset,
+                    port     : _config.defaultSqlConfig.port
                 })
                 connection.connect((err) => {
                     if (!err) {
@@ -52,7 +53,8 @@ exports.secondConnection = () => {
                     user     : _config.secondSqlConfig.username,
                     password : _config.secondSqlConfig.password,
                     database : _config.secondSqlConfig.database,
-                    charset  : _config.secondSqlConfig.charset
+                    charset  : _config.secondSqlConfig.charset,
+                    port     : _config.defaultSqlConfig.port
                 })
                 connection.connect((err) => {
                     if (!err) {
