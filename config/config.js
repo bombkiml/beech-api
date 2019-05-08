@@ -30,14 +30,14 @@ exports.main_config = {
  * 
  */
 exports.defaultSqlConfig = {
-    name      : 'default database',
+    name      : 'default_database',
     host      : '127.0.0.1',
     username  : 'root',
     password  : '', 
-    database  : 'exam_db',
+    database  : 'example_db',
     port      : '3306',
     charset   : 'utf8',
-    isConnect : true
+    isConnect : false
 }
 
 /**
@@ -53,12 +53,12 @@ exports.defaultSqlConfig = {
  * 
  */
 exports.secondSqlConfig = {
-    name      : 'report database',
+    name      : 'second_database',
     host      : '127.0.0.1',
     username  : 'root',
     password  : '',
-    database  : 'report_db',
+    database  : 'example2_db',
     port      : '3306',
     charset   : 'utf8',
-    isConnect : true
+    isConnect : false
 }
