@@ -13,21 +13,24 @@
   - [nodeJS](https://nodejs.org) = 8.11.3
 #
 ### # Installing
-  - Install by clone "myProject"
-  - Run command prompt 
+  - Install by using git clone 
 ```sh
-    $ cd myProject
+    $ git clone https://github.com/bombkiml/beech-api.git "yourProjectName" 
 ```
-  - npm install package
+  - Run command prompt then cd to your project directory
+```sh
+    $ cd yourProjectName
+```
+  - npm install node packages
 ```sh
     $ npm install
 ```
 #
 ### # Usage
 You may use the beech api by execute main aplication `beech` using by `node` command
-    
-    node beech
-    
+```sh
+    $ node beech
+```
 #
 ### # Using with command line interface (CLI)
 	 
