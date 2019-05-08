@@ -12,7 +12,7 @@ exports.expressStart = () => {
 				data.message = err.message;
 				res.json(data);
 			});
-			const ExpressServer = _http.createServer(app).listen(_config.main_config.app_port, _config.main_config.app_host, () => {
+			const ExpressServer = _http.createServer(app).listen(_config.main_config.app_port, () => {
 				console.log('Express server started: <http://' + ExpressServer.address().address +':'+ ExpressServer.address().port +'>');
                 resolve(ExpressServer)
 			});
