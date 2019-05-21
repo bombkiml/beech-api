@@ -1,14 +1,14 @@
 //const {{modelName}} = require('../models/{{modelName}}');
 
 exports.init = () => {
-	app.get('/{{endpoint}}', (req, res) => {
+	app.get('{{endpoint}}', (req, res) => {
 		let data = {}
         data.code = 400
         data.msg = 'Not get allow.'
         res.status(400).json(data)
 	})
 
-    app.post('/{{endpoint}}', (req, res) => {
+    app.post('{{endpoint}}', (req, res) => {
         /**
          * @param Integer id
          *
