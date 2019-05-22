@@ -16,7 +16,7 @@ let data = [
     },
 ];
 
-exports.getProducts = () => {
+exports.example = () => {
     return new Promise((resolve, reject) => {
         try {
             console.log(data)
