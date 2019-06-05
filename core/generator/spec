@@ -2,33 +2,36 @@ process.env.NODE_ENV = 'test'
 process.setMaxListeners(0)
 
 const axios = require('axios'),
-    path = require('path'),
-    basePath = path.resolve(__dirname, '../../../../'),
-    config = require(path.join(basePath, 'config/config')).main_config,
-    baseUrl = config.local_nodejs
+path = require('path'),
+basePath = path.resolve(__dirname, '../../../../'),
+config = require(path.join(basePath, 'config/config')).main_config,
+baseUrl = config.local_nodejs
 
 describe('Test endpoint <{{endpoint}}>', () => { 
-    it('Truthy!', () => { 
-        expect('{{endpoint}}').toBeTruthy()
-    })
+  it('Truthy!', () => { 
+    expect('{{endpoint}}').toBeTruthy()
+  });
 
-    it('Say hello!', () => {
-        expect('Hello {{endpointName}}') 
-        .toEqual('Hello {{endpointName}}')
-    })
+  it('Say hello!', () => {
+    expect('Hello {{endpointName}}').toEqual('Hello {{endpointName}}')
+  });
 
-    /** 
-    * An asynchronous test will fail after 5000 ms if done() is not called.
-    * This timeout can be changed by setting TIMEOUT_INTERVAL or by passing 
-    * a timeout interval in the specification.
-    * 
-    */
-    it("Respond with basic GET <{{endpoint}}>", (done) => {
-        axios.get(baseUrl)
-        .then((res) => {
-            expect(400).toEqual(res.data.code)
-            done()
-        })
-    })
+  /** 
+  * An asynchronous test will fail after 5000 ms if done() is not called.
+  * This timeout can be changed by setting TIMEOUT_INTERVAL or by passing 
+  * a timeout interval in the specification.
+  * 
+  */
+  it("Respond with basic GET <{{endpoint}}>", (done) => {
+      axios.get(baseUrl)
+      .then((res) => {
+          expect(400).toEqual(res.data.code)
+          done()
+      })
+  });
 
-})
+  /**
+   * other
+   *
+   */
+});

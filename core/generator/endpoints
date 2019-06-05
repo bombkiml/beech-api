@@ -3,21 +3,21 @@
 exports.init = () => {
 	app.get('{{endpoint}}', (req, res) => {
 		let data = {}
-        data.code = 400
-        data.msg = 'Not get allow.'
-        res.status(400).json(data)
-	})
+    data.code = 400
+    data.msg = 'Not get allow.'
+    res.status(400).json(data)
+	});
 
-    app.post('{{endpoint}}', (req, res) => {
-        /**
-         * @param Integer id
-         *
-         * @return json
-         *
-         */
-        let id = req.param('id')
-
-        res.status(200).send(id)
-        
-    })
+  app.post('{{endpoint}}', (req, res) => {
+    /**
+      * @param Integer id
+      *
+      * @return json
+      *
+      */
+    let id = req.param('id')
+    
+    // return
+    res.status(200).send(id)      
+  });
 }
