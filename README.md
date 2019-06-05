@@ -31,6 +31,8 @@ You may use the beech api by execute main aplication `beech` using by `node` com
 ```sh
     $ node beech
 ```
+The Beech API will be start server [http://localhost:9000](http://localhost:9000) default port ``9000`` you can specific in ``app.config.js``
+
 #
 ### # Using with command line interface (CLI)
 	 
