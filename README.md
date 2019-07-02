@@ -10,7 +10,7 @@
 ### # Environment
   - [nvm](https://github.com/coreybutler/nvm-windows) >= 1.1.6
   - npm >= 5.6.0
-  - [nodeJS](https://nodejs.org) = 8.11.3
+  - [nodeJS](https://nodejs.org) >= 10.16.0 LTS (recommended)
 #
 ### # Installing
   - Install by using git clone 
