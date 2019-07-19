@@ -1,13 +1,14 @@
 process.env.NODE_ENV = 'test'
 process.setMaxListeners(0)
 
-const axios = require('axios'),
-path = require('path'),
-basePath = path.resolve(__dirname, '../../../../'),
-config = require(path.join(basePath, 'config/config')).main_config,
+const axios = require('axios')
+path = require('path')
+basePath = path.resolve()
+config = require(path.join(basePath, 'app.config')).main_config
 baseUrl = config.local_nodejs
+endpoint = baseUrl.concat('{{endpoint}}')
 
-describe('Test endpoint <{{endpoint}}>', () => { 
+describe('Test endpoint : '+ endpoint, () => { 
   it('Truthy!', () => { 
     expect('{{endpoint}}').toBeTruthy()
   });
@@ -22,11 +23,11 @@ describe('Test endpoint <{{endpoint}}>', () => {
   * a timeout interval in the specification.
   * 
   */
-  it("Respond with basic GET <{{endpoint}}>", (done) => {
-      axios.get(baseUrl)
+  it("Respond with basic GET status 200", (done) => {
+    axios.get(endpoint)
       .then((res) => {
-          expect(400).toEqual(res.data.code)
-          done()
+        expect(200).toEqual(res.data.status)
+        done()
       })
   });
 

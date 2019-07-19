@@ -1,6 +1,10 @@
 {
     "name": "beech-api",
-    "version": "1.0.0",
+    "version": "2.0.0",
+    "scripts": {
+        "serve": "node beech",
+        "test:unit": "./node_modules/.bin/jasmine-node-karma test --verbose"
+    },
     "description": "The Beech API framework is powered by NodeJS, express",
     "keywords": [
         "beech",
@@ -22,7 +26,7 @@
     },
     "homepage": "https://github.com/bombkiml/beech-api/blob/master/README.md",
     "dependencies": {
-        "axios": "^0.18.0",
+        "axios": "^0.18.1",
         "body-parser": "1.15.2",
         "cookie-parser": "1.4.3",
         "cors": "^2.8.1",
@@ -35,7 +39,7 @@
         "line-api": "^0.1.4",
         "mkdirp": "^0.5.1",
         "mysql": "^2.16.0",
-        "npm": "^6.4.0",
+        "npm": "^6.10.1",
         "path": "^0.12.7",
         "promise": "^7.1.1",
         "save-file": "^1.2.0",

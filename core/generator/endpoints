@@ -3,9 +3,9 @@
 exports.init = () => {
 	app.get('{{endpoint}}', (req, res) => {
 		let data = {}
-    data.code = 400
-    data.msg = 'Not get allow.'
-    res.status(400).json(data)
+    data.status = 200
+    data.message = 'Not get allow.'
+    res.status(200).json(data)
 	});
 
   app.post('{{endpoint}}', (req, res) => {
