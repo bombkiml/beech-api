@@ -10,7 +10,7 @@
 ### # Environment
   - [nvm](https://github.com/coreybutler/nvm-windows) >= 1.1.6
   - npm >= 5.6.0
-  - [nodeJS](https://nodejs.org) = 8.11.3
+  - [nodeJS](https://nodejs.org) >= 10.16.0 LTS (recommended)
 #
 ### # Installing
   - Install by using git clone 
@@ -31,6 +31,8 @@ You may use the beech api by execute main aplication `beech` using by `node` com
 ```sh
     $ node beech
 ```
+The Beech API will be start server [http://localhost:9000](http://localhost:9000) default port ``9000`` you can specific in ``app.config.js``
+
 #
 ### # Using with command line interface (CLI)
 	 
