@@ -1,5 +1,4 @@
-//const {{modelName}} = require('../models/{{modelName}}');
-
+//require
 exports.init = () => {
 	app.get('{{endpoint}}', (req, res) => {
 		let data = {}

@@ -13,18 +13,71 @@ class Generator {
     return new Promise((resolve, reject) => {
       try {
         if (this.option == '-v' || this.option == '--version') {
+          // check beech version
           resolve("\n The Beech API [103m[90m v2.0.0 [0m[0m \n Author: bombkiml \n Built: July 19, 2019 22:19:09 \n")
         } else if (this.option == '-h' || this.option == '-?' || this.option == '--help') {
+          // help for see avaliable command
           this.help()
             .then((help) => resolve(help))
             .catch((err) => reject(err))
         } else if (this.option == '-g' || this.option == 'generate') {
+          // generate endpoint
           if (!this.argument) {
-            resolve("\n [103m[90m Warning [0m[0m : Plase specify endpoints name. \n")
+            resolve("\n [103m[90m Warning [0m[0m : Please specify endpoints name. \n")
           } else {
-            this.make()
-              .then((make) => resolve(make))
-              .catch((err) => reject(err))
+            if (this.special.length > 10) {
+              if (this.special.substring(0, 10) == '--require=') {
+                // check space
+                if (this.extra) {
+                  resolve("\n [103m[90m Warning [0m[0m : Not using space in `" + this.special + "[101m [0m" + this.extra + "...`, please remove it. \n")
+                  return
+                }
+                let myRequire = this.special.substring(10)
+                myRequire = myRequire.split(',')
+                // check require model exists
+                this.isModelFound(myRequire)
+                  .then((notExistsModel) => {
+                    if (notExistsModel == true) {
+                      // generate & require
+                      if (!this.special) {
+                        resolve("\n [103m[90m Warning [0m[0m : Please specify require file(s). \n")
+                      } else {
+                        // create back dash (../)
+                        let backDash = ''
+                        let arg = this.argument.replace(/^\/+|\/+$/g, '')
+                        arg = arg.split('/')
+                        arg.map(() => {
+                          backDash += '../'
+                        })
+                        // make require file
+                        let rqr = myRequire.map((data) => {
+                          let model = data.replace(/[^A-Za-z0-9]+/g, '')
+                          return 'const '.concat(model.concat(' = require("'.concat(backDash.concat('models/'.concat(model.concat('");\n'))))))
+                        })
+                        this.make(rqr)
+                          .then((make) => resolve(make))
+                          .catch((err) => reject(err))
+                      }
+                    } else {
+                      resolve("\n [103m[90m Warning [0m[0m : The model `" + notExistsModel + "` is not found.")
+                      return
+                    }
+                  })
+                  .catch(err => { throw err })
+              } else {
+                resolve("\n [101m Faltal [0m : commnad is not available. \n")
+              }
+            } else if (this.special == '--model') {
+              this.makeModel()
+                .then((make) => resolve(make))
+                .catch((err) => reject(err))
+            } else if (!this.special) {
+              this.make()
+                .then((make) => resolve(make))
+                .catch((err) => reject(err))
+            } else {
+              resolve("\n [101m Faltal [0m : commnad is not available. \n")
+            }
           }
         } else if (this.option == 'kill') {
           /* require('./app')
@@ -38,33 +91,37 @@ class Generator {
     })
   }
 
-  make() {
+  make(rq = null) {
     return new Promise((resolve, reject) => {
       try {
         let tmpEndpointsPath = './core/generator/endpoints'
-        let tmpModelsPath = './core/generator/models'
         let tmpSpecPath = './core/generator/spec'
         let endpointsPath = './src/endpoints/'
         let testPath = './test/unit/endpoints/'
         // argument join `slash`
-
         let arg = this.argument.replace(/^\/+|\/+$/g, '')
         arg = arg.split('/')
         let endpoints = arg.pop()
         let subFolder = arg.join('/')
         // endpoints
-        let fullEndpoints = endpointsPath + subFolder + '/' + endpoints.concat('-endpoints.js')
+        let fullEndpoints = endpointsPath + subFolder.concat('/') + endpoints.concat('-endpoints.js')
         let routeEndpoints = ((arg.length > 0) ? '/' : '') + subFolder.concat('/') + endpoints
         // test
         let fullTest = testPath + subFolder + '/' + endpoints.concat('-endpoints.spec.js')
         const fs = require('fs')
         if (!fs.existsSync(fullEndpoints)) {
+          // prepare state require file
+          let rqFile = ''
+          rq.map((data) => {
+            rqFile += data
+          })
           // generater endpoint
           this.makeFolder(endpointsPath + subFolder)
             .then(this.copy.bind(this, tmpEndpointsPath, fullEndpoints))
             .then(this.contentReplace.bind(this, fullEndpoints, {
               'endpoint': routeEndpoints,
-              'endpointName': endpoints
+              'endpointName': endpoints,
+              'rq': rqFile
             }))
             // generater test
             .then(this.makeFolder.bind(this, testPath + subFolder))
@@ -73,13 +130,65 @@ class Generator {
               'endpoint': routeEndpoints,
               'endpointName': endpoints
             }))
-            //.then(resolve('\n Generated endpoints, spec successfully. \n'))
-            .then(resolve('\n [102m[90m Generater [0m[0m : The endpoint `' + endpoints + '` is created. \n'))
+            .then(resolve('\n [104m Processing [0m : The endpoint `' + endpoints + '` is initialize.'))
+            .then(generated => console.log(generated))
             .catch((err) => {
               throw err
             })
         } else {
           resolve('\n [103m[90m Warning [0m[0m : The endpoint `' + endpoints + '` is duplicate. \n')
+        }
+      } catch (error) {
+        reject(error)
+      }
+    })
+  }
+
+  isModelFound(modelArr) {
+    return new Promise((resolve, reject) => {
+      try {
+        const fs = require('fs')
+        let n = 1
+        modelArr.map((data) => {
+          if (!fs.existsSync('src/models/' + data.concat('.js'))) {
+            resolve(data)
+          }
+          if (modelArr.length == n) {
+            resolve(true)
+          }
+          n++
+        })
+      } catch (error) {
+        reject(error)
+      }
+    })
+  }
+
+  makeModel() {
+    return new Promise((resolve, reject) => {
+      try {
+        let tmpModelsPath = './core/generator/models'
+        let modelPath = './src/models/'
+        // argument join `slash`
+        let arg = this.argument.replace(/^\/+|\/+$/g, '')
+        arg = arg.split('/')
+        let models = arg.pop()
+        models = models.charAt(0).toUpperCase() + models.slice(1)
+        let subFolder = arg.join('/')
+        // models
+        let fullModels = modelPath + subFolder.concat('/') + models.concat('.js')
+        // check file exists
+        const fs = require('fs')
+        if (!fs.existsSync(fullModels)) {
+          // generater model
+          this.makeFolder(modelPath + subFolder)
+            .then(this.copy.bind(this, tmpModelsPath, fullModels))
+            .then(resolve('\n [102m[90m Passed [0m[0m : The models `' + models + '` is generated.'))
+            .catch((err) => {
+              throw err
+            })
+        } else {
+          resolve('\n [103m[90m Warning [0m[0m : The models `' + models + '` is duplicate. \n')
         }
       } catch (error) {
         reject(error)
@@ -140,15 +249,17 @@ class Generator {
             } else {
               let endpoint = textCondition.endpoint
               let endpointName = textCondition.endpointName
+              let rq = textCondition.rq
               // content replace
               let text = data.replace(new RegExp('{{endpoint}}', 'g'), endpoint)
               text = text.replace(new RegExp('{{endpointName}}', 'g'), endpointName)
+              text = text.replace(new RegExp('//require', 'g'), rq)
               // writing the file
               this.fs.writeFile(pathFile, text, 'utf8', (err) => {
                 if (err) {
                   throw err
                 } else {
-                  resolve('\n Generated endpoints, spec successfully. \n')
+                  resolve('\n [102m[90m Passed [0m[0m Generated successfully. \n')
                 }
               })
             }
@@ -182,6 +293,7 @@ class Generator {
         this.option = argv[2]
         this.argument = argv[3]
         this.special = argv[4]
+        this.extra = argv[5]
         resolve(this)
       } catch (error) {
         reject(err)
