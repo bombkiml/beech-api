@@ -31,7 +31,7 @@ You may use the beech api by execute main aplication `beech` using by `node` com
 ```sh
     $ node beech
 ```
-The Beech API will be start server [http://localhost:9000](http://localhost:9000) default port ``9000`` you can specific in ``app.config.js``
+The Beech API will be start server [http://localhost:9000](http://localhost:9000) default port ``9000`` you can specific the port in ``app.config.js``
 
 #
 ### # Using with command line interface (CLI)
@@ -47,15 +47,17 @@ The Beech API will be start server [http://localhost:9000](http://localhost:9000
 
 	Beech call Express server
 	  $ node beech                                The Express server start,
-						      you can config app_port in `./config/config.js`
+						      you can config app_port in `app.config.js`
 
 	The following commands are available:
 
-	Generater endpoints
-	  $ node beech -g|generate {endpointsName}    Create a new endpoints 
-		                                        - new endpoints
-						        - new models
-						        - new spac
+	Generater endpoints & models
+	  $ node beech -g|generate {endpointsName}       Create a new endpoints 
+		                                           - new endpoints
+						           - new .spac (unit test)
+	  $ node beech -g|generate {modelsName} --model  Create a new models 
+		                                           - new models
+							
 											  
 #
 ### # Development
