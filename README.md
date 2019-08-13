@@ -35,8 +35,6 @@ The Beech API will be start server [http://localhost:9000](http://localhost:9000
 
 #
 ### # Using with command line interface (CLI)
-	 
-	The Beech API
 
 	Usage:
 	  $ node beech [options] [arguments] <special>
