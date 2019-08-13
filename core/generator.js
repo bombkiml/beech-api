@@ -25,7 +25,11 @@ class Generator {
           if (!this.argument) {
             resolve("\n [103m[90m Warning [0m[0m : Please specify endpoints name. \n")
           } else {
-            if (this.special.length > 10) {
+            if (!this.special || this.special == 'undefined') {
+              this.make()
+                .then((make) => resolve(make))
+                .catch((err) => reject(err))
+            } else if (this.special.length > 10) {
               if (this.special.substring(0, 10) == '--require=') {
                 // check space
                 if (this.extra) {
@@ -71,10 +75,6 @@ class Generator {
               this.makeModel()
                 .then((make) => resolve(make))
                 .catch((err) => reject(err))
-            } else if (!this.special) {
-              this.make()
-                .then((make) => resolve(make))
-                .catch((err) => reject(err))
             } else {
               resolve("\n [101m Faltal [0m : commnad is not available. \n")
             }
@@ -111,10 +111,14 @@ class Generator {
         const fs = require('fs')
         if (!fs.existsSync(fullEndpoints)) {
           // prepare state require file
-          let rqFile = ''
-          rq.map((data) => {
-            rqFile += data
-          })
+          let rqFile = '/*@requireSomething*/'
+          // check exists requrie files
+          if (rq) {
+            // make require multiples line
+            rq.map((data) => {
+              rqFile += data
+            })
+          }
           // generater endpoint
           this.makeFolder(endpointsPath + subFolder)
             .then(this.copy.bind(this, tmpEndpointsPath, fullEndpoints))
@@ -242,6 +246,7 @@ class Generator {
   async contentReplace(pathFile, textCondition) {
     return new Promise((resolve, reject) => {
       try {
+        // delay for generator
         setTimeout(() => {
           this.fs.readFile(pathFile, 'utf8', (err, data) => {
             if (err) {
@@ -253,7 +258,7 @@ class Generator {
               // content replace
               let text = data.replace(new RegExp('{{endpoint}}', 'g'), endpoint)
               text = text.replace(new RegExp('{{endpointName}}', 'g'), endpointName)
-              text = text.replace(new RegExp('//require', 'g'), rq)
+              text = text.replace(new RegExp('/*@requireSomething*/', 'g'), rq)
               // writing the file
               this.fs.writeFile(pathFile, text, 'utf8', (err) => {
                 if (err) {

@@ -1,6 +1,6 @@
 process.env.NODE_ENV = 'test'
 process.setMaxListeners(0)
-
+/*@headRequest*/
 const axios = require('axios')
 path = require('path')
 basePath = path.resolve()
@@ -23,16 +23,16 @@ describe('Test endpoint : '+ endpoint, () => {
   * a timeout interval in the specification.
   * 
   */
-  it("Respond with basic GET status 200", (done) => {
+  it("Respond with basic GET status code 200", (done) => {
     axios.get(endpoint)
       .then((res) => {
-        expect(200).toEqual(res.data.status)
+        expect(200).toEqual(res.data.code)
         done()
       })
   });
 
   /**
-   * other
+   * Anothor test.
    *
    */
 });

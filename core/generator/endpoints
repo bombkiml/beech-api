@@ -1,22 +1,71 @@
-//require
+/*@requireSomething*/
+
 exports.init = () => {
-	app.get('{{endpoint}}', (req, res) => {
+  // @get
+	router.get('{{endpoint}}', (req, res) => {
 		let data = {}
-    data.status = 200
-    data.message = 'Not get allow.'
-    res.status(200).json(data)
+    data.code = 200
+    data.message = 'Got a GET request.'
+    res.json(data)
 	});
 
-  app.post('{{endpoint}}', (req, res) => {
+  // @post
+  router.post('{{endpoint}}', (req, res) => {
     /**
-      * @param Integer id
-      *
-      * @return json
-      *
-      */
-    let id = req.param('id')
-    
-    // return
-    res.status(200).send(id)      
+     * @param Integer id
+     *
+     * @return json
+     */
+    let id = req.params.id
+    // @return
+    let data = {}
+    data.code = 200
+    data.message = 'Got a POST request.'
+    res.json(data)
+  });
+
+  // @put
+  router.put('{{endpoint}}/:id', (req, res) => {
+    /**
+     * @param Integer id
+     *
+     * @return json
+     */
+    let id = req.params.id
+    // @return
+    let data = {}
+    data.code = 200
+    data.message = 'Got a PUT request at {{endpoint}}/' + id
+    res.json(data)
+  });
+
+  // @patch
+  router.patch('{{endpoint}}/:id', (req, res) => {
+    /**
+     * @param Integer id
+     *
+     * @return json
+     */
+    let id = req.params.id
+    // @return
+    let data = {}
+    data.code = 200
+    data.message = 'Got a PATCH request at {{endpoint}}/' + id
+    res.json(data)
+  });
+
+  // @delete
+  router.delete('{{endpoint}}/:id', (req, res) => {
+    /**
+     * @param Integer id
+     *
+     * @return json
+     */
+    let id = req.params.id
+    // @return
+    let data = {}
+    data.code = 200
+    data.message = 'Got a DELETE request at {{endpoint}}/' + id
+    res.json(data)
   });
 }
