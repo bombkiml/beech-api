@@ -1,16 +1,21 @@
-/*@requireSomething*/
-
+{{requireSomething}}
 exports.init = () => {
-  // @get
-	router.get('{{endpoint}}', (req, res) => {
+  /**
+   * Initiate basic request with GET, POST, PUT, PATCH, DELETE
+   *
+   * @return json data
+   *
+   */
+  /@GET/
+	endpoint.get('{{endpoint}}', (req, res) => {
 		let data = {}
     data.code = 200
     data.message = 'Got a GET request.'
     res.json(data)
 	});
 
-  // @post
-  router.post('{{endpoint}}', (req, res) => {
+  /@POST/
+  endpoint.post('{{endpoint}}', (req, res) => {
     /**
      * @param Integer id
      *
@@ -24,8 +29,8 @@ exports.init = () => {
     res.json(data)
   });
 
-  // @put
-  router.put('{{endpoint}}/:id', (req, res) => {
+  /@PUT/
+  endpoint.put('{{endpoint}}/:id', (req, res) => {
     /**
      * @param Integer id
      *
@@ -39,8 +44,8 @@ exports.init = () => {
     res.json(data)
   });
 
-  // @patch
-  router.patch('{{endpoint}}/:id', (req, res) => {
+  /@PATCH/
+  endpoint.patch('{{endpoint}}/:id', (req, res) => {
     /**
      * @param Integer id
      *
@@ -54,8 +59,8 @@ exports.init = () => {
     res.json(data)
   });
 
-  // @delete
-  router.delete('{{endpoint}}/:id', (req, res) => {
+  /@DELETE/
+  endpoint.delete('{{endpoint}}/:id', (req, res) => {
     /**
      * @param Integer id
      *

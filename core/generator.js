@@ -63,7 +63,7 @@ class Generator {
                           .catch((err) => reject(err))
                       }
                     } else {
-                      resolve("\n [103m[90m Warning [0m[0m : The model `" + notExistsModel + "` is not found.")
+                      resolve("\n [103m[90m Warning [0m[0m : The model `" + notExistsModel + "` is not found. \n")
                       return
                     }
                   })
@@ -90,7 +90,7 @@ class Generator {
       }
     })
   }
-
+  
   make(rq = null) {
     return new Promise((resolve, reject) => {
       try {
@@ -110,10 +110,11 @@ class Generator {
         let fullTest = testPath + subFolder + '/' + endpoints.concat('-endpoints.spec.js')
         const fs = require('fs')
         if (!fs.existsSync(fullEndpoints)) {
-          // prepare state require file
-          let rqFile = '/*@requireSomething*/'
+          // prepare state require file if `rq` not exists
+          let rqFile = '// Require something \n'
           // check exists requrie files
           if (rq) {
+            rqFile = ''
             // make require multiples line
             rq.map((data) => {
               rqFile += data
@@ -187,7 +188,7 @@ class Generator {
           // generater model
           this.makeFolder(modelPath + subFolder)
             .then(this.copy.bind(this, tmpModelsPath, fullModels))
-            .then(resolve('\n [102m[90m Passed [0m[0m : The models `' + models + '` is generated.'))
+            .then(resolve('\n [102m[90m Passed [0m[0m : The models `' + models + '` is generated. \n'))
             .catch((err) => {
               throw err
             })
@@ -258,7 +259,7 @@ class Generator {
               // content replace
               let text = data.replace(new RegExp('{{endpoint}}', 'g'), endpoint)
               text = text.replace(new RegExp('{{endpointName}}', 'g'), endpointName)
-              text = text.replace(new RegExp('/*@requireSomething*/', 'g'), rq)
+              text = text.replace(new RegExp('{{requireSomething}}', 'g'), rq)
               // writing the file
               this.fs.writeFile(pathFile, text, 'utf8', (err) => {
                 if (err) {
@@ -279,7 +280,7 @@ class Generator {
   help() {
     return new Promise((resolve, reject) => {
       try {
-        this.fs.readFile('.\\core\\help', 'utf8', function (err, data) {
+        this.fs.readFile('./core/help', 'utf8', function (err, data) {
           if (err)
             throw err
           resolve(data)

@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser')
 const bodyParser = require('body-parser')
 const expressValidator = require('express-validator')
 const cors = require('cors')
-global.router = _express.Router();
+global.endpoint = _express.Router();
 // Local environments
 global._config = require('../app.config')
 const dbConnect = require('./databases/mysql.connection')
@@ -27,13 +27,13 @@ _app.all('/', (req, res, next) => {
   next()
 })
 // parse global app
-global.app = _app
+global.express = _app
 // Read folder in ./src/endpoints/*
 const walk = require('walk')
 let jsfiles = []
-let walker = walk.walk('.\\src\\endpoints', { followLinks: false })
+let walker = walk.walk('./src/endpoints', { followLinks: false })
 walker.on('file', (root, stat, next) => {
-  jsfiles.push(root + '\\' + stat.name)
+  jsfiles.push(root + '/' + stat.name)
   next()
 })
 walker.on('end', () => {
@@ -51,8 +51,6 @@ init = (jsfiles) => {
      * 
      */
     httpExpress.expressStart()
-      /* .then(httpExpress.getExpressServer.bind(this))
-      .then(serv => _SERVER = serv) */
       .then(dbConnect.defaultConnection.bind(this))
       .then(dbConnect.secondConnection.bind(this))
       .then(fileWalk.fileWalk.bind(this, jsfiles))
@@ -64,4 +62,4 @@ init = (jsfiles) => {
   }
 }
 // use router
-app.use(router);
+express.use(endpoint);
