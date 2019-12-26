@@ -51,10 +51,12 @@ The Beech API will be start server [http://localhost:9000](http://localhost:9000
 
 	Generater endpoints & models
 	  $ node beech -g|generate {endpointsName}       Create a new endpoints 
-		                                           - new endpoints
-						           - new .spac (unit test)
+		                                           - New endpoints
+						           - New .spac (unit test)
+							   - You might using <special> ``--require=ModelName1,ModelName2,..`` 
+							     for require model file in generate processing
 	  $ node beech -g|generate {modelsName} --model  Create a new models 
-		                                           - new models
+		                                           - New models
 							
 											  
 #
