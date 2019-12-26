@@ -19,4 +19,4 @@ $ node beech -g|generate {endpointsName}       Create a new endpoints
                                                 - You might using <special> ``--require=ModelName1,ModelName2,..`` 
                                                   for require model file in generate processing
 $ node beech -g|generate {modelsName} --model  Create a new models 
-		                                           - New models
+		                                - New models
