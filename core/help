@@ -1,16 +1,22 @@
 
 Usage:
-  $ node beech [options] [arguments] <special>
+$ node beech [options] [arguments] <special>
 
 Options:
-  -?|-h, --help                    Display this help message
-  -v, --version                    Display this application version
+-?|-h, --help                               Display this help message
+-v, --version                               Display this application version
 
 Beech call Express server
-  $ node beech                     The Express server start, you can config app_port in `app.config.js`
+$ node beech                                The Express server start,
+                                            you can config app_port in `app.config.js`
 
 The following commands are available:
 
 Generater endpoints & models
-  $ node beech -g|generate {endpointsName}         Create a new endpoints (endpoints, test)
-  $ node beech -g|generate {modelsName} --model    Create a new models (models)
+$ node beech -g|generate {endpointsName}       Create a new endpoints 
+                                                - New endpoints
+                                                - New .spac (unit test)
+                                                - You might using <special> ``--require=ModelName1,ModelName2,..`` 
+                                                  for require model file in generate processing
+$ node beech -g|generate {modelsName} --model  Create a new models 
+		                                           - New models
