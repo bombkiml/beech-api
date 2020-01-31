@@ -1,4 +1,4 @@
-const line = require('line-api')
+const line = require('line-api');
 
 exports.notify = (message, token) => {    
   const notify = new line.Notify({
@@ -7,5 +7,5 @@ exports.notify = (message, token) => {
   notify.send({
     message: message
   })
-  .then(console.log)
+  .then(console.log);
 }

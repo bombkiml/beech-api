@@ -36,29 +36,23 @@ The Beech API will be start server [http://localhost:9000](http://localhost:9000
 #
 ### # Using with command line interface (CLI)
 
-	Usage:
-	  $ node beech [options] [arguments] <special>
+  Usage:
+    $ node beech [options] [arguments] <special>
+    $ node beech                     The Beech development with express server
+                                     you can config app_port in `app.config.js`
 
-	Options:
-	  -?|-h, --help                               Display this help message
-	  -v, --version                               Display this application version
+  Options:
+    ?|-h, --help                     Display this help message
+    -v, --version                    Display this application version
 
-	Beech call Express server
-	  $ node beech                                The Express server start,
-						      you can config app_port in `app.config.js`
+  The following commands are available:
 
-	The following commands are available:
+    $ node beech -g {endpoint}       Create a new endpoints, test, 
+                                     You might using <special> `--require=Model1,Model2,..`
+                                     for require model file in generate processing
+    $ node beech -g {model} --model  Create a new models
 
-	Generater endpoints & models
-	  $ node beech -g|generate {endpointsName}       Create a new endpoints 
-		                                           - New endpoints
-						           - New .spac (unit test)
-							   - You might using <special> ``--require=ModelName1,ModelName2,..`` 
-							     for require model file in generate processing
-	  $ node beech -g|generate {modelsName} --model  Create a new models 
-		                                           - New models
-							
-											  
+
 #
 ### # Development
 Want to contribute or join for Great Job!, You can contact to me via

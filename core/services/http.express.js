@@ -8,12 +8,12 @@ exports.expressStart = () => {
         this.badRequest()
           .then(this.wrongRequest())
           .catch(err => {
-            throw err
-          })
-        resolve(ExpressServer)
+            throw err;
+          });
+        resolve(ExpressServer);
       });
     } catch (error) {
-      reject(error)
+      reject(error);
     }
   });
 }
@@ -21,9 +21,9 @@ exports.expressStart = () => {
 exports.getExpressServer = (serve) => {
   return new Promise((resolve, reject) => {
     try {
-      resolve(serve)
+      resolve(serve);
     } catch (error) {
-      reject(error)
+      reject(error);
     }
   });
 }
@@ -32,14 +32,14 @@ exports.badRequest = () => {
   return new Promise((resolve, reject) => {
     try {
       express.get('/', (req, res) => {
-        let data = {}
-        data.code = 200
-        data.message = 'Not get allow.'
-        res.json(data)
-        resolve(data)
+        let data = {};
+        data.code = 200;
+        data.message = 'Not get allow.';
+        res.json(data);
+        resolve(data);
       });
     } catch (error) {
-      reject(error)
+      reject(error);
     }
   });
 }
@@ -49,11 +49,11 @@ exports.wrongRequest = () => {
     try {
       express.use((req, res, next) => {
         res.status(404).send({ code: 404, message: 'Cannot request to ' + req.url });
-        resolve(404)
-        next()
+        resolve(404);
+        next();
       });
     } catch (error) {
-      reject(error)
+      reject(error);
     }
   });
 }

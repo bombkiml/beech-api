@@ -7,8 +7,8 @@ exports.defaultConnection = () => {
     try {
       // Check flag connecting
       if (!_config.defaultSqlConfig.isConnect) {
-        resolve(true)
-        return
+        resolve(true);
+        return;
       } else {
         let connection = _mysql.createConnection({
           host: _config.defaultSqlConfig.host,
@@ -20,18 +20,18 @@ exports.defaultConnection = () => {
         })
         connection.connect((err) => {
           if (!err) {
-            connection.query("SET NAMES UTF8")
-            db = connection
-            console.log('[102m[90m Passed [0m[0m Database `' + _config.defaultSqlConfig.name + '` is connected : [[93m' + connection.config.database + ':' + connection.config.port + '[0m]')
-            resolve(connection)
+            connection.query("SET NAMES UTF8");
+            db = connection;
+            console.log('[102m[90m Passed [0m[0m Database `' + _config.defaultSqlConfig.name + '` is connected : [[93m' + connection.config.database + ':' + connection.config.port + '[0m]');
+            resolve(connection);
           } else {
-            console.log('[101m Failed [0m [91mDatabase `' + _config.defaultSqlConfig.name + '` is connect failed.[0m')
-            throw err
+            console.log('[101m Failed [0m [91mDatabase `' + _config.defaultSqlConfig.name + '` is connect failed.[0m');
+            throw err;
           }
         })
       }
     } catch (error) {
-      reject(error)
+      reject(error);
     }
   })
 }
@@ -45,8 +45,8 @@ exports.secondConnection = () => {
     try {
       // Check flag connecting
       if (!_config.secondSqlConfig.isConnect) {
-        resolve(true)
-        return
+        resolve(true);
+        return;
       } else {
         let connection = _mysql.createConnection({
           host: _config.secondSqlConfig.host,
@@ -58,18 +58,18 @@ exports.secondConnection = () => {
         })
         connection.connect((err) => {
           if (!err) {
-            connection.query("SET NAMES UTF8")
-            db2 = connection
-            console.log('[102m[90m Passed [0m[0m Database `' + _config.secondSqlConfig.name + '` is connected : [[93m' + connection.config.database + ':' + connection.config.port + '[0m]')
-            resolve(connection)
+            connection.query("SET NAMES UTF8");
+            db2 = connection;
+            console.log('[102m[90m Passed [0m[0m Database `' + _config.secondSqlConfig.name + '` is connected : [[93m' + connection.config.database + ':' + connection.config.port + '[0m]');
+            resolve(connection);
           } else {
-            console.log('[101m Failed [0m [91mDatabase `' + _config.secondSqlConfig.name + '` is connect failed.[0m')
-            throw err
+            console.log('[101m Failed [0m [91mDatabase `' + _config.secondSqlConfig.name + '` is connect failed.[0m');
+            throw err;
           }
         })
       }
     } catch (error) {
-      reject(error)
+      reject(error);
     }
   })
 }

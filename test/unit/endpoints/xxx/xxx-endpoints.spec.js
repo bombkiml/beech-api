@@ -6,15 +6,15 @@ path = require('path');
 basePath = path.resolve();
 config = require(path.join(basePath, 'app.config')).main_config;
 baseUrl = config.local_nodejs;
-endpoint = baseUrl.concat('{{endpoint}}');
+endpoint = baseUrl.concat('/xxx/xxx');
 
 describe('Test endpoint : '+ endpoint, () => { 
   it('Truthy!', () => { 
-    expect('{{endpoint}}').toBeTruthy();
+    expect('/xxx/xxx').toBeTruthy();
   });
 
   it('Say hello!', () => {
-    expect('Hello {{endpointName}}').toEqual('Hello {{endpointName}}');
+    expect('Hello xxx').toEqual('Hello xxx');
   });
 
   /** 

@@ -1,4 +1,5 @@
-{{requireSomething}}
+// Require something 
+
 exports.init = () => {
   /**
    * Initiate basic request with GET, POST, PUT, PATCH, DELETE
@@ -7,7 +8,7 @@ exports.init = () => {
    *
    */
   /@GET/
-	endpoint.get('{{endpoint}}', (req, res) => {
+	endpoint.get('/xxx/xxx', (req, res) => {
 		let data = {};
     data.code = 200;
     data.message = 'Got a GET request.';
@@ -15,7 +16,7 @@ exports.init = () => {
 	});
 
   /@POST/
-  endpoint.post('{{endpoint}}', (req, res) => {
+  endpoint.post('/xxx/xxx', (req, res) => {
     /**
      * @param Integer id
      *
@@ -30,7 +31,7 @@ exports.init = () => {
   });
 
   /@PUT/
-  endpoint.put('{{endpoint}}/:id', (req, res) => {
+  endpoint.put('/xxx/xxx/:id', (req, res) => {
     /**
      * @param Integer id
      *
@@ -40,12 +41,12 @@ exports.init = () => {
     // @return
     let data = {};
     data.code = 200;
-    data.message = 'Got a PUT request at {{endpoint}}/' + id;
+    data.message = 'Got a PUT request at /xxx/xxx/' + id;
     res.json(data);
   });
 
   /@PATCH/
-  endpoint.patch('{{endpoint}}/:id', (req, res) => {
+  endpoint.patch('/xxx/xxx/:id', (req, res) => {
     /**
      * @param Integer id
      *
@@ -55,12 +56,12 @@ exports.init = () => {
     // @return
     let data = {};
     data.code = 200;
-    data.message = 'Got a PATCH request at {{endpoint}}/' + id;
+    data.message = 'Got a PATCH request at /xxx/xxx/' + id;
     res.json(data);
   });
 
   /@DELETE/
-  endpoint.delete('{{endpoint}}/:id', (req, res) => {
+  endpoint.delete('/xxx/xxx/:id', (req, res) => {
     /**
      * @param Integer id
      *
@@ -70,7 +71,7 @@ exports.init = () => {
     // @return
     let data = {};
     data.code = 200;
-    data.message = 'Got a DELETE request at {{endpoint}}/' + id;
+    data.message = 'Got a DELETE request at /xxx/xxx/' + id;
     res.json(data);
   });
 }

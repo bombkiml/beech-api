@@ -5,13 +5,14 @@
 exports.fileWalk = (files) => {
 	return new Promise((resolve, reject) => {
 		try {
-      let route;        
-      files.forEach((val, index) => {
-        route = require('../.' + val.replace('.js', ''))
-        route.init()
-      })
+      let route;
+      files.forEach(val => {
+        route = require('../.' + val.replace('.js', ''));
+        route.init();
+      });
+      resolve(true);
 		} catch (error) {
-			reject(error)
+			reject(error);
 		}
 	});
 }
