@@ -25,7 +25,7 @@ _app.all('/', (req, res, next) => {
   res.header("Access-Control-Allow-Methods", "GET, PUT, PATCH, POST, DELETE, OPTIONS");
   res.header("Content-Type", "application/json; charset=utf-8");
   next();
-})
+});
 // parse global app
 global.express = _app;
 // Read folder in ./src/endpoints/*
@@ -35,10 +35,10 @@ let walker = walk.walk('./src/endpoints', { followLinks: false });
 walker.on('file', (root, stat, next) => {
   jsfiles.push(root + '/' + stat.name);
   next();
-})
+});
 walker.on('end', () => {
   init(jsfiles);
-})
+});
 // defind server variable
 global._SERVER;
 // Initialize the application
