@@ -14,7 +14,7 @@ class Generator {
       try {
         if (this.option == '-v' || this.option == '--version') {
           // check beech version
-          resolve("\n The Beech API [103m[90m v2.0.0 [0m[0m \n Author: bombkiml \n Built: July 19, 2019 22:19:09");
+          resolve("\n The Beech API [103m[90m v3.0.0 [0m[0m \n Author: bombkiml \n Built: Mar 27, 2020 15:19:09");
         } else if (this.option == '-h' || this.option == '?' || this.option == '--help') {
           // help for see avaliable command
           this.help()

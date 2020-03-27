@@ -1,6 +1,6 @@
 {
     "name": "beech-api",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "scripts": {
         "serve": "node beech",
         "test:unit": "./node_modules/.bin/jasmine-node-karma test --verbose"

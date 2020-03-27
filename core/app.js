@@ -51,8 +51,9 @@ init = (jsfiles) => {
      * 
      */
     httpExpress.expressStart()
-      .then(dbConnect.defaultConnection.bind(this))
-      .then(dbConnect.secondConnection.bind(this))
+      .then(dbConnect.mySqlConnection.bind(this))
+      /* .then(dbConnect.defaultConnection.bind(this))
+      .then(dbConnect.secondConnection.bind(this)) */
       .then(fileWalk.fileWalk.bind(this, jsfiles))
       .catch(error => {
         throw error;
