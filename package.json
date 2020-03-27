@@ -1,6 +1,6 @@
 {
   "name": "beech-api",
-  "version": "3.0.0",
+  "version": "3.0.3",
   "description": "The Beech API framework is powered by NodeJS, express",
   "keywords": [
     "beech",
@@ -18,7 +18,7 @@
   },
   "authors": "bombkiml",
   "bin": {
-    "beech-api": "./src/index.js"
+    "beech-api": "./core/generator.js"
   },
   "bugs": {
     "url": "https://github.com/bombkiml/beech-api/issues"
