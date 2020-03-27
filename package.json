@@ -1,10 +1,6 @@
 {
   "name": "beech-api",
   "version": "3.0.0",
-  "scripts": {
-    "serve": "node beech",
-    "test:unit": "./node_modules/.bin/jasmine-node-karma test --verbose"
-  },
   "description": "The Beech API framework is powered by NodeJS, express",
   "keywords": [
     "beech",
@@ -20,12 +16,9 @@
     "type": "git",
     "url": "https://github.com/bombkiml/beech-api.git"
   },
-  "author": {
-    "name": "bombkiml",
-    "url": "https://github.com/bombkiml/beech-api/blob/master/README.md"
-  },
+  "authors": "bombkiml",
   "bin": {
-    "vue-native": "./src/index.js"
+    "beech-api": "./src/index.js"
   },
   "bugs": {
     "url": "https://github.com/bombkiml/beech-api/issues"
