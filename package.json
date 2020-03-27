@@ -1,6 +1,6 @@
 {
   "name": "beech-api",
-  "version": "3.0.3",
+  "version": "3.0.6",
   "description": "The Beech API framework is powered by NodeJS, express",
   "keywords": [
     "beech",
@@ -11,17 +11,25 @@
     "api-framework"
   ],
   "license": "MIT",
-  "main": "app.js",
+  "main": "./core/app.js",
+  "preferGlobal": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/bombkiml/beech-api.git"
   },
-  "authors": "bombkiml",
+  "author": {
+    "name": "bombkiml",
+    "url": "https://github.com/bombkiml/beech-api/blob/master/README.md"
+  },
   "bin": {
-    "beech-api": "./core/generator.js"
+    "beech-api-cli": "./core/generator.js"
   },
   "bugs": {
     "url": "https://github.com/bombkiml/beech-api/issues"
+  },
+  "deprecated": false,
+  "engines": {
+    "node": ">=8.9"
   },
   "homepage": "https://github.com/bombkiml/beech-api/blob/master/README.md",
   "dependencies": {
@@ -43,11 +51,7 @@
     "save-file": "^1.2.0",
     "walk": "^2.3.14"
   },
-  "deprecated": false,
-  "engines": {
-    "node": ">=8.9"
-  },
   "devDependencies": {
     "jasmine-node-karma": "^1.6.1"
-  }
+  }  
 }
