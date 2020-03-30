@@ -1,0 +1,16 @@
+
+Usage:
+  $ beech [options] [arguments] <special>
+
+Options:
+  ?|-h, --help                Display this help message
+  -v, --version               Display this application version
+
+The following commands are available:
+
+  $ beech -g <endpoint>       Create a new endpoints, test, 
+                              You might using <special> `--require=Model1,Model2,..`
+                              for require model file in generate processing
+  $ beech -g <model> --model  Create a new models
+
+

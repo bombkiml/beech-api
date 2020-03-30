@@ -1,53 +1,26 @@
 {
-  "name": "@beech-api/cli",
-  "version": "3.0.7",
+  "name": "application",
+  "version": "1.0.0",
   "description": "The Beech API framework is powered by NodeJS, express",
-  "keywords": [
-    "beech-api",
-    "cli",
-    "api",
-    "nodejs",
-    "api-framework"
-  ],
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./node_modules/beech-api/packages/cli/beech",
+    "test:unit": "./node_modules/.bin/jasmine-node-karma test --verbose"
+  },
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bombkiml/beech-api.git",
-    "directory": "packages/cli"
-  },
-  "authors": "bombkiml",
-  "bin": {
-    "beech": "./bin/beech.js"
-  },
-  "bugs": {
-    "url": "https://github.com/bombkiml/beech-api/issues"
-  },
-  "homepage": "https://github.com/bombkiml/beech-api/blob/master/README.md",
-  "deprecated": false,
-  "engines": {
-    "node": ">=8.9"
-  },
   "dependencies": {
+    "app-root-path": "^3.0.0",
     "axios": "^0.18.1",
+    "beech-api": "^3.0.23",
     "body-parser": "1.15.2",
-    "chalk": "^2.4.1",
     "cookie-parser": "1.4.3",
-    "commander": "^2.20.0",
     "cors": "^2.8.1",
-    "cryptr": "^4.0.0",
-    "dateformat": "^1.0.12",
-    "didyoumean": "^1.2.1",
     "express": "4.16.3",
     "express-validator": "2.20.10",
     "fs": "0.0.1-security",
-    "line-api": "^0.1.4",
     "mkdirp": "^0.5.1",
     "mysql": "^2.16.0",
-    "npm": "^6.10.1",
     "path": "^0.12.7",
-    "promise": "^7.1.1",
-    "save-file": "^1.2.0",
-    "semver": "^6.1.0",
     "walk": "^2.3.14"
   },
   "devDependencies": {

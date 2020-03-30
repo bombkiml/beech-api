@@ -1,3 +1,4 @@
+const appRoot = require('app-root-path');
 global._http = require('http');
 const _express = require('express');
 const _app = _express();
@@ -8,7 +9,7 @@ const expressValidator = require('express-validator');
 const cors = require('cors');
 global.endpoint = _express.Router();
 // Local environments
-global._config = require('../app.config');
+global._config = require(appRoot + '/app.config');
 const dbConnect = require('./databases/mysql.connection');
 const httpExpress = require('./services/http.express');
 const fileWalk = require('./file-walk/file-walk');
@@ -31,7 +32,7 @@ global.express = _app;
 // Read folder in ./src/endpoints/*
 const walk = require('walk');
 let jsfiles = []
-let walker = walk.walk('./src/endpoints', { followLinks: false });
+let walker = walk.walk(appRoot + '/src/endpoints', { followLinks: false });
 walker.on('file', (root, stat, next) => {
   jsfiles.push(root + '/' + stat.name);
   next();
@@ -52,8 +53,6 @@ init = (jsfiles) => {
      */
     httpExpress.expressStart()
       .then(dbConnect.mySqlConnection.bind(this))
-      /* .then(dbConnect.defaultConnection.bind(this))
-      .then(dbConnect.secondConnection.bind(this)) */
       .then(fileWalk.fileWalk.bind(this, jsfiles))
       .catch(error => {
         throw error;
