@@ -26,18 +26,6 @@ class Generator {
           // generate endpoint
           if (!this.argument) {
             resolve("\n[103m[90m Warning [0m[0m Please specify endpoints name.");
-          } else if (this.argument == 'global') {
-            let globalFrom = __dirname + '/global';
-            let globalCopyTo = 'beech.global.js';
-            if (!this.fs.existsSync(globalCopyTo)) {
-              this.copy(globalFrom, globalCopyTo)
-                .then(resolve("\n[102m[90m Passed [0m[0m The `" + globalCopyTo + "` it's generated."))
-                .catch(err => {
-                  throw err;
-                });
-            } else {
-              resolve("\n[103m[90m Warning [0m[0m Already have a global library.");
-            }
           } else {
             if (!this.special || this.special == 'undefined') {
               this.make()
