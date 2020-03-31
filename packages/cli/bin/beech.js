@@ -1,9 +1,6 @@
 #!/usr/bin/env node
 
-// Check node version before requiring/doing anything else
-// The user may be on a very old node version
-
-class Generator {
+class Beech {
   constructor() {
     this.embed(process.argv)
       .then(() => this.init()
@@ -28,14 +25,14 @@ class Generator {
         } else if (this.option == "create") {
           let tmpConfigFile = __dirname + '/../core/configure/app.config.js';
           let pasteConfigFile = this.argument + '/app.config.js';
-          let tmpPackageFile = __dirname + '/../package.json';
+          let tmpPackageFile = __dirname + '/../generator/package';
           let pastePackageFile = this.argument + '/package.json';
           if (!this.fs.existsSync(this.argument)) {
             this.makeFolder(this.argument)
               .then(this.copy.bind(this, tmpConfigFile, pasteConfigFile))
               .then(this.copy.bind(this, tmpPackageFile, pastePackageFile))
               .then(this.contentReplace.bind(this, pastePackageFile, { 'application': this.argument }))
-              .then(resolve("\n[104m [37mProcessing[0m [0m The `" + this.argument + "` it's a initialize.\n"))
+              .then(resolve("\n[104m [37mProcessing[0m [0m The `" + this.argument + "` it's a initialize...\n"))
               .then(
                 this.cmd.get('cd ' + this.argument + ' && yarn install', (err, data, stderr) => {
                 if(err) {
@@ -52,10 +49,10 @@ class Generator {
                 throw err;
               })
           } else {
-            resolve('\n[103m[90m Warning [0m[0m : The project `' + this.argument + '` is duplicate.')
+            resolve("\n[103m[90m Warning [0m[0m The project `" + this.argument + "` it's duplicated.");
           }
         } else {
-          resolve("\n[101m Faltal [0m : commnad is not available.");
+          resolve("\n[101m Faltal [0m commnad it's not available.");
         }
       } catch (error) {
         reject(error);
@@ -84,7 +81,7 @@ class Generator {
                 if (err) {
                   reject(err);
                 } else {
-                  resolve('\n[102m[90m Passed [0m[0m create successfully.');
+                  resolve("\n[102m[90m Passed [0m[0m The application `" + application + "` it's create successfully.");
                 }
               })
             }
@@ -173,4 +170,4 @@ class Generator {
   }
 }
 
-new Generator();
+new Beech();

@@ -8,9 +8,9 @@ Options:
 
 The following commands are available:
 
-  $ beech -g <endpoint>       Create a new endpoints, test, 
-                              You might using <special> `--require=Model1,Model2,..`
-                              for require model file in generate processing
-  $ beech -g <model> --model  Create a new models
+  $ beech make <endpoint>       Create a new endpoints and unit test file,
+                                You might using <special> `--require=Model1,Model2,..`
+                                for require model file(s) in generate processing
+  $ beech make <model> --model  Create a new models file
 
 

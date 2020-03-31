@@ -1,24 +1,21 @@
 let data = [
   {
     "id": 1,
-    "name": "Jose D. Roger",
-    "desc": "Pirate King."
+    "name": "Oggy",
+    "desc": "Oggy is a cat with a light blue body, green eyes, grey tummy and white feet."
   },
   {
     "id": 2,
-    "name": "Monkey D. Luffy",
-    "desc": "Captain."
+    "name": "Jack",
+    "desc": "Jack is Oggy's cousin, He is a cat who has an olive green body, yellow eyes, pale Salmon pink tummy and white feet"
+  },
+  {
+    "id": 3,
+    "name": "The Cockroaches Gang",
+    "desc": "The Cockroaches are three brothers who antagonize other characters."
   },
 ];
 
-exports.example = () => {
-  return new Promise((resolve, reject) => {
-    try {
-      console.log(data);
-      // @return data
-      resolve(data);
-    } catch (error) {
-      reject(error);
-    }
-  });
+exports.getData = () => {
+  return data;
 }

@@ -13,6 +13,7 @@ global._config = require(appRoot + '/app.config');
 const dbConnect = require('./databases/mysql.connection');
 const httpExpress = require('./services/http.express');
 const fileWalk = require('./file-walk/file-walk');
+require.resolve(appRoot + '/beech.global');
 // View engine
 _app.use(bodyParser.json());
 _app.use(bodyParser.urlencoded({ extended: true }));

@@ -1,8 +1,5 @@
 #!/usr/bin/env node
 
-// Check node version before requiring/doing anything else
-// The user may be on a very old node version
-
 class Generator {
   constructor() {
     this.embed(process.argv)
@@ -25,10 +22,22 @@ class Generator {
           this.help()
             .then(help => resolve(help))
             .catch(err => reject(err));
-        } else if (this.option == '-g' || this.option == 'generate') {
+        } else if (this.option == 'make') {
           // generate endpoint
           if (!this.argument) {
-            resolve("\n[103m[90m Warning [0m[0m : Please specify endpoints name.");
+            resolve("\n[103m[90m Warning [0m[0m Please specify endpoints name.");
+          } else if (this.argument == 'global') {
+            let globalFrom = __dirname + '/global';
+            let globalCopyTo = 'beech.global.js';
+            if (!this.fs.existsSync(globalCopyTo)) {
+              this.copy(globalFrom, globalCopyTo)
+                .then(resolve("\n[102m[90m Passed [0m[0m The `" + globalCopyTo + "` it's generated."))
+                .catch(err => {
+                  throw err;
+                });
+            } else {
+              resolve("\n[103m[90m Warning [0m[0m Already have a global library.");
+            }
           } else {
             if (!this.special || this.special == 'undefined') {
               this.make()
@@ -38,7 +47,7 @@ class Generator {
               if (this.special.substring(0, 10) == '--require=') {
                 // check space
                 if (this.extra) {
-                  resolve("\n[103m[90m Warning [0m[0m : Not using space in `" + this.special + "[101m [0m" + this.extra + "...`, please remove it.");
+                  resolve("\n[103m[90m Warning [0m[0m Not using space in `" + this.special + "[101m [0m" + this.extra + "...`, please remove it.");
                   return;
                 }
                 let myRequire = this.special.substring(10);
@@ -49,7 +58,7 @@ class Generator {
                     if (notExistsModel == true) {
                       // generate & require
                       if (!this.special) {
-                        resolve("\n[103m[90m Warning [0m[0m : Please specify require file(s).");
+                        resolve("\n[103m[90m Warning [0m[0m Please specify require file(s).");
                       } else {
                         // create back dash (../)
                         let backDash = '';
@@ -68,27 +77,27 @@ class Generator {
                           .catch(err => reject(err));
                       }
                     } else {
-                      resolve("\n[103m[90m Warning [0m[0m : The model `" + notExistsModel + "` is not found.");
+                      resolve("\n[103m[90m Warning [0m[0m The model `" + notExistsModel + "` it's not found.");
                       return;
                     }
                   })
                   .catch(err => { throw err });
               } else {
-                resolve("\n[101m Faltal [0m : commnad is not available.");
+                resolve("\n[101m Faltal [0m commnad it's not available.");
               }
             } else if (this.special == '--model') {
               this.makeModel()
                 .then(make => resolve(make))
                 .catch(err => reject(err));
             } else {
-              resolve("\n[101m Faltal [0m : commnad is not available.");
+              resolve("\n[101m Faltal [0m commnad it's not available.");
             }
           }
         } else if (this.option == 'kill') {
           /* require('./app')
           console.log(_SERVER) */
         } else {
-          resolve("\n[101m Faltal [0m : commnad is not available.");
+          resolve("\n[101m Faltal [0m commnad it's not available.");
         }
       } catch (error) {
         reject(error);
@@ -113,8 +122,7 @@ class Generator {
         let routeEndpoints = ((arg.length > 0) ? '/' : '') + subFolder.concat('/') + endpoints;
         // test
         let fullTest = testPath + subFolder + '/' + endpoints.concat('-endpoints.spec.js');
-        const fs = require('fs');
-        if (!fs.existsSync(fullEndpoints)) {
+        if (!this.fs.existsSync(fullEndpoints)) {
           // prepare state require file if `rq` not exists
           let rqFile = '// Require something \n';
           // check exists requrie files
@@ -140,13 +148,13 @@ class Generator {
               'endpoint': routeEndpoints,
               'endpointName': endpoints
             }))
-            .then(resolve('\n[104m [37mProcessing[0m [0m The endpoint `' + endpoints + '` is initialize.'))
+            .then(resolve("\n[104m [37mProcessing[0m [0m The endpoint `" + endpoints + "` it's initialize..."))
             .then(generated => console.log(generated))
             .catch(err => {
               throw err;
             });
         } else {
-          resolve('\n[103m[90m Warning [0m[0m : The endpoint `' + endpoints + '` is duplicate.');
+          resolve("\n[103m[90m Warning [0m[0m The endpoint `" + endpoints + "` it's duplicated.");
         }
       } catch (error) {
         reject(error);
@@ -157,10 +165,9 @@ class Generator {
   isModelFound(modelArr) {
     return new Promise((resolve, reject) => {
       try {
-        const fs = require('fs');
         let n = 1;
         modelArr.map((data) => {
-          if (!fs.existsSync('./src/models/' + data.concat('.js'))) {
+          if (!this.fs.existsSync('./src/models/' + data.concat('.js'))) {
             resolve(data);
           }
           if (modelArr.length == n) {
@@ -188,17 +195,16 @@ class Generator {
         // models
         let fullModels = modelPath + subFolder.concat('/') + models.concat('.js');
         // check file exists
-        const fs = require('fs');
-        if (!fs.existsSync(fullModels)) {
+        if (!this.fs.existsSync(fullModels)) {
           // generater model
           this.makeFolder(modelPath + subFolder)
             .then(this.copy.bind(this, tmpModelsPath, fullModels))
-            .then(resolve('\n[102m[90m Passed [0m[0m : The models `' + models + '` is generated.'))
+            .then(resolve("\n[102m[90m Passed [0m[0m The models `" + models + "` it's generated."))
             .catch(err => {
               throw err;
             });
         } else {
-          resolve('\n[103m[90m Warning [0m[0m : The models `' + models + '` is duplicate.');
+          resolve("\n[103m[90m Warning [0m[0m The models `" + models + "` it's duplicated.");
         }
       } catch (error) {
         reject(error);
@@ -270,7 +276,7 @@ class Generator {
                 if (err) {
                   throw err;
                 } else {
-                  resolve('\n[102m[90m Passed [0m[0m Generated successfully.');
+                  resolve("\n[102m[90m Passed [0m[0m The endpoint `" + endpointName + "` it's generated.");
                 }
               });
             }
@@ -285,7 +291,7 @@ class Generator {
   help() {
     return new Promise((resolve, reject) => {
       try {
-        this.fs.readFile(__dirname + "/../core/generator/help", 'utf8', function (err, data) {
+        this.fs.readFile(__dirname + "/help", 'utf8', function (err, data) {
           if (err) {
             throw err;
           }

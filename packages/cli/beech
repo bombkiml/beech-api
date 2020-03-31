@@ -2,9 +2,8 @@
  * The beech api (cli) package generater and server
  *
  * @author bombkiml
- * @version 3.1.0
+ * @version 3.1
  * @Built Mar 28, 2020 at 22:19:09
  *
  */
-
-(process.argv[2]) ? require('./core/generator/index') : require('./core/index')
+require('./core/index')
