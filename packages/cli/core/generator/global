@@ -1,0 +1,2 @@
+// example declare global library
+global.moment = requrie('moment');

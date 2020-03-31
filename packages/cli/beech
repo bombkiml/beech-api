@@ -1,0 +1,9 @@
+/**
+ * The beech api (cli) package generater and server
+ *
+ * @author bombkiml
+ * @version 3.1
+ * @Built Mar 28, 2020 at 22:19:09
+ *
+ */
+require('./core/index')

@@ -7,7 +7,7 @@ exports.fileWalk = (files) => {
 		try {
       let route;
       files.forEach(val => {
-        route = require('../.' + val.replace('.js', ''));
+        route = require(val.replace('.js', ''));
         route.init();
       });
       resolve(true);
