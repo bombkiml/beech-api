@@ -25,14 +25,14 @@ class Beech {
         } else if (this.option == "create") {
           let tmpConfigFile = __dirname + '/../core/configure/app.config.js';
           let pasteConfigFile = this.argument + '/app.config.js';
-          let tmpPackageFile = __dirname + '/../generator/package';
+          let tmpPackageFile = __dirname + '/../core/generator/package';
           let pastePackageFile = this.argument + '/package.json';
           if (!this.fs.existsSync(this.argument)) {
             this.makeFolder(this.argument)
               .then(this.copy.bind(this, tmpConfigFile, pasteConfigFile))
               .then(this.copy.bind(this, tmpPackageFile, pastePackageFile))
               .then(this.contentReplace.bind(this, pastePackageFile, { 'application': this.argument }))
-              .then(resolve("\n[104m [37mProcessing[0m [0m The `" + this.argument + "` it's a initialize...\n"))
+              .then(resolve("\n[104m [37mProcessing[0m [0m The `" + this.argument + "` application is creating...\n"))
               .then(
                 this.cmd.get('cd ' + this.argument + ' && yarn install', (err, data, stderr) => {
                 if(err) {
@@ -61,7 +61,7 @@ class Beech {
   }
 
   successfully() {
-    console.log('[102m[90m Passed [0m[0m Successfully created project.\n\n  [37m$[0m [36mcd ' + this.argument + '[0m\n  [37m$[0m [36mnpm run start[0m or [36myarn start[0m');
+    console.log('[102m[90m Passed [0m[0m The project has been successfully created.\n\n  [37m$[0m [36mcd ' + this.argument + '[0m\n  [37m$[0m [36mnpm run start[0m or [36myarn start[0m');
   }
 
   async contentReplace(pathFile, textCondition) {
