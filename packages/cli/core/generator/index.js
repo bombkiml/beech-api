@@ -148,7 +148,7 @@ class Generator {
               'endpoint': routeEndpoints,
               'endpointName': endpoints
             }))
-            .then(resolve("\n[104m [37mProcessing[0m [0m The endpoint `" + endpoints + "` it's initialize..."))
+            .then(resolve("\n[104m [37mProcessing[0m [0m The endpoint `" + endpoints + "` it's generating..."))
             .then(generated => console.log(generated))
             .catch(err => {
               throw err;

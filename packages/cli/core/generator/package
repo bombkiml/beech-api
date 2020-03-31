@@ -4,7 +4,7 @@
   "description": "The Beech API framework is powered by NodeJS, express",
   "main": "index.js",
   "scripts": {
-    "start": "node ./node_modules/beech-api/packages/cli/compiler/beech",
+    "start": "node ./node_modules/beech-api/packages/cli/beech",
     "test:unit": "./node_modules/.bin/jasmine-node-karma test --verbose"
   },
   "license": "MIT",
