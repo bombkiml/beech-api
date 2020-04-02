@@ -1,7 +1,7 @@
 {
   "name": "beech-api",
+  "version": "3.1.6",
   "authors": "bombkiml",
-  "version": "3.1.5",
   "description": "Command line interface for rapid Beech API development",
   "keywords": [
     "beech-api",
