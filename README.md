@@ -3,7 +3,7 @@
 [![beech-api release](https://img.shields.io/github/v/release/bombkiml/beech-api.svg)](https://github.com/bombkiml/beech-api/releases/)
 [![PyPI license](https://img.shields.io/pypi/l/ansicolortags.svg)](https://github.com/bombkiml/beech-api/blob/master/README.md)
 ### What is Beech API ?
-  - ``Beech API`` is a Node.js framework it's help you with very easy create API project under Node.js
+  - ``Beech API`` is a Node.js framework it's help you with very easy create API project under [Node.js](https://nodejs.org)
 #
 ### Why Beech API ?
   - ``Beech API`` is a Very easy for using, very feather framework, easy to installation, easy to implementation, and high security
@@ -14,7 +14,7 @@
   ![N|Solid](https://i.ibb.co/CQqYZkK/node-epressjs.jpg)
 #
 ### Environment
-  - [``node.js``](https://nodejs.org) >= 8.11.0+ (recommended)
+  - [``Node.js``](https://nodejs.org) >= 8.11.0+ (recommended)
   - ``npm`` >= 8.9 or ``yarn`` >= 1.22
 #
 ### Installation
