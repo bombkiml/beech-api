@@ -8,7 +8,7 @@
 ### Support By
   - [PHP Beech framework (LTS)](https://github.com/bombkiml/phpbeech)
 ### Powered by Node.js
-  [![N|Solid](https://image.ibb.co/dUEGD9/node2.png)](https://nodejs.org)
+  ![N|Solid](https://i.ibb.co/CQqYZkK/node-epressjs.jpg)
 ### Environment
   - [``node.js``](https://nodejs.org) >= 8.11.0+ (recommended)
   - ``npm`` >= 8.9 or ``yarn`` >= 1.22
