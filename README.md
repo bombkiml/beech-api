@@ -1,6 +1,7 @@
   [![N|Solid](https://i.ibb.co/FzcMFd8/beech128x412.jpg)](https://github.com/bombkiml)
 # Beech API framework (ES6)
-###
+[![beech-api release](https://img.shields.io/github/v/release/bombkiml/beech-api.svg)](https://github.com/bombkiml/beech-api/releases/)
+[![PyPI license](https://img.shields.io/pypi/l/ansicolortags.svg)](https://github.com/bombkiml/beech-api/blob/master/README.md)
 ### What is Beech API ?
   - ``Beech API`` is a Node.js framework it's help you with very easy create API project under Node.js
 ### Why Beech API ?
