@@ -4,15 +4,19 @@
 [![PyPI license](https://img.shields.io/pypi/l/ansicolortags.svg)](https://github.com/bombkiml/beech-api/blob/master/README.md)
 ### What is Beech API ?
   - ``Beech API`` is a Node.js framework it's help you with very easy create API project under Node.js
+#
 ### Why Beech API ?
   - ``Beech API`` is a Very easy for using, very feather framework, easy to installation, easy to implementation, and high security
+#
 ### Support By
   - [PHP Beech framework (LTS)](https://github.com/bombkiml/phpbeech)
 ### Powered by Node.js & Express.js
   ![N|Solid](https://i.ibb.co/CQqYZkK/node-epressjs.jpg)
+#
 ### Environment
   - [``node.js``](https://nodejs.org) >= 8.11.0+ (recommended)
   - ``npm`` >= 8.9 or ``yarn`` >= 1.22
+#
 ### Installation
   - Beech API requires Node.js version 8.9 or above (8.11.0+ recommended). You can manage multiple versions of Node on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows). So, Let's go to install ``beech api``
     ```sh
@@ -25,6 +29,7 @@
     ```sh
     $ beech-app --version
     ```
+#
 ### Creating a project
   - create a new project run:
     ```sh
@@ -40,7 +45,6 @@
     ```sh
     $ beech --help
     ```
-#
   - The ``beech`` command line available:
     ```
     Usage:
