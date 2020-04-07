@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "The Beech API framework is powered by NodeJS, express",
   "main": "index.js",
-  "scripts": {
-    "start": "node ./node_modules/beech-api/packages/cli/beech",
-    "test:unit": "./node_modules/.bin/jasmine-node-karma test --verbose"
-  },
   "license": "MIT",
+  "scripts": {
+    "start": "if-env NODE_ENV=test && nodemon ./node_modules/beech-api/packages/cli/beech || node ./node_modules/beech-api/packages/cli/beech",
+    "test": "node ./node_modules/jest/bin/jest __tests__ -o --watch --config"
+  },  
   "dependencies": {
     "app-root-path": "^3.0.0",
     "axios": "^0.18.1",
@@ -18,12 +18,14 @@
     "express": "4.16.3",
     "express-validator": "2.20.10",
     "fs": "0.0.1-security",
+    "if-env": "^1.0.4",
     "mkdirp": "^0.5.1",
     "mysql": "^2.16.0",
+    "nodemon": "^2.0.2",
     "path": "^0.12.7",
     "walk": "^2.3.14"
   },
   "devDependencies": {
-    "jasmine-node-karma": "^1.6.1"
+    "jest": "^25.2.7"
   }
 }

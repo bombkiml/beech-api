@@ -99,7 +99,7 @@ class Generator {
         let tmpEndpointsPath = __dirname + '/endpoints';
         let tmpSpecPath = __dirname + '/spec';
         let endpointsPath = './src/endpoints/';
-        let testPath = './test/unit/endpoints/';
+        let testPath = './__tests__/unit/endpoints/';
         // argument join `slash`
         let arg = this.argument.replace(/^\/+|\/+$/g, '');
         arg = arg.split('/');
