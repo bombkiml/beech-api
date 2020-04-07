@@ -1,6 +1,7 @@
 const fs = require("fs");
+const packages = require("./node_modules/beech-api/package.json");
 
 module.exports = {
-  verbose: true,
-  setupFilesAfterEnv: [(fs.existsSync("./node_modules/beech-api/packages/cli/core/test/utils")) || "./core/test/utils"]
+  setupFilesAfterEnv: [(fs.existsSync(packages.jest.prdFile)) ? packages.jest.prdFile : packages.jest.devFile],
+  verbose: true
 };
