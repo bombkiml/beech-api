@@ -4,10 +4,7 @@ exports.mySqlConnection = () => {
       global.mysql = {};
       // loop database connection
       _config.mySqlConfig.map(val => {
-        if (!val.isConnect) {
-          resolve(true);
-          return;
-        } else {
+        if (val.isConnect) {
           let connection = _mysql.createConnection({
             host: val.host,
             user: val.username,
@@ -18,9 +15,8 @@ exports.mySqlConnection = () => {
           })
           connection.connect((err) => {
             if (!err) {
-              connection.query("SET NAMES UTF8");
               mysql[val.name] = connection;
-              console.log('[102m[90m Passed [0m[0m `' + val.name + '` is connected : [[93m' + connection.config.database + ':' + connection.config.port + '[0m]');
+              console.log('[102m[90m Passed [0m [0mDatabase is connected at [[93m' + val.name, '[0m->[93m', connection.config.database + ':' + connection.config.port + '[0m]');
               resolve(connection);
             } else {
               console.log('[101m Failed [0m [91mDatabase `' + val.name + '` is connect failed.[0m');

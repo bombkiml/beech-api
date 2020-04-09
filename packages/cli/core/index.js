@@ -40,17 +40,11 @@ walker.on('file', (root, stat, next) => {
 walker.on('end', () => {
   init(jsfiles);
 });
-// defind server variable
+// define server variable
 global._SERVER;
 // Initialize the application
 init = (jsfiles) => {
   try {
-    /**
-     * @start express server 
-     * @mysql connect
-     * @autoload
-     * 
-     */
     httpExpress.expressStart()
       .then(dbConnect.mySqlConnection.bind(this))
       .then(fileWalk.fileWalk.bind(this, jsfiles))

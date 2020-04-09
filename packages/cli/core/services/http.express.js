@@ -4,7 +4,7 @@ exports.expressStart = () => {
     try {
       // Create express server
       const ExpressServer = express.listen(_config.main_config.app_port, () => {
-        console.log('[102m[90m Passed [0m[0m Express server started : http://' + _config.main_config.app_host + ':' + ExpressServer.address().port);
+        console.log('[102m[90m Passed [0m[0m Service is started at [93mhttp://' + _config.main_config.app_host + ':' + ExpressServer.address().port, '[0m');
         this.badRequest()
           .then(this.wrongRequest())
           .catch(err => {
