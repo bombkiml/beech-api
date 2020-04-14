@@ -51,7 +51,7 @@
     
   The ``beech`` command line available:
   
-  ```sh
+  ```
   Usage:
     $ beech [options] [arguments] <special>
 
@@ -89,7 +89,7 @@
   #### Configuration
    Before continuing further we will need to tell CLI how to connect to database. To do that let's open default config file ``config/config.json`` It looks something like this
    
-  ```sh
+  ```
   {
     "development": {
       "username": "root",
@@ -115,7 +115,7 @@
   }
   ```
   The ``sequelize`` command line available:
-  ```sh
+  ```
   $ npx sequelize [command]
 
   Commands:
