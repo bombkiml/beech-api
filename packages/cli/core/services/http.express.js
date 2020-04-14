@@ -4,7 +4,7 @@ exports.expressStart = () => {
     try {
       // Create express server
       const ExpressServer = express.listen(_config.main_config.app_port, () => {
-        console.log('[102m[90m Passed [0m[0m Express server started : http://' + _config.main_config.app_host + ':' + ExpressServer.address().port);
+        console.log('\n[102m[90m Passed [0m[0m Service is started at:\n - Local:   [36mhttp://' + _config.main_config.app_host + ':' + ExpressServer.address().port, '[0m\n - Network: [36m' + _config.main_config.client_host + '[0m\n');
         this.badRequest()
           .then(this.wrongRequest())
           .catch(err => {
@@ -34,7 +34,7 @@ exports.badRequest = () => {
       express.get('/', (req, res) => {
         let data = {};
         data.code = 200;
-        data.message = 'Not get allow.';
+        data.message = 'Got it.';
         res.json(data);
         resolve(data);
       });

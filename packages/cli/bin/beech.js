@@ -25,18 +25,20 @@ class Beech {
         } else if (this.option == "create") {
           let tmpConfigFile = __dirname + '/../core/configure/app.config.js';
           let pasteConfigFile = this.argument + '/app.config.js';
+          let tmpJestFile = __dirname + '/../core/configure/jest.config.js';
+          let pasteJestFile = this.argument + '/jest.config.js';
           let tmpPackageFile = __dirname + '/../core/generator/package';
           let pastePackageFile = this.argument + '/package.json';
           if (!this.fs.existsSync(this.argument)) {
             this.makeFolder(this.argument)
-              .then(this.copy.bind(this, tmpConfigFile, pasteConfigFile))
               .then(this.copy.bind(this, tmpPackageFile, pastePackageFile))
               .then(this.contentReplace.bind(this, pastePackageFile, { 'application': this.argument }))
+              .then(this.copy.bind(this, tmpConfigFile, pasteConfigFile))
+              .then(this.copy.bind(this, tmpJestFile, pasteJestFile))
               .then(resolve("\n[104m [37mProcessing[0m [0m The `" + this.argument + "` application is creating...\n"))
-              .then(
-                this.cmd.get('cd ' + this.argument + ' && yarn install', (err, data, stderr) => {
+              .then(this.cmd.get('cd ' + this.argument + ' && yarn install', (err, data) => {
                 if(err) {
-                  this.cmd.get('cd ' + this.argument + ' && npm install', (err, data, stderr) => {
+                  this.cmd.get('cd ' + this.argument + ' && npm install', (data) => {
                     console.log(data);
                     this.successfully();
                   });
