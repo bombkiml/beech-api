@@ -1,5 +1,5 @@
   [![N|Solid](https://i.ibb.co/FzcMFd8/beech128x412.jpg)](https://github.com/bombkiml)
-# Beech API framework (ES6)
+# Beech API framework
 [![beech-api release](https://img.shields.io/github/v/release/bombkiml/beech-api.svg)](https://github.com/bombkiml/beech-api/releases/)
 [![PyPI license](https://img.shields.io/pypi/l/ansicolortags.svg)](https://github.com/bombkiml/beech-api/blob/master/README.md)
 ### What is Beech API ?
@@ -8,8 +8,6 @@
 ### Why Beech API ?
   ``Beech API`` is a Very easy for using, very feather framework, easy to installation, easy to implementation, and high security
 #
-### Support By
-  - [PHP Beech framework (LTS)](https://github.com/bombkiml/phpbeech)
 ### Powered by Node.js & Express.js
   ![N|Solid](https://i.ibb.co/CQqYZkK/node-epressjs.jpg)
 #
@@ -154,4 +152,4 @@ Want to contribute or join for great job!, You can contact to me via
   - Facebook: [https://www.facebook.com/bombkiml](https://www.facebook.com/bombkiml)
 #
 ### License
-The Beech API framework (ES6) is open-sourced software licensed under the [MIT license.](https://opensource.org/licenses/MIT)
+The Beech API framework is open-sourced software licensed under the [MIT license.](https://opensource.org/licenses/MIT)
