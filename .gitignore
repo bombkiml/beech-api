@@ -13,3 +13,9 @@ packages/cli/package-lock.json
 packages/cli/app.config.js
 packages/cli/jest.config.js
 yarn.lock
+
+# sequelize-cli migration
+packages/cli/config
+packages/cli/migrations
+packages/cli/models
+packages/cli/seeders

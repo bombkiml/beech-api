@@ -1,24 +1,22 @@
 {
   "name": "application",
   "version": "0.1.0",
-  "description": "The Beech API framework is powered by NodeJS, express",
+  "description": "The project is powered by Beech API framework",
   "main": "index.js",
-  "license": "MIT",
   "scripts": {
-    "start": "if-env NODE_ENV=test && nodemon ./node_modules/beech-api/packages/cli/beech || node ./node_modules/beech-api/packages/cli/beech",
+    "start": "nodemon ./node_modules/beech-api/packages/cli/beech",
     "test": "node ./node_modules/jest/bin/jest __tests__ -o --watch --config"
   },
   "dependencies": {
     "app-root-path": "^3.0.0",
     "axios": "^0.18.1",
-    "beech-api": "^3.0.23",
+    "beech-api": "^3.2.4",
     "body-parser": "1.15.2",
     "cookie-parser": "1.4.3",
     "cors": "^2.8.1",
     "express": "4.16.3",
     "express-validator": "2.20.10",
     "fs": "0.0.1-security",
-    "if-env": "^1.0.4",
     "mkdirp": "^0.5.1",
     "mysql": "^2.18.1",
     "mysql2": "^2.1.0",
