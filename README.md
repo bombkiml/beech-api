@@ -126,6 +126,57 @@
   ```
 
 #
+### Helpers
+  The ``helpers`` keep the files of functions for process specific something in the project. So, you might create the ``helpers`` in path ``src/helpers`` folder
+  ```js
+    // TextEditor.js
+    
+    module.exports = {
+      
+      textUpperCase(text) {
+        return text.toUpperCase();
+      },
+      textTrim(text) {
+        return text.trim();
+      },
+      ...
+      
+    };
+  ```
+
+#
+### Bonus
+  Free ``helpers``you can make [LINE Notify](https://github.com/Yuhsak/line-api#readme) by using [line-api](https://notify-bot.line.me/en/) package with create the helper function following
+  
+  Package installation
+  
+  ```
+  npm install line-api
+  ```
+  
+  Create file in ``src/helpers`` folder and copy code below:
+  
+  ```js
+  // Line.js
+  
+  const line = require('line-api')
+
+  module.exports = {
+    notify(message, token) {    
+      const notify = new line.Notify({
+        token: token
+      });
+      notify.send({
+        message: message
+      })
+      .then(console.log)
+    }
+  };
+  ```
+  
+  Enjoy.
+
+#
 ### Databases managements
   #### # Migrations & Seeder
    Just like you use Git / SVN to manage changes in your source code, you can use migrations to keep track of changes to the database. With migrations you can transfer your existing database into another state and vice versa: Those state transitions are saved in migration files, which describe how to get to the new state and how to revert the changes in order to get back to the old state.
