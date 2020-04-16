@@ -1,6 +1,6 @@
 {{requireSomething}}
 exports.init = () => {
-  // Initiate with basic request support GET, POST, PUT, PATCH and DELETE
+  // Initiate with basic request currently support GET, POST, PUT, PATCH and DELETE
 
   /@GET/
 	endpoint.get('{{endpoint}}', (req, res) => {

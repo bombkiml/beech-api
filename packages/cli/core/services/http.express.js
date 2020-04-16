@@ -1,10 +1,12 @@
+const appRoot = require("app-root-path");
+const package = require(appRoot + '/package.json');
 // Server start using by Express
 exports.expressStart = () => {
   return new Promise((resolve, reject) => {
     try {
       // Create express server
-      const ExpressServer = express.listen(_config.main_config.app_port, () => {
-        console.log('\n[102m[90m Passed [0m[0m Service is started at:\n - Local:   [36mhttp://' + _config.main_config.app_host + ':' + ExpressServer.address().port, '[0m\n - Network: [36m' + _config.main_config.client_host + '[0m\n');
+      const ExpressServer = _app_.listen(_config_.main_config.app_port, () => {
+        console.log('\n[102m[90m Passed [0m[0m Service is started at:\n - Local:   [36mhttp://' + _config_.main_config.app_host + ':' + ExpressServer.address().port, '[0m\n - Network: [36m' + _config_.main_config.client_host + '[0m\n');
         this.badRequest()
           .then(this.wrongRequest())
           .catch(err => {
@@ -31,10 +33,10 @@ exports.getExpressServer = (serve) => {
 exports.badRequest = () => {
   return new Promise((resolve, reject) => {
     try {
-      express.get('/', (req, res) => {
+      _app_.get('/', (req, res) => {
         let data = {};
         data.code = 200;
-        data.message = 'Got it.';
+        data.message = `Welcome to ${package.name} (version ${package.version})`;
         res.json(data);
         resolve(data);
       });
@@ -47,8 +49,8 @@ exports.badRequest = () => {
 exports.wrongRequest = () => {
   return new Promise((resolve, reject) => {
     try {
-      express.use((req, res, next) => {
-        res.status(404).send({ code: 404, message: 'Cannot request to ' + req.url });
+      _app_.use((req, res, next) => {
+        res.status(404).send({ code: 404, message: '404 Not found, cannot request to ' + req.url });
         resolve(404);
         next();
       });
