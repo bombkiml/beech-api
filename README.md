@@ -38,7 +38,7 @@
   $ beech-app create hello-world
   ```
 
-  :grey_question: Tips: The Beech API it's start server at [http://127.0.0.1:9000](http://127.0.0.1:9000) you can change new a port in ``app.config.js`` file |
+:grey_question: Tips: The Beech API it's start server at [http://127.0.0.1:9000](http://127.0.0.1:9000) you can change new a port in ``app.config.js`` file |
 ------------ |
 #
 ### Part of generate file
@@ -56,24 +56,85 @@
     $ beech [options] [arguments] <special>
 
   Options:
-    ?|-h, --help                Display this help message
-    -v, --version               Display this application version
+    ?|-h, --help                    Display this help message
+    -v, --version                   Display this application version
 
   The following commands are available:
 
-    $ beech make <endpoint>       Create a new endpoints and unit test file,
-                                  You might using <special> `--require=Model1,Model2,..`
-                                  for require model file(s) in generate processing
-    $ beech make <model> --model  Create a new models file
+    $ beech make <endpoint>         Create a new endpoints and unit test file,
+                                    You might using <special> `--require=Model1,Model2,..`
+                                    for require model file(s) in generate processing
+    $ beech make <model> --model    Create a new models file
   ```  
 #
-### Databases
-  #### Migrations & Seeder
+### Endpoints
+  The ``endpoints`` keep the endpoints basic request files currently support ``GET``, ``POST``, ``PUT``, ``PATCH`` and ``DELETE``. 
+  
+  So, you might create new endpoints with constant ``endpoint`` available in ``src/endpoints/`` folder and the file neme must be end with ``-endpoints.js``
+  
+  ```js
+    // fruits-endpoints.js
+    
+    exports.init = () => {
+    
+      /@GET/
+      endpoint.get('/fruits', (req, res) => {
+        ...      
+      });
+      
+      /@POST/
+      endpoint.post('/fruits', (req, res) => {
+        ...      
+      });
+
+    }
+  ```
+  
+:grey_question: Tips: Inside the endpoints file must be export ``init()`` function for initialize the the endpoints |
+------------ |
+
+#
+### Models
+  The ``models`` keep the files of function(s) for retriving, inserting, updating and deleting with SQL data. for understanding you might make model name same your table name in ``src/models`` folder
+  
+  ```js
+    // Fruits.js
+    
+    module.exports = {
+
+      // Example basic function get data
+      getData() {
+        return { ... }
+      }
+      
+      // Example basic function get data from MySQL (must be return promise)
+      getFruits() {
+        return new Promise((resolve, reject) => {
+          try {
+          
+            // call mysql `default_db` connection
+            mysql.default_db.query("SELECT * FROM fruits", (err, results) => {
+              if (err) { reject(err) }
+              resolve(results);
+            });
+            
+          } catch (error) {
+            reject(error);
+          }
+        });
+      }
+      
+    };
+  ```
+
+#
+### Databases managements
+  #### # Migrations & Seeder
    Just like you use Git / SVN to manage changes in your source code, you can use migrations to keep track of changes to the database. With migrations you can transfer your existing database into another state and vice versa: Those state transitions are saved in migration files, which describe how to get to the new state and how to revert the changes in order to get back to the old state.
 
    You will need [Sequelize CLI.](https://github.com/sequelize/cli) The CLI ships support for migrations and project.
 
-  #### Usage 
+  #### # Usage 
    To create an empty project you will need to execute ```init``` command
   ```sh
   $ npx sequelize-cli init
@@ -86,7 +147,7 @@
    - ``migrations``, contains all migration files
    - ``seeders``, contains all seed files
 
-  #### Configuration
+  #### # Configuration
    Before continuing further we will need to tell CLI how to connect to database. To do that let's open default config file ``databases/config/database.json`` It looks something like this
    
   ```
