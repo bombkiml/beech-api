@@ -35,7 +35,7 @@ class Generator {
               if (this.special.substring(0, 10) == '--require=') {
                 // check space
                 if (this.extra) {
-                  resolve("\n[103m[90m Warning [0m[0m Not using space in `" + this.special + "[101m [0m" + this.extra + "...`, please remove it.");
+                  resolve("\n[103m[90m Warning [0m[0m Please remove a space(s) in special text `" + this.special + "[101m [0m" + this.extra + "...`");
                   return;
                 }
                 let myRequire = this.special.substring(10);
@@ -48,18 +48,14 @@ class Generator {
                       if (!this.special) {
                         resolve("\n[103m[90m Warning [0m[0m Please specify require file(s).");
                       } else {
-                        // create back dash (../)
-                        let backDash = '';
-                        let arg = this.argument.replace(/^\/+|\/+$/g, '');
-                        arg = arg.split('/');
-                        arg.map(() => {
-                          backDash += '../';
-                        })
-                        // make require file
+                        // declare require model file
                         let rqr = myRequire.map(data => {
-                          let model = data.replace(/[^A-Za-z0-9]+/g, '');
-                          return 'const '.concat(model.concat(' = require("'.concat(backDash.concat('models/'.concat(model.concat('");\n'))))));
-                        })
+                          let modelName = data.split('/');
+                          modelName = modelName.pop();
+                          modelName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
+                          return `const ${modelName} = require(\"@/models/${data.substring(0, data.lastIndexOf('/') + 1) + modelName}\");\n`;
+                        });
+                        // make with require model file
                         this.make(rqr)
                           .then(make => resolve(make))
                           .catch(err => reject(err));
@@ -90,7 +86,7 @@ class Generator {
       } catch (error) {
         reject(error);
       }
-    })
+    });
   }
 
   make(rq = null) {
@@ -112,7 +108,7 @@ class Generator {
         let fullTest = testPath + subFolder + '/' + endpoints.concat('-endpoints.spec.js');
         if (!this.fs.existsSync(fullEndpoints)) {
           // prepare state require file if `rq` not exists
-          let rqFile = '// Require something \n';
+          let rqFile = '// You can require something \n';
           // check exists requrie files
           if (rq) {
             rqFile = '';
@@ -147,7 +143,7 @@ class Generator {
       } catch (error) {
         reject(error);
       }
-    })
+    });
   }
 
   isModelFound(modelArr) {
@@ -166,7 +162,7 @@ class Generator {
       } catch (error) {
         reject(error);
       }
-    })
+    });
   }
 
   makeModel() {
@@ -197,7 +193,7 @@ class Generator {
       } catch (error) {
         reject(error);
       }
-    })
+    });
   }
 
   async makeFolder(path) {
@@ -220,7 +216,7 @@ class Generator {
       } catch (error) {
         reject(error);
       }
-    })
+    });
   }
 
   async copy(path, to) {
@@ -232,29 +228,33 @@ class Generator {
      */
     return new Promise((resolve, reject) => {
       try {
-        if (this.fs.createReadStream(path).pipe(this.fs.createWriteStream(to))) {
-          resolve(to);
+        if (!this.fs.existsSync(to)) {
+          if (this.fs.createReadStream(path).pipe(this.fs.createWriteStream(to))) {
+            resolve(to);
+          } else {
+            throw err;
+          }
         } else {
-          throw err;
+          resolve(to);
         }
       } catch (error) {
         reject(error);
       }
-    })
+    });
   }
 
   async contentReplace(pathFile, textCondition) {
     return new Promise((resolve, reject) => {
       try {
+        let endpoint = textCondition.endpoint;
+        let endpointName = textCondition.endpointName;
+        let rq = textCondition.rq;
         // delay for generator
         setTimeout(() => {
           this.fs.readFile(pathFile, 'utf8', (err, data) => {
             if (err) {
               throw err;
             } else {
-              let endpoint = textCondition.endpoint;
-              let endpointName = textCondition.endpointName;
-              let rq = textCondition.rq;
               // content replace
               let text = data.replace(new RegExp('{{endpoint}}', 'g'), endpoint);
               text = text.replace(new RegExp('{{endpointName}}', 'g'), endpointName);
@@ -269,7 +269,7 @@ class Generator {
               });
             }
           })
-        }, 1500);
+        }, 500);
       } catch (error) {
         reject(error);
       }
@@ -288,7 +288,7 @@ class Generator {
       } catch (error) {
         reject(err);
       }
-    })
+    });
   }
 
   embed(argv) {
@@ -304,7 +304,7 @@ class Generator {
       } catch (error) {
         reject(err);
       }
-    })
+    });
   }
 }
 

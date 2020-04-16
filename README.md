@@ -79,7 +79,7 @@
   $ npx sequelize-cli init
   ```
 
-   This will create following folders
+   This will create following folders inside ``databases`` folder
 
    - ``config``, contains config file, which tells CLI how to connect with database
    - ``models``, contains all models for your project
@@ -87,7 +87,7 @@
    - ``seeders``, contains all seed files
 
   #### Configuration
-   Before continuing further we will need to tell CLI how to connect to database. To do that let's open default config file ``config/config.json`` It looks something like this
+   Before continuing further we will need to tell CLI how to connect to database. To do that let's open default config file ``databases/config/database.json`` It looks something like this
    
   ```
   {

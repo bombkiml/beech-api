@@ -8,7 +8,7 @@ class Beech {
         .catch(err => {
           throw err;
         })
-    );
+      );
   }
 
   init() {
@@ -17,41 +17,54 @@ class Beech {
         if (this.option == "-v" || this.option == "--version") {
           // check beech version
           resolve("v" + require(__dirname + "/../../../package.json").version);
-        } else if (this.option == "-h" || this.option == "?" || this.option == "--help" ) {
+        } else if (this.option == "-h" || this.option == "?" || this.option == "--help") {
           // help for see avaliable command
           this.help()
             .then(help => resolve(help))
             .catch(err => reject(err));
         } else if (this.option == "create") {
-          let tmpConfigFile = __dirname + '/../core/configure/app.config.js';
-          let pasteConfigFile = this.argument + '/app.config.js';
-          let tmpJestFile = __dirname + '/../core/configure/jest.config.js';
-          let pasteJestFile = this.argument + '/jest.config.js';
-          let tmpPackageFile = __dirname + '/../core/generator/package';
-          let pastePackageFile = this.argument + '/package.json';
-          if (!this.fs.existsSync(this.argument)) {
-            this.makeFolder(this.argument)
-              .then(this.copy.bind(this, tmpPackageFile, pastePackageFile))
-              .then(this.contentReplace.bind(this, pastePackageFile, { 'application': this.argument }))
-              .then(this.copy.bind(this, tmpConfigFile, pasteConfigFile))
-              .then(this.copy.bind(this, tmpJestFile, pasteJestFile))
-              .then(resolve("\n[104m [37mProcessing[0m [0m The `" + this.argument + "` application is creating...\n"))
-              .then(this.cmd.get('cd ' + this.argument + ' && yarn install', (err, data) => {
-                if(err) {
-                  this.cmd.get('cd ' + this.argument + ' && npm install', (data) => {
+          if (this.argument) {
+            let tmpPackageFile = __dirname + '/../core/generator/package';
+            let pastePackageFile = this.argument + '/package.json';
+            let tmpConfigFile = __dirname + '/../core/configure/app.config.js';
+            let pasteConfigFile = this.argument + '/app.config.js';
+            let tmpJestFile = __dirname + '/../core/configure/jest.config.js';
+            let pasteJestFile = this.argument + '/jest.config.js';
+            let tmpJsConfigFile = __dirname + '/../core/configure/jsconfig.json';
+            let pasteJsConfigFile = this.argument + '/jsconfig.json';
+            let tmpDotSequelizercFile = __dirname + '/../core/configure/sequelizerc';
+            let pasteDotSequelizercFile = this.argument + '/.sequelizerc';
+            let tmpGloablConfigFile = __dirname + '/../core/configure/global.config.js';
+            let pasteGloablConfigFile = this.argument + '/global.config.js';
+            if (!this.fs.existsSync(this.argument)) {
+              this.makeFolder(this.argument)
+                .then(this.copy.bind(this, tmpPackageFile, pastePackageFile))
+                .then(this.contentReplace.bind(this, pastePackageFile, { 'application': this.argument }))
+                .then(this.copy.bind(this, tmpConfigFile, pasteConfigFile))
+                .then(this.copy.bind(this, tmpJestFile, pasteJestFile))
+                .then(this.copy.bind(this, tmpJsConfigFile, pasteJsConfigFile))
+                .then(this.copy.bind(this, tmpDotSequelizercFile, pasteDotSequelizercFile))
+                .then(this.copy.bind(this, tmpGloablConfigFile, pasteGloablConfigFile))
+                .then(resolve("\n[104m [37mProcessing[0m [0m The `" + this.argument + "` application is creating...\n"))
+                .then(this.cmd.get('cd ' + this.argument + ' && yarn install', (err, data) => {
+                  if (err) {
+                    this.cmd.get('cd ' + this.argument + ' && npm install', (data) => {
+                      console.log(data);
+                      this.successfully();
+                    });
+                  } else {
                     console.log(data);
                     this.successfully();
-                  });
-                } else {
-                  console.log(data);
-                  this.successfully();
-                }
-              }))
-              .catch((err) => {
-                throw err;
-              })
+                  }
+                }))
+                .catch((err) => {
+                  throw err;
+                })
+            } else {
+              resolve("\n[103m[90m Warning [0m[0m The project `" + this.argument + "` it's duplicated.");
+            }
           } else {
-            resolve("\n[103m[90m Warning [0m[0m The project `" + this.argument + "` it's duplicated.");
+            resolve("\n[103m[90m Warning [0m[0m Please specify your project name.");
           }
         } else {
           resolve("\n[101m Faltal [0m commnad it's not available.");

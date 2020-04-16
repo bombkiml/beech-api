@@ -3,5 +3,5 @@ Usage:
   $ beech-app create <app-name>
 
 Options:
-  ?|-h, --help        Display this help message
-  -v, --version       Display this application version
+  ?|-h, --help          Display this help message
+  -v, --version         Display this application version

@@ -1,16 +1,14 @@
 {{requireSomething}}
 exports.init = () => {
-  /**
-   * Initiate basic request with GET, POST, PUT, PATCH, DELETE
-   *
-   * @return json data
-   *
-   */
+  // Initiate with basic request support GET, POST, PUT, PATCH and DELETE
+
   /@GET/
 	endpoint.get('{{endpoint}}', (req, res) => {
+    // basic get method
 		let data = {};
     data.code = 200;
     data.message = 'Got a GET request.';
+    // @return
     res.json(data);
 	});
 
@@ -22,10 +20,10 @@ exports.init = () => {
      * @return json
      */
     let id = req.body.id;
-    // @return
     let data = {};
     data.code = 200;
     data.message = 'Got a POST request.';
+    // @return
     res.json(data);
   });
 
@@ -37,10 +35,10 @@ exports.init = () => {
      * @return json
      */
     let id = req.params.id;
-    // @return
     let data = {};
     data.code = 200;
     data.message = 'Got a PUT request at {{endpoint}}/' + id;
+    // @return
     res.json(data);
   });
 
@@ -52,10 +50,10 @@ exports.init = () => {
      * @return json
      */
     let id = req.params.id;
-    // @return
     let data = {};
     data.code = 200;
     data.message = 'Got a PATCH request at {{endpoint}}/' + id;
+    // @return
     res.json(data);
   });
 
@@ -67,10 +65,10 @@ exports.init = () => {
      * @return json
      */
     let id = req.params.id;
-    // @return
     let data = {};
     data.code = 200;
     data.message = 'Got a DELETE request at {{endpoint}}/' + id;
+    // @return
     res.json(data);
   });
 }

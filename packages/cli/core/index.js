@@ -1,18 +1,22 @@
-const appRoot = require('app-root-path');
-global._http = require('http');
-const _express = require('express');
+const appRoot = require("app-root-path");
+const moduleAlias = require("module-alias");
+moduleAlias.addAlias("@", appRoot + "/src");
+global._http = require("http");
+const _express = require("express");
 const _app = _express();
-global._mysql = require('mysql');
-const cookieParser = require('cookie-parser');
-const bodyParser = require('body-parser');
-const expressValidator = require('express-validator');
-const cors = require('cors');
+const cors = require("cors");
 global.endpoint = _express.Router();
+global._mysql = require("mysql");
+const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
+const expressValidator = require("express-validator");
+const globalVariable = require(appRoot + "/global.config.js");
+globalVariable.init();
 // Local environments
-global._config = require(appRoot + '/app.config');
-const dbConnect = require('./databases/mysql.connection');
-const httpExpress = require('./services/http.express');
-const fileWalk = require('./file-walk/file-walk');
+global._config = require(appRoot + "/app.config");
+const dbConnect = require("./databases/mysql.connection");
+const httpExpress = require("./services/http.express");
+const fileWalk = require("./file-walk/file-walk");
 // View engine
 _app.use(bodyParser.json());
 _app.use(bodyParser.urlencoded({ extended: true }));
@@ -20,7 +24,7 @@ _app.use(cookieParser());
 _app.use(expressValidator());
 _app.use(cors({ origin: true, credentials: true }));
 // Allow Origin
-_app.all('/', (req, res, next) => {
+_app.all("/", (req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "X-Requested-With");
   res.header("Access-Control-Allow-Methods", "GET, PUT, PATCH, POST, DELETE, OPTIONS");
@@ -30,14 +34,14 @@ _app.all('/', (req, res, next) => {
 // parse global app
 global.express = _app;
 // Read folder in ./src/endpoints/*
-const walk = require('walk');
+const walk = require("walk");
 let jsfiles = []
-let walker = walk.walk(appRoot + '/src/endpoints', { followLinks: false });
-walker.on('file', (root, stat, next) => {
-  jsfiles.push(root + '/' + stat.name);
+let walker = walk.walk(appRoot + "/src/endpoints", { followLinks: false });
+walker.on("file", (root, stat, next) => {
+  jsfiles.push(root + "/" + stat.name);
   next();
 });
-walker.on('end', () => {
+walker.on("end", () => {
   init(jsfiles);
 });
 // define server variable
