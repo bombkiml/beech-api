@@ -105,19 +105,17 @@
       // Example basic function get data
       getData() {
         return { ... }
-      }
+      },
       
       // Example basic function get data from MySQL (must be return promise)
       getFruits() {
         return new Promise((resolve, reject) => {
-          try {
-          
+          try {          
             // call mysql `default_db` connection
             mysql.default_db.query("SELECT * FROM fruits", (err, results) => {
               if (err) { reject(err) }
               resolve(results);
-            });
-            
+            });            
           } catch (error) {
             reject(error);
           }
