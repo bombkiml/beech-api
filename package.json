@@ -1,6 +1,6 @@
 {
   "name": "beech-api",
-  "version": "3.2.7",
+  "version": "3.2.8",
   "description": "Command line interface for rapid Beech API development",
   "keywords": [
     "beech-api",
