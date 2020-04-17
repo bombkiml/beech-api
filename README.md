@@ -6,7 +6,7 @@
   ``Beech API`` is a Node.js framework it's help you with very easy create API project under [Node.js](https://nodejs.org)
 #
 ### Why Beech API ?
-  ``Beech API`` is a Very easy for using, very feather framework, easy to installation, easy to implementation, and high security
+  ``Beech API`` is a Very easy for using, very feather framework, easy to installation, easy to implementation, and high security.
 #
 ### Powered by Node.js & Express.js
   ![N|Solid](https://i.ibb.co/CQqYZkK/node-epressjs.jpg)
@@ -38,7 +38,7 @@
   $ beech-app create hello-world
   ```
 
-  :grey_question: Tips: The Beech API it's start server at [http://127.0.0.1:9000](http://127.0.0.1:9000) you can change new a port in ``app.config.js`` file |
+:grey_question: Tips: The Beech API it's start server at [http://127.0.0.1:9000](http://127.0.0.1:9000) you can change new a port in ``app.config.js`` file. |
 ------------ |
 #
 ### Part of generate file
@@ -56,38 +56,151 @@
     $ beech [options] [arguments] <special>
 
   Options:
-    ?|-h, --help                Display this help message
-    -v, --version               Display this application version
+    ?|-h, --help                    Display this help message
+    -v, --version                   Display this application version
 
   The following commands are available:
 
-    $ beech make <endpoint>       Create a new endpoints and unit test file,
-                                  You might using <special> `--require=Model1,Model2,..`
-                                  for require model file(s) in generate processing
-    $ beech make <model> --model  Create a new models file
+    $ beech make <endpoint>         Create a new endpoints and unit test file,
+                                    You might using <special> `--require=Model1,Model2,..`
+                                    for require model file(s) in generate processing
+    $ beech make <model> --model    Create a new models file
   ```  
 #
-### Databases
-  #### Migrations & Seeder
+### Endpoints
+  The ``endpoints`` keep the endpoints basic request files currently support ``GET``, ``POST``, ``PUT``, ``PATCH`` and ``DELETE``. 
+  
+  So, you might create new endpoints with constant ``endpoint`` object variable in ``src/endpoints/`` folder and file neme must be end with ``-endpoints.js``
+  
+  ```js
+    // fruits-endpoints.js
+    
+    exports.init = () => {
+    
+      /@GET/
+      endpoint.get('/fruits', (req, res) => {
+        ...      
+      });
+      
+      /@POST/
+      endpoint.post('/fruits', (req, res) => {
+        ...      
+      });
+
+    }
+  ```
+  
+:grey_question: Tips: Inside the endpoints file must be export ``init()`` function for initialize the the endpoints. |
+------------ |
+
+#
+### Models
+  The ``models`` keep the files of function(s) for retriving, inserting, updating and deleting with SQL data. for understanding you might make model name same your table name in ``src/models`` folder.
+  
+  ```js
+    // Fruits.js
+    
+    module.exports = {
+
+      // Example basic function get data
+      getData() {
+        return { ... }
+      },
+      
+      // Example basic function get data from MySQL (must be return promise)
+      getFruits() {
+        return new Promise((resolve, reject) => {
+          try {          
+            // call mysql `default_db` connection
+            mysql.default_db.query("SELECT * FROM fruits", (err, results) => {
+              if (err) { reject(err) }
+              resolve(results);
+            });            
+          } catch (error) {
+            reject(error);
+          }
+        });
+      }
+      
+    };
+  ```
+
+#
+### Helpers
+  The ``helpers`` keep the files of functions for process specific something in the project. So, you might create the ``helpers`` in path ``src/helpers`` folder.
+  
+  Example text editor helper:
+  
+  ```js
+    // TextEditor.js
+    
+    module.exports = {
+      
+      textUpperCase(text) {
+        return text.toUpperCase();
+      },
+      textTrim(text) {
+        return text.trim();
+      },
+      ...
+      
+    };
+  ```
+
+#
+### Bonus
+  Free ``helpers``you can make [LINE Notify](https://github.com/Yuhsak/line-api#readme) by using [line-api](https://notify-bot.line.me/en/) package with create the helper function following.
+  
+  Installation the package:
+  
+  ```
+  $ npm install line-api
+  ```
+  
+  Create file ``Line.js`` in ``src/helpers`` folder and copy code below:
+  
+  ```js
+  // Line.js
+  
+  const Line = require('line-api');
+
+  module.exports = {
+    notify(message, token) {    
+      const notify = new Line.Notify({
+        token: token
+      });
+      notify.send({
+        message: message
+      })
+      .then(console.log)
+    }
+  };
+  ```
+  
+  Enjoy.
+
+#
+### Databases managements
+  #### # Migrations & Seeder
    Just like you use Git / SVN to manage changes in your source code, you can use migrations to keep track of changes to the database. With migrations you can transfer your existing database into another state and vice versa: Those state transitions are saved in migration files, which describe how to get to the new state and how to revert the changes in order to get back to the old state.
 
    You will need [Sequelize CLI.](https://github.com/sequelize/cli) The CLI ships support for migrations and project.
 
-  #### Usage 
+  #### # Usage 
    To create an empty project you will need to execute ```init``` command
   ```sh
   $ npx sequelize-cli init
   ```
 
-   This will create following folders inside ``databases`` folder
+   This will create following folders inside ``databases`` folder.
 
-   - ``config``, contains config file, which tells CLI how to connect with database
-   - ``models``, contains all models for your project
-   - ``migrations``, contains all migration files
-   - ``seeders``, contains all seed files
+   - ``config``, contains config file, which tells CLI how to connect with database.
+   - ``models``, contains all models for your project.
+   - ``migrations``, contains all migration files.
+   - ``seeders``, contains all seed files.
 
-  #### Configuration
-   Before continuing further we will need to tell CLI how to connect to database. To do that let's open default config file ``databases/config/database.json`` It looks something like this
+  #### # Configuration
+   Before continuing further we will need to tell CLI how to connect to database. To do that let's open default config file ``databases/config/database.json`` It looks something like this:
    
   ```
   {
@@ -143,7 +256,36 @@
     --version  Show version number              [boolean]
     --help     Show help                        [boolean]
   ```
-   
+
+#
+### Testing
+  Test using [Jest](https://jestjs.io/en/) for testing the project. Jest is a delightful JavaScript Testing Framework with a focus on simplicity. Learn more [Jest docs](https://jestjs.io/docs/en/getting-started.html)
+  
+  So, When you make the new endpoints it's automatic create test file end with ``.spec.js`` in ``__test__`` folder with constant ``baseUrl`` variable and ``axios`` package.
+  
+  Example endpoints testing
+  
+  ```js
+    // fruits-endpoints.spec.js
+    
+    const endpoint = baseUrl.concat('/fruits/fruits');
+    
+    describe('Test endpoint : ' + endpoint, () => {
+      it('Truthy!', () => {
+        expect('/fruits/fruits').toBeTruthy();
+      });
+
+      it("Respond with basic GET status code 200", (done) => {
+        axios.get(endpoint)
+          .then((res) => {
+            expect(200).toEqual(res.data.code);
+            done();
+          })
+      });
+    });    
+    
+  ```
+
 #
 ### Development
 Want to contribute or join for great job!, You can contact to me via

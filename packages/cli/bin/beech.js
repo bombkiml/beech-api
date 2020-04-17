@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+const logUpdate = require("log-update");
 
 class Beech {
   constructor() {
@@ -8,7 +9,7 @@ class Beech {
         .catch(err => {
           throw err;
         })
-    );
+      );
   }
 
   init() {
@@ -17,41 +18,47 @@ class Beech {
         if (this.option == "-v" || this.option == "--version") {
           // check beech version
           resolve("v" + require(__dirname + "/../../../package.json").version);
-        } else if (this.option == "-h" || this.option == "?" || this.option == "--help" ) {
+        } else if (this.option == "-h" || this.option == "?" || this.option == "--help") {
           // help for see avaliable command
           this.help()
             .then(help => resolve(help))
             .catch(err => reject(err));
         } else if (this.option == "create") {
-          let tmpConfigFile = __dirname + '/../core/configure/app.config.js';
-          let pasteConfigFile = this.argument + '/app.config.js';
-          let tmpJestFile = __dirname + '/../core/configure/jest.config.js';
-          let pasteJestFile = this.argument + '/jest.config.js';
-          let tmpPackageFile = __dirname + '/../core/generator/package';
-          let pastePackageFile = this.argument + '/package.json';
-          if (!this.fs.existsSync(this.argument)) {
-            this.makeFolder(this.argument)
-              .then(this.copy.bind(this, tmpPackageFile, pastePackageFile))
-              .then(this.contentReplace.bind(this, pastePackageFile, { 'application': this.argument }))
-              .then(this.copy.bind(this, tmpConfigFile, pasteConfigFile))
-              .then(this.copy.bind(this, tmpJestFile, pasteJestFile))
-              .then(resolve("\n[104m [37mProcessing[0m [0m The `" + this.argument + "` application is creating...\n"))
-              .then(this.cmd.get('cd ' + this.argument + ' && yarn install', (err, data) => {
-                if(err) {
-                  this.cmd.get('cd ' + this.argument + ' && npm install', (data) => {
-                    console.log(data);
-                    this.successfully();
-                  });
-                } else {
-                  console.log(data);
-                  this.successfully();
-                }
-              }))
-              .catch((err) => {
-                throw err;
-              })
+          if (this.argument) {
+            let tmpPackageFile = __dirname + '/../core/generator/package';
+            let pastePackageFile = this.argument + '/package.json';
+            let tmpConfigFile = __dirname + '/../core/configure/app.config.js';
+            let pasteConfigFile = this.argument + '/app.config.js';
+            let tmpJestFile = __dirname + '/../core/configure/jest.config.js';
+            let pasteJestFile = this.argument + '/jest.config.js';
+            let tmpJsConfigFile = __dirname + '/../core/configure/jsconfig.json';
+            let pasteJsConfigFile = this.argument + '/jsconfig.json';
+            let tmpDotSequelizercFile = __dirname + '/../core/configure/sequelizerc';
+            let pasteDotSequelizercFile = this.argument + '/.sequelizerc';
+            let tmpGloablConfigFile = __dirname + '/../core/configure/global.config.js';
+            let pasteGloablConfigFile = this.argument + '/global.config.js';
+            let tmpGitignoreFile = __dirname + '/../core/configure/gitignore';
+            let pasteGitignoreFile = this.argument + '/.gitignore';
+            if (!this.fs.existsSync(this.argument)) {
+              this.makeFolder(this.argument)
+                .then(this.copy.bind(this, tmpPackageFile, pastePackageFile))
+                .then(this.contentReplace.bind(this, pastePackageFile, { 'application': this.argument }))
+                .then(this.copy.bind(this, tmpConfigFile, pasteConfigFile))
+                .then(this.copy.bind(this, tmpJestFile, pasteJestFile))
+                .then(this.copy.bind(this, tmpJsConfigFile, pasteJsConfigFile))
+                .then(this.copy.bind(this, tmpDotSequelizercFile, pasteDotSequelizercFile))
+                .then(this.copy.bind(this, tmpGloablConfigFile, pasteGloablConfigFile))
+                .then(this.copy.bind(this, tmpGitignoreFile, pasteGitignoreFile))
+                .then(this.installPackage.bind(this, this.argument))
+                .then(logUpdate("\n[104m [37mProcessing[0m [0m The `" + this.argument + "` application is creating...\n"))
+                .catch((err) => {
+                  throw err;
+                })
+            } else {
+              resolve("\n[103m[90m Warning [0m[0m The project `" + this.argument + "` it's duplicated.");
+            }
           } else {
-            resolve("\n[103m[90m Warning [0m[0m The project `" + this.argument + "` it's duplicated.");
+            resolve("\n[103m[90m Warning [0m[0m Please specify your project name.");
           }
         } else {
           resolve("\n[101m Faltal [0m commnad it's not available.");
@@ -62,8 +69,37 @@ class Beech {
     });
   }
 
+  installPackage(argument) {
+    return new Promise((resolve, reject) => {
+      try {
+        let lineStdout = "";
+        let processYarn = this.cmd.get('cd ' + argument + ' && yarn install', (err, data) => {
+          if (err) {
+            this.cmd.get('cd ' + argument + ' && npm install', (err, data) => {
+              if (err) { throw err }
+              resolve(data);
+              this.successfully();
+            });
+          } else {
+            resolve(data);
+            this.successfully();
+          }
+        });
+        // yarn install line shoutout
+        processYarn.stdout.on('data', (yarnData) => {
+          lineStdout += yarnData;
+          if (lineStdout[lineStdout.length - 1] == '\n') {
+            logUpdate('\n' + lineStdout);
+          }
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
   successfully() {
-    console.log('[102m[90m Passed [0m[0m The project has been successfully created.\n\n  [37m$[0m [36mcd ' + this.argument + '[0m\n  [37m$[0m [36mnpm run start[0m or [36myarn start[0m');
+    logUpdate('\n[102m[90m Passed [0m[0m The project has been successfully created.\n\n  [37m$[0m [36mcd ' + this.argument + '[0m\n  [37m$[0m [36mnpm run start[0m or [36myarn start[0m');
   }
 
   async contentReplace(pathFile, textCondition) {

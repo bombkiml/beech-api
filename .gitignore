@@ -1,21 +1,22 @@
 # default
-.git/
-.vscode/
-node_modules/
+.git
+.vscode
+node_modules
+package-lock.json
+yarn.lock
 
 # development
 package.json
-packages/cli/src/*
+packages/cli/src
 packages/cli/__tests__
-packages/cli/node_modules/
+packages/cli/node_modules
 packages/cli/package.json
 packages/cli/package-lock.json
 packages/cli/app.config.js
+packages/cli/global.config.js
 packages/cli/jest.config.js
-yarn.lock
+packages/cli/jsconfig.json
+packages/cli/.sequelizerc
 
 # sequelize-cli migration
-packages/cli/config
-packages/cli/migrations
-packages/cli/models
-packages/cli/seeders
+packages/cli/databases

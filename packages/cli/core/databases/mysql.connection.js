@@ -3,9 +3,9 @@ exports.mySqlConnection = () => {
     try {
       global.mysql = {};
       // loop database connection
-      _config.mySqlConfig.map((val, index) => {
+      _config_.mySqlConfig.map((val, index) => {
         if (val.isConnect) {
-          let connection = _mysql.createConnection({
+          let connection = _mysql_.createConnection({
             host: val.host,
             user: val.username,
             password: val.password,
@@ -18,7 +18,7 @@ exports.mySqlConnection = () => {
               mysql[val.name] = connection;
               console.log('[102m[90m Passed [0m [0mDatabase is connected at [[93m' + val.name, '[0m->[93m', connection.config.database + ':' + connection.config.port + '[0m]');
               // checking for resolve
-              if ((index + 1) == _config.mySqlConfig.length) {
+              if ((index + 1) == _config_.mySqlConfig.length) {
                 resolve(true);
               }
             } else {
@@ -28,7 +28,7 @@ exports.mySqlConnection = () => {
           })
         } else {
           // checking for resolve
-          if ((index + 1) == _config.mySqlConfig.length) {
+          if ((index + 1) == _config_.mySqlConfig.length) {
             resolve(true);
           }
         }
