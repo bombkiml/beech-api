@@ -148,22 +148,22 @@
 ### Bonus
   Free ``helpers``you can make [LINE Notify](https://github.com/Yuhsak/line-api#readme) by using [line-api](https://notify-bot.line.me/en/) package with create the helper function following
   
-  Package installation
+  Installation the package:
   
   ```
   npm install line-api
   ```
   
-  Create file in ``src/helpers`` folder and copy code below:
+  Create file ``Line.js`` in ``src/helpers`` folder and copy code below:
   
   ```js
   // Line.js
   
-  const line = require('line-api')
+  const Line = require('line-api');
 
   module.exports = {
     notify(message, token) {    
-      const notify = new line.Notify({
+      const notify = new Line.Notify({
         token: token
       });
       notify.send({
