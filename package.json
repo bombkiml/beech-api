@@ -30,7 +30,8 @@
   },
   "dependencies": {
     "fs": "0.0.1-security",
-    "mkdirp": "^0.5.1",
+    "log-update": "^4.0.0",
+    "mkdirp": "^1.0.4",
     "node-cmd": "^3.0.0",
     "path": "^0.12.7"
   },

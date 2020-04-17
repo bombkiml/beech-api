@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+const logUpdate = require("log-update");
 
 class Beech {
   constructor() {
@@ -36,6 +37,8 @@ class Beech {
             let pasteDotSequelizercFile = this.argument + '/.sequelizerc';
             let tmpGloablConfigFile = __dirname + '/../core/configure/global.config.js';
             let pasteGloablConfigFile = this.argument + '/global.config.js';
+            let tmpGitignoreFile = __dirname + '/../core/configure/gitignore';
+            let pasteGitignoreFile = this.argument + '/.gitignore';
             if (!this.fs.existsSync(this.argument)) {
               this.makeFolder(this.argument)
                 .then(this.copy.bind(this, tmpPackageFile, pastePackageFile))
@@ -45,18 +48,9 @@ class Beech {
                 .then(this.copy.bind(this, tmpJsConfigFile, pasteJsConfigFile))
                 .then(this.copy.bind(this, tmpDotSequelizercFile, pasteDotSequelizercFile))
                 .then(this.copy.bind(this, tmpGloablConfigFile, pasteGloablConfigFile))
-                .then(resolve("\n[104m [37mProcessing[0m [0m The `" + this.argument + "` application is creating...\n"))
-                .then(this.cmd.get('cd ' + this.argument + ' && yarn install', (err, data) => {
-                  if (err) {
-                    this.cmd.get('cd ' + this.argument + ' && npm install', (data) => {
-                      console.log(data);
-                      this.successfully();
-                    });
-                  } else {
-                    console.log(data);
-                    this.successfully();
-                  }
-                }))
+                .then(this.copy.bind(this, tmpGitignoreFile, pasteGitignoreFile))
+                .then(this.installPackage.bind(this, this.argument))
+                .then(logUpdate("\n[104m [37mProcessing[0m [0m The `" + this.argument + "` application is creating...\n"))
                 .catch((err) => {
                   throw err;
                 })
@@ -75,8 +69,37 @@ class Beech {
     });
   }
 
+  installPackage(argument) {
+    return new Promise((resolve, reject) => {
+      try {
+        let lineStdout = "";
+        let processYarn = this.cmd.get('cd ' + argument + ' && yarn install', (err, data) => {
+          if (err) {
+            this.cmd.get('cd ' + argument + ' && npm install', (err, data) => {
+              if (err) { throw err }
+              resolve(data);
+              this.successfully();
+            });
+          } else {
+            resolve(data);
+            this.successfully();
+          }
+        });
+        // yarn install line shoutout
+        processYarn.stdout.on('data', (yarnData) => {
+          lineStdout += yarnData;
+          if (lineStdout[lineStdout.length - 1] == '\n') {
+            logUpdate('\n' + lineStdout);
+          }
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
   successfully() {
-    console.log('[102m[90m Passed [0m[0m The project has been successfully created.\n\n  [37m$[0m [36mcd ' + this.argument + '[0m\n  [37m$[0m [36mnpm run start[0m or [36myarn start[0m');
+    logUpdate('\n[102m[90m Passed [0m[0m The project has been successfully created.\n\n  [37m$[0m [36mcd ' + this.argument + '[0m\n  [37m$[0m [36mnpm run start[0m or [36myarn start[0m');
   }
 
   async contentReplace(pathFile, textCondition) {

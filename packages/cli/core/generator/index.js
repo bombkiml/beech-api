@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+const logUpdate = require("log-update");
 
 class Generator {
   constructor() {
@@ -132,8 +133,8 @@ class Generator {
               'endpoint': routeEndpoints,
               'endpointName': endpoints
             }))
-            .then(resolve("\n[104m [37mProcessing[0m [0m The endpoint `" + endpoints + "` it's generating..."))
-            .then(generated => console.log(generated))
+            .then(logUpdate("\n[104m [37mProcessing[0m [0m The endpoint `" + endpoints + "` it's generating..."))
+            .then(generated => logUpdate(generated))
             .catch(err => {
               throw err;
             });
@@ -183,12 +184,16 @@ class Generator {
           // generater model
           this.makeFolder(modelPath + subFolder)
             .then(this.copy.bind(this, tmpModelsPath, fullModels))
-            .then(resolve("\n[102m[90m Passed [0m[0m The models `" + models + "` it's generated."))
+            .then(this.modelContentReplace.bind(this, fullModels, {
+              'modelName': models.toLowerCase(),
+            }))
+            .then(logUpdate("\n[104m [37mProcessing[0m [0m The model `" + models + "` it's generating..."))
+            .then(generated => logUpdate(generated))
             .catch(err => {
               throw err;
             });
         } else {
-          resolve("\n[103m[90m Warning [0m[0m The models `" + models + "` it's duplicated.");
+          resolve("\n[103m[90m Warning [0m[0m The model `" + models + "` it's duplicated.");
         }
       } catch (error) {
         reject(error);
@@ -249,6 +254,7 @@ class Generator {
         let endpoint = textCondition.endpoint;
         let endpointName = textCondition.endpointName;
         let rq = textCondition.rq;
+        let modelName = textCondition.modelName;
         // delay for generator
         setTimeout(() => {
           this.fs.readFile(pathFile, 'utf8', (err, data) => {
@@ -259,6 +265,7 @@ class Generator {
               let text = data.replace(new RegExp('{{endpoint}}', 'g'), endpoint);
               text = text.replace(new RegExp('{{endpointName}}', 'g'), endpointName);
               text = text.replace(new RegExp('{{requireSomething}}', 'g'), rq);
+              text = text.replace(new RegExp('{{modelName}}', 'g'), modelName);
               // writing the file
               this.fs.writeFile(pathFile, text, 'utf8', (err) => {
                 if (err) {
@@ -269,7 +276,36 @@ class Generator {
               });
             }
           })
-        }, 500);
+        }, 1000);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  async modelContentReplace(pathFile, textCondition) {
+    return new Promise((resolve, reject) => {
+      try {
+        let modelName = textCondition.modelName;
+        // delay for generator
+        setTimeout(() => {
+          this.fs.readFile(pathFile, 'utf8', (err, data) => {
+            if (err) {
+              throw err;
+            } else {
+              // content replace
+              let text = data.replace(new RegExp('{{modelName}}', 'g'), modelName);
+              // writing the file
+              this.fs.writeFile(pathFile, text, 'utf8', (err) => {
+                if (err) {
+                  throw err;
+                } else {
+                  resolve("\n[102m[90m Passed [0m[0m The model `" + modelName + "` it's generated.");
+                }
+              });
+            }
+          })
+        }, 1000);
       } catch (error) {
         reject(error);
       }
