@@ -1,6 +1,6 @@
 {
   "name": "beech-api",
-  "version": "3.2.9",
+  "version": "3.2.11",
   "description": "Command line interface for rapid Beech API development",
   "keywords": [
     "beech-api",
@@ -31,7 +31,7 @@
   "dependencies": {
     "fs": "0.0.1-security",
     "log-update": "^4.0.0",
-    "mkdirp": "^1.0.4",
+    "mkdirp": "^0.5.1",
     "node-cmd": "^3.0.0",
     "path": "^0.12.7"
   },
