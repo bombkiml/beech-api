@@ -4,17 +4,17 @@
 [![PyPI license](https://img.shields.io/pypi/l/ansicolortags.svg)](https://github.com/bombkiml/beech-api/blob/master/README.md)
 ## What is Beech API ?
   ``Beech API`` is a Node.js framework it's help you with very easy create API project under [Node.js](https://nodejs.org)
-#
+
 ## Why Beech API ?
   ``Beech API`` is a Very easy for using, very feather framework, easy to installation, easy to implementation, and high security.
-#
+
 ## Powered by Node.js & Express.js
   ![N|Solid](https://i.ibb.co/CQqYZkK/node-epressjs.jpg)
-#
+
 ## Environment
   - [``Node.js``](https://nodejs.org) >= 8.11.0+ (recommended)
   - ``npm`` >= 8.9 or ``yarn`` >= 1.22
-#
+
 ## Installation
   Beech API requires Node.js version 8.9 or above (8.11.0+ recommended). You can manage multiple versions of Node on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows). So, Let's go to install ``beech api``
   
@@ -30,7 +30,7 @@
   ```sh
   $ beech-app --version
   ```
-#
+
 ## Creating a project
   create a new project run:
   
@@ -40,7 +40,7 @@
 
 :grey_question: Tips: The Beech API it's start server at [http://127.0.0.1:9000](http://127.0.0.1:9000) you can change new a port in ``app.config.js`` file. |
 ------------ |
-#
+
 ## Part of generate file
   After installation, you will have access to the ``beech`` binary in your command line.
   The ``beech`` command has a number of options and you can explore them all by running:
@@ -66,7 +66,7 @@
                                     for require model file(s) in generate processing
     $ beech make <model> --model    Create a new models file
   ```  
-#
+
 ## Endpoints
   The ``endpoints`` keep the endpoints basic request files currently support ``GET``, ``POST``, ``PUT``, ``PATCH`` and ``DELETE``. 
   
@@ -93,7 +93,6 @@
 :grey_question: Tips: Inside the endpoints file must be export ``init()`` function for initialize the the endpoints. |
 ------------ |
 
-#
 ## Models
   The ``models`` keep the files of function(s) for retriving, inserting, updating and deleting with SQL data. for understanding you might make model name same your table name in ``src/models`` folder.
   
@@ -125,7 +124,6 @@
     };
   ```
 
-#
 ## Helpers
   The ``helpers`` keep the files of functions for process specific something in the project. So, you might create the ``helpers`` in path ``src/helpers`` folder.
   
@@ -147,7 +145,6 @@
     };
   ```
 
-#
 ## Bonus
   Free ``helpers``you can make [LINE Notify](https://github.com/Yuhsak/line-api#readme) by using [line-api](https://notify-bot.line.me/en/) package with create the helper function following.
   
@@ -179,7 +176,6 @@
   
   Enjoy.
 
-#
 ## Databases managements
   ### # Migrations & Seeder
    Just like you use Git / SVN to manage changes in your source code, you can use migrations to keep track of changes to the database. With migrations you can transfer your existing database into another state and vice versa: Those state transitions are saved in migration files, which describe how to get to the new state and how to revert the changes in order to get back to the old state.
@@ -283,7 +279,6 @@
       $ npx sequelize-cli db:seed:undo:all
       ```
 
-#
 ## Testing
   Test using [Jest](https://jestjs.io/en/) for testing the project. Jest is a delightful JavaScript Testing Framework with a focus on simplicity. Learn more [Jest docs](https://jestjs.io/docs/en/getting-started.html)
   
@@ -312,12 +307,11 @@
     
   ```
 
-#
 ## Development
 Want to contribute or join for great job!, You can contact to me via
   - GitHub: [bombkiml/beech-api - issues](https://github.com/bombkiml/beech-api/issues)
   - E-mail: nattapat.jquery@gmail.com 
   - Facebook: [https://www.facebook.com/bombkiml](https://www.facebook.com/bombkiml)
-#
+
 ## License
 The Beech API framework is open-sourced software licensed under the [MIT license.](https://opensource.org/licenses/MIT)
