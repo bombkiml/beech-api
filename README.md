@@ -38,8 +38,7 @@
   $ beech-app create hello-world
   ```
 
-:grey_question: Tips: The Beech API it's start server at [http://127.0.0.1:9000](http://127.0.0.1:9000) you can change new a port in ``app.config.js`` file. |
------------- |
+:grey_question: **Note:** The Beech API it's start server at [http://127.0.0.1:9000](http://127.0.0.1:9000) you can change new a port in ``app.config.js`` file.
 
 ## Part of generate file
   After installation, you will have access to the ``beech`` binary in your command line.
@@ -90,8 +89,7 @@
     }
   ```
   
-:grey_question: Tips: Inside the endpoints file must be export ``init()`` function for initialize the the endpoints. |
------------- |
+:grey_question: **Note:** Inside the endpoints file must be export ``init()`` function for initialize the the endpoints.
 
 ## Models
   The ``models`` keep the files of function(s) for retriving, inserting, updating and deleting with SQL data. for understanding you might make model name same your table name in ``src/models`` folder.
@@ -223,7 +221,7 @@
     }
   }
   ```
-  **Note:** If your database doesn't exists yet, you can just call ``npx sequelize-cli db:create`` command. With proper access it will create that database for you.
+  :grey_question: **Note:** If your database doesn't exists yet, you can just call ``npx sequelize-cli db:create`` command. With proper access it will create that database for you.
   
   ### # Creating first Migrations
    Create ``model`` use ``model:generate`` command. This command requires two options.
