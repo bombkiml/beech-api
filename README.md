@@ -1,4 +1,4 @@
-  [![N|Solid](https://i.ibb.co/FzcMFd8/beech128x412.jpg)](https://github.com/bombkiml)
+  [![N|Solid](https://i.ibb.co/NKxx9NQ/beech320.jpg)](https://github.com/bombkiml)
 # Beech API framework
 [![beech-api release](https://img.shields.io/github/v/release/bombkiml/beech-api.svg)](https://github.com/bombkiml/beech-api/releases/)
 [![PyPI license](https://img.shields.io/pypi/l/ansicolortags.svg)](https://github.com/bombkiml/beech-api/blob/master/README.md)
