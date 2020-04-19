@@ -184,7 +184,7 @@
   #### # Migrations & Seeder
    Just like you use Git / SVN to manage changes in your source code, you can use migrations to keep track of changes to the database. With migrations you can transfer your existing database into another state and vice versa: Those state transitions are saved in migration files, which describe how to get to the new state and how to revert the changes in order to get back to the old state.
 
-   You will need [Sequelize CLI.](https://github.com/sequelize/cli) The CLI ships support for migrations and project.
+   You will need [Sequelize CLI.](https://github.com/sequelize/cli) The CLI ships support for [migrations](https://sequelize.org/v5/manual/migrations.html) and project.
 
   #### # Usage 
    To create an empty project you will need to execute ```init``` command
