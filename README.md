@@ -144,7 +144,7 @@
   ```
 
 ## Bonus
-  Free ``helpers``you can make [LINE Notify](https://github.com/Yuhsak/line-api#readme) by using [line-api](https://notify-bot.line.me/en/) package with create the helper function following.
+  Free ``helpers`` you can make [LINE Notify](https://github.com/Yuhsak/line-api#readme) by using [line-api](https://notify-bot.line.me/en/) package with create the helper function following.
   
   Installation the package:
   
