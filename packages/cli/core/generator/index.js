@@ -78,9 +78,14 @@ class Generator {
               resolve("\n[101m Faltal [0m commnad it's not available.");
             }
           }
-        } else if (this.option == 'kill') {
-          /* require('./app')
-          console.log(_SERVER) */
+        } else if (this.option == 'passport') {
+          if (!this.argument) {
+            resolve("\n[103m[90m Warning [0m[0m Using `passport init` for initiate passport-jwt.");
+          } else {
+            this.makePassportInit()
+              .then(make => resolve(make))
+              .catch(err => reject(err));
+          }
         } else {
           resolve("\n[101m Faltal [0m commnad it's not available.");
         }
@@ -201,7 +206,7 @@ class Generator {
     });
   }
 
-  async makeFolder(path) {
+  makeFolder(path) {
     /**
      * @param path path to make
      * 
@@ -224,7 +229,25 @@ class Generator {
     });
   }
 
-  async copy(path, to) {
+  makePassportInit() {
+    return new Promise((resolve, reject) => {
+      try {
+        let passport_config_file = __dirname + '/../configure/passport.config.js';
+        let passport_config_paste_point = "./passport.config.js";
+        if (!this.fs.existsSync(passport_config_paste_point)) {
+          this.copy(passport_config_file, passport_config_paste_point)
+            .then(resolve("\n[102m[90m Passed [0m[0m The `passport-jwt` is initialized."))
+            .catch(err => console.log(err));
+        } else {
+          resolve("\n[103m[90m Warning [0m[0m The `passport-jwt` already is initialized.");
+        }
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  copy(path, to) {
     /**
      * @param path old path file
      * @param to save to new path file
@@ -248,7 +271,7 @@ class Generator {
     });
   }
 
-  async contentReplace(pathFile, textCondition) {
+  contentReplace(pathFile, textCondition) {
     return new Promise((resolve, reject) => {
       try {
         let endpoint = textCondition.endpoint;
@@ -283,7 +306,7 @@ class Generator {
     });
   }
 
-  async modelContentReplace(pathFile, textCondition) {
+  modelContentReplace(pathFile, textCondition) {
     return new Promise((resolve, reject) => {
       try {
         let modelName = textCondition.modelName;

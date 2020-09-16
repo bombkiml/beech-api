@@ -99,7 +99,7 @@ class Beech {
   }
 
   successfully() {
-    logUpdate('\n[102m[90m Passed [0m[0m The project has been successfully created.\n\n  [37m$[0m [36mcd ' + this.argument + '[0m\n  [37m$[0m [36mnpm run start[0m or [36myarn start[0m');
+    logUpdate('\n[102m[90m Passed [0m[0m The project has been successfully created.\n\n  [37m$[0m [36mcd ' + this.argument + '[0m\n  [37m$[0m [36mnpm start[0m or [36myarn start[0m');
   }
 
   async contentReplace(pathFile, textCondition) {
