@@ -4,7 +4,7 @@ const md5 = require("md5");
 const secret = require("./salt").salt;
 
 module.exports = {
-  post(fields, cb) {
+  store(fields, cb) {
     try {
       let keys = [];
       let values = [passport_config.model.table || "users"];
@@ -32,7 +32,7 @@ module.exports = {
       cb({ code: 500, err: error });
     }
   },
-  patch(someFields, id, cb) {
+  update(someFields, id, cb) {
     try {
       let keys = [];
       let values = [passport_config.model.table || "users"];

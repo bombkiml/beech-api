@@ -98,12 +98,12 @@ module.exports = {
       });
       // create users endpoints
       _app_.post(auth_endpoint + '/users', (req, res) => {
-        Beech.post(req.body, e => res.status(e.code).json(e));
+        Beech.store(req.body, e => res.status(e.code).json(e));
       });
       // patch users endpoints
       _app_.patch(auth_endpoint + '/users/:id', auth.credentials, (req, res) => {
         // require some fields with body params
-        Beech.patch(req.body, req.params.id, e => res.status(e.code).json(e));
+        Beech.update(req.body, req.params.id, e => res.status(e.code).json(e));
       });
     } catch (error) {
       throw error;
