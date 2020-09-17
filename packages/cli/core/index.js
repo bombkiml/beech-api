@@ -30,9 +30,11 @@ _app_.all("/", (req, res, next) => {
   res.header("Content-Type", "application/json; charset=utf-8");
   next();
 });
+// passport
+const passport = require("./auth/Passport");
 // Read folder in ./src/endpoints/*
 const walk = require("walk");
-let jsfiles = []
+let jsfiles = [];
 let walker = walk.walk(appRoot + "/src/endpoints", { followLinks: false });
 walker.on("file", (root, stat, next) => {
   jsfiles.push(root + "/" + stat.name);
@@ -41,17 +43,13 @@ walker.on("file", (root, stat, next) => {
 walker.on("end", () => {
   init(jsfiles);
 });
-// define server variable
-global._SERVER;
 // Initialize the application
-init = (jsfiles) => {
+init = async (jsfiles) => {
   try {
-    httpExpress.expressStart()
-      .then(dbConnect.mySqlConnection.bind(this))
-      .then(fileWalk.fileWalk.bind(this, jsfiles))
-      .catch(error => {
-        throw error;
-      });
+    await httpExpress.expressStart();
+    await dbConnect.mySqlConnection();
+    await passport.init();
+    await fileWalk.fileWalk(jsfiles);
   } catch (error) {
     throw error;
   }
