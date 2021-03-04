@@ -71,7 +71,13 @@ module.exports = {
       // authentication endpoints
       _app_.post(auth_endpoint, (req, res, next) => {
         passport.authenticate('local', { session: false }, (err, user, opt) => {
-          if (err) { res.json(502).json({ code: 502, message: 'Bad Gateway.' }) }
+          if (err) {
+            res.status(502).json({
+              code: 502,
+              error: 'BAD_GATEWAY',
+              message: err
+            })
+          }
           if (user) {
             const token = jwt.sign(user, passport_config.secret, {
               expiresIn: passport_config.token_expired

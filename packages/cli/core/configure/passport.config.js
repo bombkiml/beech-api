@@ -5,7 +5,7 @@ module.exports = {
   auth_endpoint: "",
   // your jwt secret key
   secret: "your_jwt_secret",
-  // token expiry time (minute), default expired in 1 day
+  // token expiry time (second), default expired in 1 day
   token_expired: 86400,
   model: {
     // mysql connection name inside `app.config.js` file

@@ -44,6 +44,7 @@ module.exports = {
             md5(password + secret)
           ], (err, result) => {
             if (err) {
+              console.log("pass",err)
               return done(err);
             } else {
               return done(null, JSON.parse(JSON.stringify(result[0] || null)));
