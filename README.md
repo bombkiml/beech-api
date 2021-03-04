@@ -59,6 +59,8 @@ $ beech-app create hello-world
 
 :grey_question: **Note:** The Beech API it's start server at [http://127.0.0.1:9000](http://127.0.0.1:9000) you can change new a port in `app.config.js` file.
 
+:grey_question: **Note:** The Beech API will be generate ``app_secret`` key in ``app.config.js`` file, You can manual generate by use command ``$ beech key:generate``
+
 ## Part of generate file
 
 After installation, you will have access to the `beech` binary in your command line.
@@ -84,6 +86,7 @@ The following commands are available:
                                   You might using <special> `--require=Model1,Model2,..`
                                   for require model file(s) in generate processing
   $ beech make <model> --model    Create a new models file
+  $ beech passport init           Initialize authentication with passport-jwt
 ```
 
 ## Endpoints
@@ -158,6 +161,7 @@ Example text editor helper:
     textUpperCase(text) {
       return text.toUpperCase();
     },
+    
     textTrim(text) {
       return text.trim();
     },
@@ -176,7 +180,7 @@ Passport-jwt initiation :
 $ beech passport init
 ```
 
-After passport initialize the `passport.config.js` of root project it's appeared
+After passport initialized the `passport.config.js` it's appeared
 
 ```js
 module.exports = {
@@ -189,7 +193,7 @@ module.exports = {
   // your jwt secret key
   secret: "your_jwt_secret",
 
-  // token expiry time (minute), default expired in 1 day
+  // token expiry time (seconds), default 86400 sec. it's expired in 24 hr.
   token_expired: 86400,
 
   model: {
@@ -254,39 +258,6 @@ You can easy management `users` data with Beech helper just define below:
     if (err) throw err;
   });
 ```
-
-## Bonus
-
-Free `helpers` you can make [LINE Notify](https://github.com/Yuhsak/line-api#readme) by using [line-api](https://notify-bot.line.me/en/) package with create the helper function following.
-
-Installation the package:
-
-```
-$ npm install line-api
-```
-
-Create file `Line.js` in `src/helpers` folder and copy code below:
-
-```js
-// Line.js
-
-const Line = require("line-api");
-
-module.exports = {
-  notify(message, token) {
-    const notify = new Line.Notify({
-      token: token
-    });
-    notify
-      .send({
-        message: message
-      })
-      .then(console.log);
-  }
-};
-```
-
-Enjoy.
 
 ## Databases managements
 
@@ -437,6 +408,41 @@ describe("Test endpoint : " + endpoint, () => {
   });
 });
 ```
+
+## Bonus
+
+Free `helpers` you can make [LINE Notify](https://github.com/Yuhsak/line-api#readme) by using [line-api](https://notify-bot.line.me/en/) package with create the helper function following.
+
+Installation the package:
+
+```
+$ npm install line-api
+```
+
+Create file `Line.js` in `src/helpers` folder and copy code below:
+
+```js
+// Line.js
+
+const Line = require("line-api");
+
+module.exports = {
+
+  notify(message, token) {
+    const notify = new Line.Notify({
+      token: token
+    });
+    notify
+      .send({
+        message: message
+      })
+      .then(console.log);
+  }
+
+};
+```
+
+Enjoy.
 
 ## Development
 

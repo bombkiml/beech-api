@@ -5,7 +5,7 @@ module.exports = {
       session: false
     }, (err, user, info) => {
       if (err) {
-        console.log(err);
+        console.log(err, info);
         return next(err);
       }
       if (!user) {

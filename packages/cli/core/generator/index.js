@@ -86,6 +86,10 @@ class Generator {
               .then(make => resolve(make))
               .catch(err => reject(err));
           }
+        } else if (this.option == "key:generate") {
+          this.generateKeyConfigFile()
+          .then(resGenKey => resolve(resGenKey))
+          .catch(err => reject(err));;
         } else {
           resolve("\n[101m Faltal [0m commnad it's not available.");
         }
@@ -329,6 +333,58 @@ class Generator {
             }
           })
         }, 1000);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  appKeyGenerator(length) {
+    return new Promise((resolve, reject) => {
+      try {
+        let md5 = require("md5");
+        let secret = require(__dirname + "/../../../lib/salt").salt;
+        let result = '';
+        let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let charactersLength = characters.length;
+        for ( var i = 0; i < length; i++ ) {
+          result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        resolve(md5(result + secret));
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  generateKeyConfigFile() {
+    return new Promise((resolve, reject) => {
+      try {
+        this.fs.readFile("app.config.js", 'utf8', (err, data) => {
+          if (err) {
+            throw err;
+          } else {
+            // edit or add property
+            let buffer = Buffer.from(data);
+            let buf2str = buffer.toString();
+            let buf2json = JSON.parse(JSON.stringify(buf2str));
+            let buf2eval = eval(buf2json);
+            let oldSecret = buf2eval.main_config.app_secret;
+            // generate new key secret
+            this.appKeyGenerator(8).then(newAppSecret => {
+              // content replace
+              let text = data.replace(new RegExp(oldSecret, 'g'), newAppSecret);
+              // writing the file
+              this.fs.writeFile("app.config.js", text, 'utf8', (err) => {
+                if (err) {
+                  throw err;
+                } else {
+                  resolve("\n[102m[90m Passed [0m[0m App secret it's new generated.");
+                }
+              });              
+            });
+          }
+        });
       } catch (error) {
         reject(error);
       }

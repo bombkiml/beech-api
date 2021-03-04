@@ -24,7 +24,7 @@ module.exports = {
         if (err) {
           cb({ code: 500, status: "CREATE_FAILED", error: err });
         } else {
-          cb({ code: 201, status: "created", message: "CREATE_SUCCESS" });
+          cb({ code: 201, status: "CREATE_SUCCEED", message: "created." });
         }
       });
 
@@ -47,13 +47,13 @@ module.exports = {
         values.push(someFields[key]);
       });
       values.push(id);
-      let sql = 'UPDATE ?? SET ' + keys.join() + ' WHERE id=?';
+      let sql = 'UPDATE ?? SET ' + keys.join() + ' WHERE id = ?';
       const pool = eval("mysql." + passport_config.model.name);
       pool.query(sql, values, (err) => {
         if (err) {
           cb({ code: 500, status: "UPDATE_FAILED", error: err });
         } else {
-          cb({ code: 200, status: "updated", message: "UPDATE_SUCCESS" });
+          cb({ code: 200, status: "UPDATE_SUCCEED", message: "updated." });
         }
       });
     } catch (error) {
