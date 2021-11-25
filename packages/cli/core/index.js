@@ -8,6 +8,7 @@ global.endpoint = _express_.Router();
 global._mysql_ = require("mysql");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
+const expressSession = require("express-session");
 const expressValidator = require("express-validator");
 const globalVariable = require(appRoot + "/global.config.js");
 globalVariable.init();
@@ -20,6 +21,11 @@ const fileWalk = require("./file-walk/file-walk");
 _app_.use(bodyParser.json());
 _app_.use(bodyParser.urlencoded({ extended: true }));
 _app_.use(cookieParser());
+_app_.use(expressSession({
+  secret: 'keyboard cat',
+  resave: true,
+  saveUninitialized: true
+}));
 _app_.use(expressValidator());
 _app_.use(cors({ origin: true, credentials: true }));
 // Allow Origin
@@ -30,8 +36,17 @@ _app_.all("/", (req, res, next) => {
   res.header("Content-Type", "application/json; charset=utf-8");
   next();
 });
-// passport
-const passport = require("./auth/Passport");
+// passport initialization
+const authPassport = require("./auth/Passport");
+const passport = require("passport");
+_app_.use(passport.initialize());
+_app_.use(passport.session());
+passport.serializeUser((user, done) =>{
+  done(null, user);
+});
+passport.deserializeUser((user, done) => {
+  done(null, user);
+});
 // Read folder in ./src/endpoints/*
 const walk = require("walk");
 let jsfiles = [];
@@ -48,7 +63,7 @@ init = async (jsfiles) => {
   try {
     await httpExpress.expressStart();
     await dbConnect.mySqlConnection();
-    await passport.init();
+    await authPassport.init();
     await fileWalk.fileWalk(jsfiles);
   } catch (error) {
     throw error;

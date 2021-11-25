@@ -312,6 +312,8 @@ Before continuing further we will need to tell CLI how to connect to database. T
 }
 ```
 
+:grey_question: **Note:** The database connect default port 3306 if you another port you can add object ``port`` in config.
+
 :grey_question: **Note:** If your database doesn't exists yet, you can just call `npx sequelize-cli db:create` command. With proper access it will create that database for you.
 
 ### # Creating first Migrations
