@@ -259,6 +259,17 @@ You can easy management `users` data with Beech helper just define below:
   });
 ```
 
+## API with Official strategies
+
+
+
+
+
+
+
+
+
+
 ## Databases managements
 
 ### # Migrations & Seeder
@@ -410,6 +421,71 @@ describe("Test endpoint : " + endpoint, () => {
   });
 });
 ```
+
+## Implementation
+  
+### # Implement with [PM2](https://pm2.keymetrics.io/)
+[PM2](https://pm2.keymetrics.io/) is a daemon process manager that will help you manage and keep your application online. Getting started with PM2 is straightforward, it is offered as a simple and intuitive CLI, installable via [NPM](https://www.npmjs.com/).
+
+```sh
+# Start service as standalone
+$ pm2 start ./node_modules/beech-api/packages/cli/beech --name <serviceName>
+
+# OR
+
+# Start service as cluster mode
+$ pm2 start ./node_modules/beech-api/packages/cli/beech --name <serviceName> -i <instances>
+```
+
+### # Implement with [Docker](https://www.docker.com)
+
+[Docker](https://www.docker.com) is an open platform for developing, shipping, and running applications. Docker enables you to separate your applications from your infrastructure so you can deliver software quickly.
+
+- **Create Dockerfile**
+
+Docker builds images automatically by reading the instructions from a Dockerfile -- a text file that contains all commands, in order, needed to build a given image. A Dockerfile adheres to a specific format and set of instructions which you can find at [Dockerfile reference](https://docs.docker.com/engine/reference/builder/).
+
+```js
+// Dockerfile
+
+FROM node:12.18-alpine
+ENV NODE_ENV=production
+WORKDIR /usr/src/api
+COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
+RUN npm install --production --silent && mv node_modules .
+COPY . .
+EXPOSE 9000
+CMD ["node", "./node_modules/beech-api/packages/cli/beech"]
+```
+
+- **Docker build image**
+
+The docker build command builds an image from a Dockerfile and a context. The build’s context is the set of files at a specified location ```PATH``` or ```URL```. The PATH is a directory on your local filesystem. The URL is a Git repository location.
+
+```sh
+$ docker build -t <imageName> .
+```
+
+:grey_question: Tips: You can specify a repository and tag at which to save the new image : ``` $ docker build -t <imageName>:<tags> . ``` |
+------------ |
+
+- **Run docker**
+
+  After create ``image`` you can run docker engine following :
+
+  - **Docker Container (Standalone)**
+  ```sh
+  $ docker run -d -p 9000:9000 --name <containerName> <imageName>
+  ```
+
+  - **Create Docker Swarm (Cluster)**
+  ```sh
+  # initiate swarm
+  $ docker swarm init  
+  # run docker service
+  $ docker service create --replicas <instances> --name <containerName> --publish 9000:9000 <imageName>
+  ```
+
 
 ## Bonus
 

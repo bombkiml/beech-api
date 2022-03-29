@@ -79,17 +79,25 @@ class Generator {
             }
           }
         } else if (this.option == 'passport') {
-          if (!this.argument) {
-            resolve("\n[103m[90m Warning [0m[0m Using `passport init` for initiate passport-jwt.");
-          } else {
+          if (this.argument == "init") {
             this.makePassportInit()
               .then(make => resolve(make))
               .catch(err => reject(err));
+          } else {
+            resolve("\n[103m[90m Warning [0m[0m Using `passport init` for initiate passport-jwt.");
           }
         } else if (this.option == "key:generate") {
           this.generateKeyConfigFile()
           .then(resGenKey => resolve(resGenKey))
           .catch(err => reject(err));;
+        } else if (this.option == "add-on") {
+          if (this.argument == "init") {
+            this.makeAddOnInit()
+              .then(make => resolve(make))
+              .catch(err => reject(err));            
+          } else {
+            resolve("\n[103m[90m Warning [0m[0m Using `add-on init` for initiate add-on.");
+          }          
         } else {
           resolve("\n[101m Faltal [0m commnad it's not available.");
         }
@@ -244,6 +252,26 @@ class Generator {
             .catch(err => console.log(err));
         } else {
           resolve("\n[103m[90m Warning [0m[0m The `passport-jwt` already is initialized.");
+        }
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  makeAddOnInit() {
+    return new Promise((resolve, reject) => {
+      try {
+        let tmpEndpointsPath = __dirname + '/add-on';
+        let add_on_paste_point = "Add-on.js";
+        let folder_add_on = "./src/";
+        if (!this.fs.existsSync(folder_add_on + add_on_paste_point)) {
+          this.makeFolder(folder_add_on)
+            .then(this.copy.bind(this, tmpEndpointsPath, folder_add_on + add_on_paste_point))
+            .then(resolve("\n[102m[90m Passed [0m[0m The `add-on` is initialized."))
+            .catch(err => console.log(err));
+        } else {
+          resolve("\n[103m[90m Warning [0m[0m The `add-on` already is initialized.");
         }
       } catch (error) {
         reject(error);

@@ -1,3 +1,4 @@
+const fs = require("fs");
 const appRoot = require("app-root-path");
 const moduleAlias = require("module-alias");
 moduleAlias.addAlias("@", appRoot + "/src");
@@ -53,16 +54,23 @@ let jsfiles = [];
 let walker = walk.walk(appRoot + "/src/endpoints", { followLinks: false });
 walker.on("file", (root, stat, next) => {
   jsfiles.push(root + "/" + stat.name);
+  // check add-on file exists ?
+  if (fs.existsSync(root + "/../Add-on.js")) {
+    if (_config_.addOn) {
+      jsfiles.push(root + "/../Add-on.js");
+    }
+  }
   next();
 });
+// Walking
 walker.on("end", () => {
   init(jsfiles);
 });
 // Initialize the application
 init = async (jsfiles) => {
   try {
-    await httpExpress.expressStart();
     await dbConnect.mySqlConnection();
+    await httpExpress.expressStart();
     await authPassport.init();
     await fileWalk.fileWalk(jsfiles);
   } catch (error) {

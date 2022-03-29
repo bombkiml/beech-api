@@ -10,7 +10,8 @@ module.exports = {
       if (fs.existsSync(passport_config_file)) {
         var passport = require("passport"),
             LocalStrategy = require("passport-local").Strategy,
-            GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
+            GoogleStrategy = require("passport-google-oauth").OAuth2Strategy,
+            FacebookStrategy = require('passport-facebook').Strategy;
         var passportJWT = require("passport-jwt"),
             JWTStrategy = passportJWT.Strategy,
             ExtractJWT = passportJWT.ExtractJwt;
@@ -76,21 +77,23 @@ module.exports = {
           return done(null, null, true);
         }
       }));
-
+      
+      // declare head authentication enpoint for all strategy
+      let auth_endpoint = (passport_config.auth_endpoint) ? (passport_config.auth_endpoint[0] === "/" ? passport_config.auth_endpoint : "/" + passport_config.auth_endpoint) : "/authentication";      
+      
       /**
        * Passport Google Strategy
        * 
        */
-      let auth_endpoint = (passport_config.auth_endpoint) ? (passport_config.auth_endpoint[0] === "/" ? passport_config.auth_endpoint : "/" + passport_config.auth_endpoint) : "/authentication";
-      let callback_endpoint = (passport_config.strategy.google.callback_endpoint) ? (passport_config.strategy.google.callback_endpoint[0] === "/" ? passport_config.strategy.google.callback_endpoint : "/" + passport_config.strategy.google.callback_endpoint) : "/google/callback";
+      let google_callback_endpoint = (passport_config.strategy.google.callback_endpoint) ? (passport_config.strategy.google.callback_endpoint[0] === "/" ? passport_config.strategy.google.callback_endpoint : "/" + passport_config.strategy.google.callback_endpoint) : "/google/callback";
       passport.use(new GoogleStrategy({
         clientID: passport_config.strategy.google.client_id,
         clientSecret: passport_config.strategy.google.client_secret,
-        callbackURL:  auth_endpoint + callback_endpoint
+        callbackURL:  auth_endpoint + google_callback_endpoint
       }, (accessToken, refreshToken, profile, done) => {
-        // find user
+        // find google user
         let googleIdField = (passport_config.strategy.google.google_id_field) ? passport_config.strategy.google.google_id_field : "google_id";
-        this.findOrCreate(passport_config, passportFields, passportTable, accessToken, refreshToken, profile, googleIdField, (err, res, dbFailed) => {
+        this.findOrCreate(passport_config, "google", passportFields, passportTable, accessToken, refreshToken, profile, googleIdField, (err, res, dbFailed) => {
           if (err) {
             return done(err);
           } else {
@@ -98,11 +101,41 @@ module.exports = {
           }
         });
       }));
+      
+      /**
+       * Passport Facebook Strategy
+       * 
+       */
+       let facebook_callback_endpoint = (passport_config.strategy.facebook.callback_endpoint) ? (passport_config.strategy.facebook.callback_endpoint[0] === "/" ? passport_config.strategy.facebook.callback_endpoint : "/" + passport_config.strategy.facebook.callback_endpoint) : "/facebook/callback";
+       passport.use(new FacebookStrategy({
+        clientID: passport_config.strategy.facebook.app_id,
+        clientSecret: passport_config.strategy.facebook.app_secret,
+        callbackURL: auth_endpoint + facebook_callback_endpoint
+      }, (accessToken, refreshToken, profile, done) => {
+
+        console.log(accessToken, refreshToken, profile);
+
+        // fix somthing went wrong
+
+
+        //return
+        
+        // find facebook user
+        let faecbookIdField = (passport_config.strategy.facebook.google_id_field) ? passport_config.strategy.facebook.facebook_id_field : "facebook_id";
+        this.findOrCreate(passport_config, "facebook", passportFields, passportTable, accessToken, refreshToken, profile, faecbookIdField, (err, res, dbFailed) => {
+          if (err) {
+            return done(err);
+          } else {
+            return done(err, res, dbFailed);
+          }
+        });
+      }
+    ));
     } catch (error) {
       throw error;
     }
   },
-  findOrCreate(passport_config, passportFields, passportTable, accessToken, refreshToken, profile, googleIdField, cb) {
+  findOrCreate(passport_config, strategy_name, passportFields, passportTable, accessToken, refreshToken, profile, googleIdField, cb) {
     let pool = eval("mysql." + passport_config.model.name);
     if (pool) {
       pool.query("SELECT " + passportFields + " FROM ?? WHERE ?? = ?", [
@@ -113,46 +146,53 @@ module.exports = {
         if (err) {
           cb(err);
         } else {
-          if (!result[0]) { // find not found and create
-            // declare data response
-            let data = {};
-            // filter fields
-            let fields = [].concat.apply([], [
-              (passport_config.strategy.google.profile_fields.name) ? passport_config.strategy.google.profile_fields.name : null,
-              (passport_config.strategy.google.profile_fields.email) ? passport_config.strategy.google.profile_fields.email : null,
-              (passport_config.strategy.google.profile_fields.photos) ? passport_config.strategy.google.profile_fields.photos : null,
-              (passport_config.strategy.google.profile_fields.locate) ? passport_config.strategy.google.profile_fields.locate : null
-            ].filter((el) => el != null));
-            // fileter values
-            let values = [].concat.apply([], [
-              (passport_config.strategy.google.profile_fields.name) ? profile.displayName : null,
-              (passport_config.strategy.google.profile_fields.email) ? profile.emails[0].value : null,
-              (passport_config.strategy.google.profile_fields.photos) ? profile.photos[0].value : null,
-              (passport_config.strategy.google.profile_fields.locate) ? profile._json.locale : null
-            ].filter((el) => el != null));
-            // Store google profile
-            pool.query("INSERT INTO ??(??,??,??,??) VALUES(?,?,?,?)", [
-              passportTable,
-              passport_config.model.username_field || "username",
-              passport_config.model.password_field || "password",
-              googleIdField,
-              fields,
-              profile.emails[0].value.split("@")[0],
-              md5(profile.id + secret),
-              profile.id,
-              values
-            ], (err, result) => {
-              data.result = result;
-              data.google = profile;
-              cb(err, data);
-            });
-          } else { // find found
-            let users = {};
-            users.google = profile;
-            users.google.accessToken = accessToken;
-            users.google.refreshToken = refreshToken;
-            users.user = result[0];
-            cb(err, users);
+          // declare data response
+          let data = {};
+          // check strategy name for store
+          if (strategy_name == "google") {
+            if (!result[0]) { // find not found and create
+              // filter fields
+              let fields = [].concat.apply([], [
+                (passport_config.strategy.google.profile_fields.name) ? passport_config.strategy.google.profile_fields.name : null,
+                (passport_config.strategy.google.profile_fields.email) ? passport_config.strategy.google.profile_fields.email : null,
+                (passport_config.strategy.google.profile_fields.photos) ? passport_config.strategy.google.profile_fields.photos : null,
+                (passport_config.strategy.google.profile_fields.locate) ? passport_config.strategy.google.profile_fields.locate : null
+              ].filter((el) => el != null));
+              // fileter values
+              let values = [].concat.apply([], [
+                (passport_config.strategy.google.profile_fields.name) ? profile.displayName : null,
+                (passport_config.strategy.google.profile_fields.email) ? profile.emails[0].value : null,
+                (passport_config.strategy.google.profile_fields.photos) ? profile.photos[0].value : null,
+                (passport_config.strategy.google.profile_fields.locate) ? profile._json.locale : null
+              ].filter((el) => el != null));
+              // Store google profile
+              pool.query("INSERT INTO ??(??,??,??,??) VALUES(?,?,?,?)", [
+                passportTable,
+                passport_config.model.username_field || "username",
+                passport_config.model.password_field || "password",
+                googleIdField,
+                fields,
+                profile.emails[0].value.split("@")[0],
+                md5(profile.id + secret),
+                profile.id,
+                values
+              ], (err, result) => {
+                data.result = result;
+                data.google = profile;
+                cb(err, data);
+              });
+            } else { // find found
+              let users = {};
+              users.google = profile;
+              users.google.accessToken = accessToken;
+              users.google.refreshToken = refreshToken;
+              users.user = result[0];
+              cb(err, users);
+            }
+          } else if (strategy_name == "facebook") {
+
+            console.log(result)
+
           }
         }
       });          

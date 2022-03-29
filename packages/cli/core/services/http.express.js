@@ -61,8 +61,12 @@ module.exports = {
         var passport = require('passport');
         var Beech = require("../../../lib/beech");
         if (!passport_config.jwt_allow) {
+          // jwt is false
+          console.log(" - JWT:     [90mOFF[0m");
           return;
         }
+        // jwt is true
+        console.log(" - JWT:     [93mON[0m");
       } else {
         return;
       }
@@ -135,7 +139,10 @@ module.exports = {
           }
         });
       });
-      // Google Strategy
+      /**
+       * Google Strategy
+       *  
+       */
       if (passport_config.strategy.google.allow) {
         _app_.get(auth_endpoint + '/google', passport.authenticate('google', {
           scope: [
@@ -191,6 +198,18 @@ module.exports = {
             });
           }
         });
+      }
+      /**
+       * Facebook strategy
+       * 
+       */
+      if (passport_config.strategy.facebook.allow) {
+        _app_.get(auth_endpoint + '/facebook', passport.authenticate('facebook', { scope: ['email', 'pages_show_list'] }));
+        // facebook callback
+        const facebookCallback = (passport_config.strategy.facebook.callback_endpoint) ? (passport_config.strategy.facebook.callback_endpoint[0] === "/" ? passport_config.strategy.facebook.callback_endpoint : "/" + passport_config.strategy.facebook.callback_endpoint) : "/facebook/callback";
+        _app_.get(auth_endpoint + facebookCallback, passport.authenticate('facebook', (err, res) => {
+           console.log(err, res)
+        }));
       }
     } catch (error) {
       throw error;
