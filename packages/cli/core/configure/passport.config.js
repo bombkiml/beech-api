@@ -30,17 +30,16 @@ module.exports = {
   strategy: {
     /**
      * The Client Id and Client Secret needed to authenticate with Google can be set up from the Google Developers Console (https://console.developers.google.com/)
-     * You may also need to enable Google+ API in the developer console, otherwise user profile data may not be fetched. 
+     * You may also need to enable Google API in the developer console, otherwise user profile data may not be fetched. 
      * Now Google supports authentication with oAuth 2.0.
      * 
      */
     google: {
       // Allow using google strategy
       allow: false,
-      // Google ID fields, default field: `google_id`
-      google_id_field: "",
-      // User profile fields, default fields: `name`, `email`, `photos`, `locate`
-      profile_fields: {
+      // Local user profile fields, default fields: `name`, `email`, `photos`, `locate`
+      local_profile_fields: {
+        google_id: "", // Google ID fields, default field: `google_id`
         name: "name",
         email: "email",
         photos: "profile_url",
@@ -50,7 +49,9 @@ module.exports = {
       client_id: "GOOGLE_CLIENT_ID",
       client_secret: "GOOGLE_CLIENT_SECRET",
       // Callback endpoint default `/google/callback`
-      callback_endpoint: ""
+      callbackURL: "",
+      // Failure redirect to your route
+      failureRedirect: "/login"
     },
 
     /**
@@ -64,10 +65,9 @@ module.exports = {
     facebook: {
       // Allow using facebook strategy
       allow: false,
-      // Facebook ID fields, default field: `facebook_id`
-      facebook_id_field: "",
-      // User profile fields, default fields: `name`, `email`, `photos`, `locate`
-      profile_fields: {
+      // Local user profile fields, default fields: `name`, `email`, `photos`, `locate`
+      local_profile_fields: {
+        facebook_id: "", // Facebook ID fields, default field: `facebook_id`
         name: "name",
         email: "email",
         photos: "profile_url",
@@ -76,9 +76,12 @@ module.exports = {
       // Facebook development Credentials OAuth 2.0
       app_id: "FACEBOOK_APP_ID",
       app_secret: "FACEBOOK_APP_SECRET",
+      // Allow Permissions facebook profile fields: see more (https://developers.facebook.com/docs/graph-api/reference/v13.0/user#readperms)
+      profileFieldsAllow: [ 'id', 'displayName', 'name', 'photos', 'email', 'location' ],
       // Callback endpoint default `/facebook/callback`
-      callback_endpoint: ""
+      callbackURL: "",
+      // Failure redirect to your route
+      failureRedirect: "/login"
     },
-
   }
 }

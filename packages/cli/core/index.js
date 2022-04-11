@@ -42,7 +42,7 @@ const authPassport = require("./auth/Passport");
 const passport = require("passport");
 _app_.use(passport.initialize());
 _app_.use(passport.session());
-passport.serializeUser((user, done) =>{
+passport.serializeUser((user, done) => {
   done(null, user);
 });
 passport.deserializeUser((user, done) => {
@@ -69,10 +69,10 @@ walker.on("end", () => {
 // Initialize the application
 init = async (jsfiles) => {
   try {
-    await dbConnect.mySqlConnection();
-    await httpExpress.expressStart();
-    await authPassport.init();
-    await fileWalk.fileWalk(jsfiles);
+    await new Promise((resolve) => resolve(dbConnect.mySqlConnection()));
+    await new Promise((resolve) => resolve(httpExpress.expressStart()));
+    await new Promise((resolve) => resolve(authPassport.init()));
+    await new Promise((resolve) => resolve(fileWalk.fileWalk(jsfiles)));
   } catch (error) {
     throw error;
   }

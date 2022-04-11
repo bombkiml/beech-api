@@ -151,8 +151,8 @@ module.exports = {
           ]
         }));
         // google auth callback
-        const googleCallback = (passport_config.strategy.google.callback_endpoint) ? (passport_config.strategy.google.callback_endpoint[0] === "/" ? passport_config.strategy.google.callback_endpoint : "/" + passport_config.strategy.google.callback_endpoint) : "/google/callback";
-        _app_.get(auth_endpoint + googleCallback, passport.authenticate('google'), (req, res) => {
+        const googleCallback = (passport_config.strategy.google.callbackURL) ? (passport_config.strategy.google.callbackURL[0] === "/" ? passport_config.strategy.google.callbackURL : "/" + passport_config.strategy.google.callbackURL) : "/google/callback";
+        _app_.get(auth_endpoint + googleCallback, passport.authenticate('google', { failureRedirect: passport_config.strategy.google.failureRedirect, failureMessage: true }), (req, res) => {
           if (typeof req.user.user !== 'undefined') {
             // declare user for sign JWT
             let user = JSON.parse(JSON.stringify(req.user.user));
@@ -169,7 +169,7 @@ module.exports = {
             });
           } else {
             let condUser = {};
-            condUser[(passport_config.strategy.google.google_id_field) ? passport_config.strategy.google.google_id_field : "google_id"] = req.user.google.id;
+            condUser[(passport_config.strategy.google.local_profile_fields.google_id) ? passport_config.strategy.google.local_profile_fields.google_id : "google_id"] = req.user.google.id;
             Beech.findOne(passport_config.model.table || "users", condUser, (err, result) => {
               if (err) {
                 res.status(500).json({
@@ -206,10 +206,53 @@ module.exports = {
       if (passport_config.strategy.facebook.allow) {
         _app_.get(auth_endpoint + '/facebook', passport.authenticate('facebook', { scope: ['email', 'pages_show_list'] }));
         // facebook callback
-        const facebookCallback = (passport_config.strategy.facebook.callback_endpoint) ? (passport_config.strategy.facebook.callback_endpoint[0] === "/" ? passport_config.strategy.facebook.callback_endpoint : "/" + passport_config.strategy.facebook.callback_endpoint) : "/facebook/callback";
-        _app_.get(auth_endpoint + facebookCallback, passport.authenticate('facebook', (err, res) => {
-           console.log(err, res)
-        }));
+        const facebookCallback = (passport_config.strategy.facebook.callbackURL) ? (passport_config.strategy.facebook.callbackURL[0] === "/" ? passport_config.strategy.facebook.callbackURL : "/" + passport_config.strategy.facebook.callbackURL) : "/facebook/callback";
+        _app_.get(auth_endpoint + facebookCallback, passport.authenticate('facebook', { failureRedirect: passport_config.strategy.facebook.failureRedirect, failureMessage: true }), (req, res) => {
+          if (typeof req.user.user !== 'undefined') {
+            // declare user for sign JWT
+            let user = JSON.parse(JSON.stringify(req.user.user));
+            const accessToken = jwt.sign(user, passport_config.secret, {
+              expiresIn: passport_config.token_expired
+            });
+            // response JWT
+            res.status(200).json({
+              code: 200,
+              status: "AUTHORIZED",
+              message: "success.",
+              user: req.user,
+              accessToken
+            });
+          } else {
+            let condUser = {};
+            condUser[(passport_config.strategy.facebook.local_profile_fields.facebook_id) ? passport_config.strategy.facebook.local_profile_fields.facebook_id : "facebook_id"] = req.user.facebook.id;
+            Beech.findOne(passport_config.model.table || "users", condUser, (err, result) => {
+              if (err) {
+                res.status(500).json({
+                  code: 500,
+                  status: "INTERNAL_SERVER_ERR",
+                  message: "Internal server error.",
+                  error: err
+                });
+              } else {
+                let user = JSON.parse(JSON.stringify(result[0]));
+                const accessToken = jwt.sign(user, passport_config.secret, {
+                  expiresIn: passport_config.token_expired
+                });
+                // response JWT
+                res.status(201).json({
+                  code: 201,
+                  status: "AUTHORIZED",
+                  message: "success.",
+                  user: {
+                    facebook: req.user.facebook,
+                    user
+                  },
+                  accessToken
+                });
+              }
+            });
+          }
+        });
       }
     } catch (error) {
       throw error;

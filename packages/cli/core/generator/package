@@ -4,11 +4,11 @@
   "description": "The project is powered by Beech API framework",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon ./node_modules/beech-api/packages/cli/beech",
+    "start": "npx run ./node_modules/beech-api/packages/cli/beech",
     "test": "node ./node_modules/jest/bin/jest __tests__ -o --watch --config"
   },
   "dependencies": {
-    "beech-api": "^3.4.2"
+    "beech-api": "^3.4.5"
   },
   "devDependencies": {
     "jest": "^25.2.7"

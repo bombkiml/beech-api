@@ -213,6 +213,9 @@ module.exports = {
 
   // allow using with app_secret requset
   app_secret_allow: false
+
+  ...
+
 };
 ```
 
@@ -259,16 +262,128 @@ You can easy management `users` data with Beech helper just define below:
   });
 ```
 
-## API with Official strategies
+### # Google Strategy
 
+The Google OAuth 2.0 authentication strategy authenticates users using a Google account and OAuth 2.0 tokens. The strategy requires a verify callback, which accepts these credentials and calls done providing a user, as well as options specifying a client ID, client secret, and callback URL.
 
+Before your application can make use of Sign In With Google, you must register your app with Google. This can be done in the [APIs & Services](https://console.cloud.google.com/apis) page of the [Google Cloud Platform console.](https://console.cloud.google.com/) Once registered, your app will be issued a client ID and secret which will be used in the strategy configuration.
 
+Go to open file ``passport.config.js`` and go to ``google strategy`` then turn allow Google Strategy is ``allow: true`` something like this.
 
+```js
+  // passport.config.js
 
+  module.exports = {
+    
+    ...
 
+    strategy: {
 
+      google: {
+        // Allow using google strategy
+        allow: true,
+        // Local user profile fields, default fields: `name`, `email`, `photos`, `locate`
+        local_profile_fields: {
+          google_id: "", // Google ID fields, default field: `google_id`
+          name: "name",
+          email: "email",
+          photos: "profile_url",
+          locate: "" // If not storing set to null
+        },
+        // Google development Credentials OAuth 2.0 Client IDs
+        client_id: "GOOGLE_CLIENT_ID",
+        client_secret: "GOOGLE_CLIENT_SECRET",
+        // Callback endpoint default `/google/callback`
+        callbackURL: "",
+        // Failure redirect to your route
+        failureRedirect: "/login"
+      }
+    }
 
+    ...
 
+  }
+```
+
+The above code is a configures and registers the Google Strategy.
+
+- ``allow`` : Turn on/off the Google Strategy config type of ``boolean`` switch by ``true/false``.
+- ``google_id`` : Local Google ID field for store Google ID in my local database default field is ``google_id``.
+- ``local_profile_fields`` : Local Profile fields for store Google user details.
+- ``client_id`` and ``client_secret`` : The options to the Google Strategy constructor must include a ``clientID`` and ``clientSecret``, the values of which are set to the client ID and secret that were obtained when registering your application.
+- ``callbackURL`` : When registering your application. A callbackURL must also be included. Google will redirect users to this location after they have authenticated.
+- ``failureRedirect`` : When registering your application somthing failure it's redirect to that.
+
+Place a button on the application's login page, prompting the user to sign in with Google.
+
+```html
+<a href="/authentication/google" class="button">Sign in with Google</a>
+```
+
+:grey_question: **Note:** The URL "``/authentication``" will be follow by ``auth_endpoint`` when you custom it.
+
+### # Facebook Strategy
+
+Facebook Login allows users to sign in using their Facebook account. Support for Faceboook Login is provided by the ``passport-facebook`` package.
+
+Before your application can make use of Facebook Login, you must register your app with Facebook. This can be done in the [App dashboard](https://developers.facebook.com/apps) at [Facebook for Developers.](https://developers.facebook.com/) Once registered, your app will be issued an app ID and secret which will be used in the strategy configuration.
+
+Go to open file ``passport.config.js`` and go to ``facebook strategy`` then turn allow Facebook Strategy is ``allow: true`` something like this.
+
+```js
+  // passport.config.js
+
+  module.exports = {
+    
+    ...
+
+    strategy: {
+
+      facebook: {
+        // Allow using facebook strategy
+        allow: true,
+        // Local user profile fields, default fields: `name`, `email`, `photos`, `locate`
+        local_profile_fields: {
+          facebook_id: "", // Facebook ID fields, default field: `facebook_id`
+          name: "name",
+          email: "email",
+          photos: "profile_url",
+          locate: "" // If not storing set to null
+        },
+        // Facebook development Credentials OAuth 2.0
+        app_id: "FACEBOOK_APP_ID",
+        app_secret: "FACEBOOK_APP_SECRET",
+        // Allow Permissions facebook profile fields: see more (https://developers.facebook.com/docs/graph-api/reference/v13.0/user#readperms)
+        profileFieldsAllow: [ 'id', 'displayName', 'name', 'photos', 'email', 'location' ],
+        // Callback endpoint default `/facebook/callback`
+        callbackURL: "",
+        // Failure redirect to your route
+        failureRedirect: "/login"
+      }
+    }
+
+    ...
+
+  }
+```
+
+The above code is a configures and registers the Facebook Strategy.
+
+- ``allow`` : Turn on/off the Facebook Strategy config type of ``boolean`` switch by ``true/false``.
+- ``facebook_id`` : Local Facebook ID field for store Facebook ID in my local database default field is ``facebook_id``.
+- ``local_profile_fields`` : Local Profile fields for store Facebook user details.
+- ``app_id`` and ``app_secret`` : The options to the Facebook Strategy must include an app ID and secret. you must register your app with Facebook. This can be done in the [App dashboard](https://developers.facebook.com/apps) at [Facebook for Developers.](https://developers.facebook.com/) Once registered, your app will be issued an ``app ID`` and ``secret`` which will be used in the strategy configuration.
+- ``profileFieldsAllow`` : Permissions with Facebook Login. You must allow Permissions facebook profile fields: see more (https://developers.facebook.com/docs/graph-api/reference/v13.0/user#readperms)
+- ``callbackURL`` : When registering your application. A callbackURL must also be included. Facebook will redirect users to this location after they have authenticated.
+- ``failureRedirect`` : When registering your application somthing failure it's redirect to that.
+
+Place a button on the application's login page, prompting the user to sign in with Facebook.
+
+```html
+<a href="/authentication/facebook" class="button">Log In With Facebook</a>
+```
+
+:grey_question: **Note:** The URL "``/authentication``" will be follow by ``auth_endpoint`` when you custom it.
 
 ## Databases managements
 
