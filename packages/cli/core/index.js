@@ -52,13 +52,17 @@ passport.deserializeUser((user, done) => {
 const walk = require("walk");
 let jsfiles = [];
 let walker = walk.walk(appRoot + "/src/endpoints", { followLinks: false });
+let checkOnceAddon = true;
 walker.on("file", (root, stat, next) => {
   jsfiles.push(root + "/" + stat.name);
   // check add-on file exists ?
-  if (fs.existsSync(root + "/../Add-on.js")) {
-    if (_config_.addOn) {
-      jsfiles.push(root + "/../Add-on.js");
+  if (checkOnceAddon) {
+    if (fs.existsSync(root + "/../Add-on.js")) {
+      if (_config_.addOn) {
+        jsfiles.push(root + "/../Add-on.js");
+      }
     }
+    checkOnceAddon = false;
   }
   next();
 });

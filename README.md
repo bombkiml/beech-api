@@ -262,7 +262,13 @@ You can easy management `users` data with Beech helper just define below:
   });
 ```
 
-### # Google Strategy
+## Beech with Official Strategy
+
+Latest supported with ``Google`` and ``Facebook`` Strategy.
+
+
+### Google Strategy
+
 
 The Google OAuth 2.0 authentication strategy authenticates users using a Google account and OAuth 2.0 tokens. The strategy requires a verify callback, which accepts these credentials and calls done providing a user, as well as options specifying a client ID, client secret, and callback URL.
 
@@ -273,36 +279,35 @@ Go to open file ``passport.config.js`` and go to ``google strategy`` then turn a
 ```js
   // passport.config.js
 
-  module.exports = {
-    
-    ...
+  ...
 
-    strategy: {
+  strategy: {
 
-      google: {
-        // Allow using google strategy
-        allow: true,
-        // Local user profile fields, default fields: `name`, `email`, `photos`, `locate`
-        local_profile_fields: {
-          google_id: "", // Google ID fields, default field: `google_id`
-          name: "name",
-          email: "email",
-          photos: "profile_url",
-          locate: "" // If not storing set to null
-        },
-        // Google development Credentials OAuth 2.0 Client IDs
-        client_id: "GOOGLE_CLIENT_ID",
-        client_secret: "GOOGLE_CLIENT_SECRET",
-        // Callback endpoint default `/google/callback`
-        callbackURL: "",
-        // Failure redirect to your route
-        failureRedirect: "/login"
-      }
+    google: {
+
+      // Allow using google strategy
+      allow: true,
+
+      // Local user profile fields, default fields name: `name`, `email`, `photos`, `locate`
+      local_profile_fields: {
+        google_id: "google_id", // Google ID field, default field name: `google_id`
+        name: "name",
+        email: "email",
+        photos: "profile_url",
+        locate: "" // If you not store set to null
+      },
+      // Google development Credentials OAuth 2.0 Client IDs
+      client_id: "GOOGLE_CLIENT_ID",
+      client_secret: "GOOGLE_CLIENT_SECRET",
+      // Callback endpoint default `/google/callback`
+      callbackURL: "",
+      // Failure redirect to your route
+      failureRedirect: "/login"
     }
-
-    ...
-
   }
+
+  ...
+    
 ```
 
 The above code is a configures and registers the Google Strategy.
@@ -322,7 +327,9 @@ Place a button on the application's login page, prompting the user to sign in wi
 
 :grey_question: **Note:** The URL "``/authentication``" will be follow by ``auth_endpoint`` when you custom it.
 
-### # Facebook Strategy
+
+### Facebook Strategy
+
 
 Facebook Login allows users to sign in using their Facebook account. Support for Faceboook Login is provided by the ``passport-facebook`` package.
 
@@ -333,38 +340,37 @@ Go to open file ``passport.config.js`` and go to ``facebook strategy`` then turn
 ```js
   // passport.config.js
 
-  module.exports = {
-    
-    ...
+  ...
 
-    strategy: {
+  strategy: {
 
-      facebook: {
-        // Allow using facebook strategy
-        allow: true,
-        // Local user profile fields, default fields: `name`, `email`, `photos`, `locate`
-        local_profile_fields: {
-          facebook_id: "", // Facebook ID fields, default field: `facebook_id`
-          name: "name",
-          email: "email",
-          photos: "profile_url",
-          locate: "" // If not storing set to null
-        },
-        // Facebook development Credentials OAuth 2.0
-        app_id: "FACEBOOK_APP_ID",
-        app_secret: "FACEBOOK_APP_SECRET",
-        // Allow Permissions facebook profile fields: see more (https://developers.facebook.com/docs/graph-api/reference/v13.0/user#readperms)
-        profileFieldsAllow: [ 'id', 'displayName', 'name', 'photos', 'email', 'location' ],
-        // Callback endpoint default `/facebook/callback`
-        callbackURL: "",
-        // Failure redirect to your route
-        failureRedirect: "/login"
-      }
+    facebook: {
+
+      // Allow using facebook strategy
+      allow: true,
+
+      // Local user profile fields, default fields name: `name`, `email`, `photos`, `locate`
+      local_profile_fields: {
+        facebook_id: "facebook_id", // Facebook ID field, default field name: `facebook_id`
+        name: "name",
+        email: "email",
+        photos: "profile_url",
+        locate: "" // If you not store set to null
+      },
+      // Facebook development Credentials OAuth 2.0
+      app_id: "FACEBOOK_APP_ID",
+      app_secret: "FACEBOOK_APP_SECRET",
+      // Allow Permissions facebook profile fields: see more (https://developers.facebook.com/docs/graph-api/reference/v13.0/user#readperms)
+      profileFieldsAllow: [ 'id', 'displayName', 'name', 'photos', 'email', 'location' ],
+      // Callback endpoint default `/facebook/callback`
+      callbackURL: "",
+      // Failure redirect to your route
+      failureRedirect: "/login"
     }
-
-    ...
-
   }
+
+  ...
+
 ```
 
 The above code is a configures and registers the Facebook Strategy.
@@ -384,6 +390,8 @@ Place a button on the application's login page, prompting the user to sign in wi
 ```
 
 :grey_question: **Note:** The URL "``/authentication``" will be follow by ``auth_endpoint`` when you custom it.
+
+
 
 ## Databases managements
 
@@ -537,6 +545,7 @@ describe("Test endpoint : " + endpoint, () => {
 });
 ```
 
+
 ## Implementation
   
 ### # Implement with [PM2](https://pm2.keymetrics.io/)
@@ -581,8 +590,7 @@ The docker build command builds an image from a Dockerfile and a context. The bu
 $ docker build -t <imageName> .
 ```
 
-:grey_question: Tips: You can specify a repository and tag at which to save the new image : ``` $ docker build -t <imageName>:<tags> . ``` |
------------- |
+:grey_question: **Note:** You can specify a repository and tag at which to save the new image : ``` $ docker build -t <imageName>:<tags> . ```
 
 - **Run docker**
 
@@ -595,9 +603,10 @@ $ docker build -t <imageName> .
 
   - **Create Docker Swarm (Cluster)**
   ```sh
-  # initiate swarm
-  $ docker swarm init  
-  # run docker service
+  # Initiate swarm
+  $ docker swarm init
+  
+  # Run docker service
   $ docker service create --replicas <instances> --name <containerName> --publish 9000:9000 <imageName>
   ```
 

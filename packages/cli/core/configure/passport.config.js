@@ -37,13 +37,13 @@ module.exports = {
     google: {
       // Allow using google strategy
       allow: false,
-      // Local user profile fields, default fields: `name`, `email`, `photos`, `locate`
+      // Local user profile fields, default fields name: `name`, `email`, `photos`, `locate`
       local_profile_fields: {
-        google_id: "", // Google ID fields, default field: `google_id`
+        google_id: "google_id", // Google ID field, default field name: `google_id`
         name: "name",
         email: "email",
         photos: "profile_url",
-        locate: "" // If not storing set to null
+        locate: "" // If you not store set to null
       },
       // Google development Credentials OAuth 2.0 Client IDs
       client_id: "GOOGLE_CLIENT_ID",
@@ -65,13 +65,13 @@ module.exports = {
     facebook: {
       // Allow using facebook strategy
       allow: false,
-      // Local user profile fields, default fields: `name`, `email`, `photos`, `locate`
+      // Local user profile fields, default fields name: `name`, `email`, `photos`, `locate`
       local_profile_fields: {
-        facebook_id: "", // Facebook ID fields, default field: `facebook_id`
+        facebook_id: "facebook_id", // Facebook ID field, default field name: `facebook_id`
         name: "name",
         email: "email",
         photos: "profile_url",
-        locate: "" // If not storing set to null
+        locate: "" // If you not store set to null
       },
       // Facebook development Credentials OAuth 2.0
       app_id: "FACEBOOK_APP_ID",

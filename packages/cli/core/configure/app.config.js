@@ -15,7 +15,7 @@ module.exports = {
     app_secret: ["2cc118cd91b52ff99e3c005ddced76fb"]
   },
 
-  // Add-on it's work when enable. You can enable add-on by run CMD `$ beech add-on init`.
+  // Add-on it's work when enabled. You can enable add-on by run CMD `$ beech add-on init`.
   addOn: true,
 
   /**
