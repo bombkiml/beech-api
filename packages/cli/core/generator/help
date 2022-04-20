@@ -13,4 +13,5 @@ The following commands are available:
                                   for require model file(s) in generate processing
   $ beech make <model> --model    Create a new models file
   $ beech passport init           Initialize authentication with passport-jwt
+  $ beech add-on init             Initialize add-on file
   

@@ -1,3 +1,4 @@
+const fs = require("fs");
 const appRoot = require("app-root-path");
 const moduleAlias = require("module-alias");
 moduleAlias.addAlias("@", appRoot + "/src");
@@ -8,6 +9,7 @@ global.endpoint = _express_.Router();
 global._mysql_ = require("mysql");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
+const expressSession = require("express-session");
 const expressValidator = require("express-validator");
 const globalVariable = require(appRoot + "/global.config.js");
 globalVariable.init();
@@ -20,6 +22,11 @@ const fileWalk = require("./file-walk/file-walk");
 _app_.use(bodyParser.json());
 _app_.use(bodyParser.urlencoded({ extended: true }));
 _app_.use(cookieParser());
+_app_.use(expressSession({
+  secret: 'keyboard cat',
+  resave: true,
+  saveUninitialized: true
+}));
 _app_.use(expressValidator());
 _app_.use(cors({ origin: true, credentials: true }));
 // Allow Origin
@@ -30,26 +37,43 @@ _app_.all("/", (req, res, next) => {
   res.header("Content-Type", "application/json; charset=utf-8");
   next();
 });
-// passport
-const passport = require("./auth/Passport");
+// passport initialization
+const authPassport = require("./auth/Passport");
+const passport = require("passport");
+_app_.use(passport.initialize());
+_app_.use(passport.session());
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+passport.deserializeUser((user, done) => {
+  done(null, user);
+});
 // Read folder in ./src/endpoints/*
 const walk = require("walk");
 let jsfiles = [];
 let walker = walk.walk(appRoot + "/src/endpoints", { followLinks: false });
+// check add-on file exists ?
+if (fs.existsSync(appRoot + "/src/Add-on.js")) {
+  if (_config_.addOn) {
+    jsfiles.push(appRoot + "/src/Add-on.js");
+  }
+}
+// Walk file on push
 walker.on("file", (root, stat, next) => {
   jsfiles.push(root + "/" + stat.name);
   next();
 });
+// Walking
 walker.on("end", () => {
   init(jsfiles);
 });
 // Initialize the application
 init = async (jsfiles) => {
   try {
-    await httpExpress.expressStart();
-    await dbConnect.mySqlConnection();
-    await passport.init();
-    await fileWalk.fileWalk(jsfiles);
+    await new Promise((resolve) => resolve(dbConnect.mySqlConnection()));
+    await new Promise((resolve) => resolve(httpExpress.expressStart()));
+    await new Promise((resolve) => resolve(authPassport.init()));
+    await new Promise((resolve) => resolve(fileWalk.fileWalk(jsfiles)));
   } catch (error) {
     throw error;
   }

@@ -11,9 +11,12 @@ module.exports = {
   main_config: {
     app_port: 9000,
     app_host: "localhost",
-    client_host: "https://example.com",
+    client_host: "http://0.0.0.0:9000",
     app_secret: ["2cc118cd91b52ff99e3c005ddced76fb"]
   },
+
+  // Add-on it's work when enabled. You can enable add-on by run CMD `$ beech add-on init`.
+  addOn: true,
 
   /**
    * Database configuration (mutiple connection) currenty support for MySQL

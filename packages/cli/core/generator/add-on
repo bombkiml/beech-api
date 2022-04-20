@@ -1,0 +1,9 @@
+//const Users = require("@/models/Users");
+
+exports.init = () => {
+
+  //Users.findAll().then(console.log)
+
+  console.log("Add-on is work!")
+
+}

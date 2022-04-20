@@ -213,6 +213,9 @@ module.exports = {
 
   // allow using with app_secret requset
   app_secret_allow: false
+
+  ...
+
 };
 ```
 
@@ -258,6 +261,137 @@ You can easy management `users` data with Beech helper just define below:
     if (err) throw err;
   });
 ```
+
+## Beech with Official Strategy
+
+Latest supported with ``Google`` and ``Facebook`` Strategy.
+
+
+### Google Strategy
+
+
+The Google OAuth 2.0 authentication strategy authenticates users using a Google account and OAuth 2.0 tokens. The strategy requires a verify callback, which accepts these credentials and calls done providing a user, as well as options specifying a client ID, client secret, and callback URL.
+
+Before your application can make use of Sign In With Google, you must register your app with Google. This can be done in the [APIs & Services](https://console.cloud.google.com/apis) page of the [Google Cloud Platform console.](https://console.cloud.google.com/) Once registered, your app will be issued a client ID and secret which will be used in the strategy configuration.
+
+Go to open file ``passport.config.js`` and go to ``google strategy`` then turn allow Google Strategy is ``allow: true`` something like this.
+
+```js
+  // passport.config.js
+
+  ...
+
+  strategy: {
+
+    google: {
+
+      // Allow using google strategy
+      allow: true,
+
+      // Local user profile fields, default fields name: `name`, `email`, `photos`, `locate`
+      local_profile_fields: {
+        google_id: "google_id", // Google ID field, default field name: `google_id`
+        name: "name",
+        email: "email",
+        photos: "profile_url",
+        locate: "" // If you not store set to null
+      },
+      // Google development Credentials OAuth 2.0 Client IDs
+      client_id: "GOOGLE_CLIENT_ID",
+      client_secret: "GOOGLE_CLIENT_SECRET",
+      // Callback endpoint default `/google/callback`
+      callbackURL: "",
+      // Failure redirect to your route
+      failureRedirect: "/login"
+    }
+  }
+
+  ...
+    
+```
+
+The above code is a configures and registers the Google Strategy.
+
+- ``allow`` : Turn on/off the Google Strategy config type of ``boolean`` switch by ``true/false``.
+- ``google_id`` : Local Google ID field for store Google ID in my local database default field is ``google_id``.
+- ``local_profile_fields`` : Local Profile fields for store Google user details.
+- ``client_id`` and ``client_secret`` : The options to the Google Strategy constructor must include a ``clientID`` and ``clientSecret``, the values of which are set to the client ID and secret that were obtained when registering your application.
+- ``callbackURL`` : When registering your application. A callbackURL must also be included. Google will redirect users to this location after they have authenticated.
+- ``failureRedirect`` : When registering your application somthing failure it's redirect to that.
+
+Place a button on the application's login page, prompting the user to sign in with Google.
+
+```html
+<a href="/authentication/google" class="button">Sign in with Google</a>
+```
+
+:grey_question: **Note:** The URL "``/authentication``" will be follow by ``auth_endpoint`` when you custom it.
+
+
+### Facebook Strategy
+
+
+Facebook Login allows users to sign in using their Facebook account. Support for Faceboook Login is provided by the ``passport-facebook`` package.
+
+Before your application can make use of Facebook Login, you must register your app with Facebook. This can be done in the [App dashboard](https://developers.facebook.com/apps) at [Facebook for Developers.](https://developers.facebook.com/) Once registered, your app will be issued an app ID and secret which will be used in the strategy configuration.
+
+Go to open file ``passport.config.js`` and go to ``facebook strategy`` then turn allow Facebook Strategy is ``allow: true`` something like this.
+
+```js
+  // passport.config.js
+
+  ...
+
+  strategy: {
+
+    facebook: {
+
+      // Allow using facebook strategy
+      allow: true,
+
+      // Local user profile fields, default fields name: `name`, `email`, `photos`, `locate`
+      local_profile_fields: {
+        facebook_id: "facebook_id", // Facebook ID field, default field name: `facebook_id`
+        name: "name",
+        email: "email",
+        photos: "profile_url",
+        locate: "" // If you not store set to null
+      },
+      // Facebook development Credentials OAuth 2.0
+      app_id: "FACEBOOK_APP_ID",
+      app_secret: "FACEBOOK_APP_SECRET",
+      // Allow Permissions facebook profile fields: see more (https://developers.facebook.com/docs/graph-api/reference/v13.0/user#readperms)
+      profileFieldsAllow: [ 'id', 'displayName', 'name', 'photos', 'email', 'location' ],
+      // Callback endpoint default `/facebook/callback`
+      callbackURL: "",
+      // Failure redirect to your route
+      failureRedirect: "/login"
+    }
+  }
+
+  ...
+
+```
+
+The above code is a configures and registers the Facebook Strategy.
+
+- ``allow`` : Turn on/off the Facebook Strategy config type of ``boolean`` switch by ``true/false``.
+- ``facebook_id`` : Local Facebook ID field for store Facebook ID in my local database default field is ``facebook_id``.
+- ``local_profile_fields`` : Local Profile fields for store Facebook user details.
+- ``app_id`` and ``app_secret`` : The options to the Facebook Strategy must include an app ID and secret. you must register your app with Facebook. This can be done in the [App dashboard](https://developers.facebook.com/apps) at [Facebook for Developers.](https://developers.facebook.com/) Once registered, your app will be issued an ``app ID`` and ``secret`` which will be used in the strategy configuration.
+- ``profileFieldsAllow`` : Permissions with Facebook Login. You must allow Permissions facebook profile fields: see more (https://developers.facebook.com/docs/graph-api/reference/v13.0/user#readperms)
+- ``callbackURL`` : When registering your application. A callbackURL must also be included. Facebook will redirect users to this location after they have authenticated.
+- ``failureRedirect`` : When registering your application somthing failure it's redirect to that.
+
+Place a button on the application's login page, prompting the user to sign in with Facebook.
+
+```html
+<a href="/authentication/facebook" class="button">Log In With Facebook</a>
+```
+
+:grey_question: **Note:** The URL "``/authentication``" will be follow by ``auth_endpoint`` when you custom it.
+
+
 
 ## Databases managements
 
@@ -311,6 +445,8 @@ Before continuing further we will need to tell CLI how to connect to database. T
   }
 }
 ```
+
+:grey_question: **Note:** The database connect default port 3306 if you another port you can add object ``port`` in config.
 
 :grey_question: **Note:** If your database doesn't exists yet, you can just call `npx sequelize-cli db:create` command. With proper access it will create that database for you.
 
@@ -408,6 +544,72 @@ describe("Test endpoint : " + endpoint, () => {
   });
 });
 ```
+
+
+## Implementation
+  
+### # Implement with [PM2](https://pm2.keymetrics.io/)
+[PM2](https://pm2.keymetrics.io/) is a daemon process manager that will help you manage and keep your application online. Getting started with PM2 is straightforward, it is offered as a simple and intuitive CLI, installable via [NPM](https://www.npmjs.com/).
+
+```sh
+# Start service as standalone
+$ pm2 start ./node_modules/beech-api/packages/cli/beech --name <serviceName>
+
+# OR
+
+# Start service as cluster mode
+$ pm2 start ./node_modules/beech-api/packages/cli/beech --name <serviceName> -i <instances>
+```
+
+### # Implement with [Docker](https://www.docker.com)
+
+[Docker](https://www.docker.com) is an open platform for developing, shipping, and running applications. Docker enables you to separate your applications from your infrastructure so you can deliver software quickly.
+
+- **Create Dockerfile**
+
+Docker builds images automatically by reading the instructions from a Dockerfile -- a text file that contains all commands, in order, needed to build a given image. A Dockerfile adheres to a specific format and set of instructions which you can find at [Dockerfile reference](https://docs.docker.com/engine/reference/builder/).
+
+```js
+// Dockerfile
+
+FROM node:12.18-alpine
+ENV NODE_ENV=production
+WORKDIR /usr/src/api
+COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
+RUN npm install --production --silent && mv node_modules .
+COPY . .
+EXPOSE 9000
+CMD ["node", "./node_modules/beech-api/packages/cli/beech"]
+```
+
+- **Docker build image**
+
+The docker build command builds an image from a Dockerfile and a context. The build’s context is the set of files at a specified location ```PATH``` or ```URL```. The PATH is a directory on your local filesystem. The URL is a Git repository location.
+
+```sh
+$ docker build -t <imageName> .
+```
+
+:grey_question: **Note:** You can specify a repository and tag at which to save the new image : ``` $ docker build -t <imageName>:<tags> . ```
+
+- **Run docker**
+
+  After create ``image`` you can run docker engine following :
+
+  - **Docker Container (Standalone)**
+  ```sh
+  $ docker run -d -p 9000:9000 --name <containerName> <imageName>
+  ```
+
+  - **Create Docker Swarm (Cluster)**
+  ```sh
+  # Initiate swarm
+  $ docker swarm init
+  
+  # Run docker service
+  $ docker service create --replicas <instances> --name <containerName> --publish 9000:9000 <imageName>
+  ```
+
 
 ## Bonus
 
