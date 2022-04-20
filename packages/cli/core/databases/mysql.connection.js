@@ -54,6 +54,15 @@ mysqlInProcess = (mysql_config, headDbShow, cb) => {
           cb(err, null);
         }
       });
+    } else {
+      if (mysql_config.length > 0) {
+        mysqlInProcess(mysql_config, headDbShow, e => {
+          cb(e, true);
+        });
+      } else {
+        // perfectly recursive
+        cb(null, true);
+      }
     }
   } catch (error) {
     cb(error, null);

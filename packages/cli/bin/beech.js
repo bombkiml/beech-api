@@ -74,9 +74,9 @@ class Beech {
     return new Promise((resolve, reject) => {
       try {
         let lineStdout = "";
-        let processYarn = this.cmd.get('cd ' + argument + ' && yarn install', (err, data) => {
+        let processYarn = this.cmd.get('cd ' + argument + ' && npm install', (err, data) => {
           if (err) {
-            this.cmd.get('cd ' + argument + ' && npm install', (err, data) => {
+            this.cmd.get('cd ' + argument + ' && yarn install', (err, data) => {
               if (err) { throw err }
               resolve(data);
               this.successfully();
