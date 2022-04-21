@@ -87,6 +87,7 @@ The following commands are available:
                                   for require model file(s) in generate processing
   $ beech make <model> --model    Create a new models file
   $ beech passport init           Initialize authentication with passport-jwt
+  $ beech add-on init             Initialize add-on file
 ```
 
 ## Endpoints
@@ -109,6 +110,8 @@ So, you might create new endpoints with constant `endpoint` object variable in `
     endpoint.post('/fruits', (req, res) => {
       ...
     });
+
+    ...
 
   }
 ```
@@ -165,6 +168,7 @@ Example text editor helper:
     textTrim(text) {
       return text.trim();
     },
+
     ...
 
   };
@@ -211,7 +215,7 @@ module.exports = {
     fields: []
   },
 
-  // allow using with app_secret requset
+  // allow using with app_secret requset (Every request need app_secret parameter)
   app_secret_allow: false
 
   ...
@@ -457,10 +461,10 @@ Create `model` use `model:generate` command. This command requires two options.
 - `name`, Name of the model
 - `attributes`, List of model attributes
 
-Let's create a model named example `User`.
+Let's create a model name example `User`. See more about of [Datatypes](https://sequelize.org/v5/manual/data-types.html)
 
 ```sh
-$ npx sequelize-cli model:generate --name User --attributes firstName:string,lastName:string,email:string
+$ npx sequelize-cli model:generate --name User --attributes id:integer,name:string,email:string,created_at:date
 ```
 
 ### # Migrations Up and Down
