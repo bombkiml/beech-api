@@ -38,8 +38,6 @@ Beech API requires Node.js version 8.9 or above (10.13.0+ recommended). You can 
 
 ```sh
 $ npm install beech-api -g
-# OR
-$ yarn global add beech-api
 ```
 
 After installation, you will have access to the `beech-app` binary in your command line.
@@ -77,17 +75,18 @@ Usage:
   $ beech [options] [arguments] <special>
 
 Options:
-  ?|-h, --help                    Display this help message
-  -v, --version                   Display this application version
+  ?|-h, --help                    Display this help message.
+  -v, --version                   Display this application version.
 
 The following commands are available:
 
   $ beech make <endpoint>         Create a new endpoints and unit test file,
                                   You might using <special> `--require=Model1,Model2,..`
-                                  for require model file(s) in generate processing
-  $ beech make <model> --model    Create a new models file
-  $ beech passport init           Initialize authentication with passport-jwt
-  $ beech add-on init             Initialize add-on file
+                                  for require model file(s) in generate processing.
+  $ beech make <model> --model    Create a new models file.
+  $ beech make <helper> --helper  Create a new Helpers file.
+  $ beech passport init           Initialize authentication with passport-jwt.
+  $ beech add-on init             Initialize add-on file.
 ```
 
 ## Endpoints
@@ -95,6 +94,12 @@ The following commands are available:
 The `endpoints` keep the endpoints basic request files currently support `GET`, `POST`, `PUT`, `PATCH` and `DELETE`.
 
 So, you might create new endpoints with constant `endpoint` object variable in `src/endpoints/` folder and file neme must be end with `-endpoints.js`
+
+``sh
+$ beech make endpointName
+``
+
+**Example:** Fruits endpoints.
 
 ```js
   // fruits-endpoints.js
@@ -121,6 +126,12 @@ So, you might create new endpoints with constant `endpoint` object variable in `
 ## Models
 
 The `models` keep the files of function(s) for retriving, inserting, updating and deleting with SQL data. for understanding you might make model name same your table name in `src/models` folder.
+
+``sh
+$ beech make modelName --model
+``
+
+**Example:** Fruits model.
 
 ```js
   // Fruits.js
@@ -154,7 +165,11 @@ The `models` keep the files of function(s) for retriving, inserting, updating an
 
 The `helpers` keep the files of functions for process specific something in the project. So, you might create the `helpers` in path `src/helpers` folder.
 
-Example text editor helper:
+``sh
+$ beech make modelName --model
+``
+
+**Example:** Text editor helper.
 
 ```js
   // TextEditor.js
@@ -458,13 +473,13 @@ Before continuing further we will need to tell CLI how to connect to database. T
 
 Create `model` use `model:generate` command. This command requires two options.
 
-- `name`, Name of the model
-- `attributes`, List of model attributes
+- `--name`, Name of the model
+- `--attributes`, List of model attributes
 
 Let's create a model name example `User`. See more about of [Datatypes](https://sequelize.org/v5/manual/data-types.html)
 
 ```sh
-$ npx sequelize-cli model:generate --name User --attributes id:integer,name:string,email:string,created_at:date
+$ npx sequelize-cli model:generate --name User --attributes firstName:string,lastName:string,email:string,birhday:date
 ```
 
 ### # Migrations Up and Down

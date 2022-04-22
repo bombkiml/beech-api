@@ -74,6 +74,10 @@ class Generator {
               this.makeModel()
                 .then(make => resolve(make))
                 .catch(err => reject(err));
+            } else if (this.special == '--helper') {
+              this.makeHelper()
+                .then(make => resolve(make))
+                .catch(err => reject(err));
             } else {
               resolve("\n[101m Faltal [0m commnad it's not available.");
             }
@@ -211,6 +215,38 @@ class Generator {
             });
         } else {
           resolve("\n[103m[90m Warning [0m[0m The model `" + models + "` it's duplicated.");
+        }
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  makeHelper() {
+    return new Promise((resolve, reject) => {
+      try {
+        let tmpHelpersPath = __dirname + '/helpers';
+        let helperPath = './src/helpers/';
+        // argument join `slash`
+        let arg = this.argument.replace(/^\/+|\/+$/g, '');
+        arg = arg.split('/');
+        let helpers = arg.pop();
+        helpers = helpers.charAt(0).toUpperCase() + helpers.slice(1);
+        let subFolder = arg.join('/');
+        // helpers
+        let fullHelpers = helperPath + subFolder.concat('/') + helpers.concat('.js');
+        // check file exists
+        if (!this.fs.existsSync(fullHelpers)) {
+          // generater model
+          this.makeFolder(helperPath + subFolder)
+            .then(this.copy.bind(this, tmpHelpersPath, fullHelpers))
+            .then(logUpdate("\n[104m [37mProcessing[0m [0m The helper `" + helpers + "` it's generating..."))
+            .then(logUpdate("\n[102m[90m Passed [0m[0m The helper `" + helpers + "` it's generated."))
+            .catch(err => {
+              throw err;
+            });
+        } else {
+          resolve("\n[103m[90m Warning [0m[0m The helper `" + helpers + "` it's duplicated.");
         }
       } catch (error) {
         reject(error);
