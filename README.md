@@ -166,7 +166,7 @@ $ beech make modelName --model
 The `helpers` keep the files of functions for process specific something in the project. So, you might create the `helpers` in path `src/helpers` folder.
 
 ```sh
-$ beech make modelName --model
+$ beech make helperName --helper
 ```
 
 **Example:** Text editor helper.
