@@ -95,9 +95,9 @@ The `endpoints` keep the endpoints basic request files currently support `GET`, 
 
 So, you might create new endpoints with constant `endpoint` object variable in `src/endpoints/` folder and file neme must be end with `-endpoints.js`
 
-``sh
+```sh
 $ beech make endpointName
-``
+```
 
 **Example:** Fruits endpoints.
 
@@ -127,9 +127,9 @@ $ beech make endpointName
 
 The `models` keep the files of function(s) for retriving, inserting, updating and deleting with SQL data. for understanding you might make model name same your table name in `src/models` folder.
 
-``sh
+```sh
 $ beech make modelName --model
-``
+```
 
 **Example:** Fruits model.
 
@@ -165,9 +165,9 @@ $ beech make modelName --model
 
 The `helpers` keep the files of functions for process specific something in the project. So, you might create the `helpers` in path `src/helpers` folder.
 
-``sh
+```sh
 $ beech make modelName --model
-``
+```
 
 **Example:** Text editor helper.
 
@@ -195,7 +195,7 @@ Passport is authentication middleware for Node. It is designed to serve a singul
 
 Passport-jwt initiation :
 
-```
+```sh
 $ beech passport init
 ```
 
