@@ -1,3 +1,5 @@
+global.mysql = {};
+
 exports.mySqlConnection = () => {
   return new Promise((resolve, reject) => {
     try {
@@ -16,7 +18,6 @@ exports.mySqlConnection = () => {
 
 mysqlInProcess = (mysql_config, headDbShow, cb) => {
   try {
-    global.mysql = {};
     let val = mysql_config.shift();
     // checking turn on db connect
     if (val.is_connect) {

@@ -4,10 +4,14 @@ exports.init = () => {
 
   /@GET/
 	endpoint.get('{{endpoint}}', Credentials, (req, res) => {
-    // basic get method
+    /**
+     * @return json
+     */
+
 		let data = {};
     data.code = 200;
     data.message = 'Got a GET request.';
+
     // @return
     res.json(data);
 	});
@@ -19,10 +23,12 @@ exports.init = () => {
      *
      * @return json
      */
+
     let id = req.body.id;
     let data = {};
     data.code = 200;
     data.message = 'Got a POST request.';
+
     // @return
     res.json(data);
   });
@@ -34,10 +40,12 @@ exports.init = () => {
      *
      * @return json
      */
+
     let id = req.params.id;
     let data = {};
     data.code = 200;
     data.message = 'Got a PUT request at {{endpoint}}/' + id;
+
     // @return
     res.json(data);
   });
@@ -49,10 +57,12 @@ exports.init = () => {
      *
      * @return json
      */
+
     let id = req.params.id;
     let data = {};
     data.code = 200;
     data.message = 'Got a PATCH request at {{endpoint}}/' + id;
+
     // @return
     res.json(data);
   });
@@ -64,10 +74,12 @@ exports.init = () => {
      *
      * @return json
      */
+
     let id = req.params.id;
     let data = {};
     data.code = 200;
     data.message = 'Got a DELETE request at {{endpoint}}/' + id;
+
     // @return
     res.json(data);
   });
