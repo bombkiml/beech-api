@@ -1,6 +1,7 @@
-global.mysql = {};
+const mysql = require("mysql");
+global.sql = {};
 
-exports.mySqlConnection = () => {
+exports.connect = () => {
   return new Promise((resolve, reject) => {
     try {
       mysqlInProcess(_config_.mysql_config, true, (err, result) => {
@@ -22,7 +23,7 @@ mysqlInProcess = (mysql_config, headDbShow, cb) => {
     // checking turn on db connect
     if (val.is_connect) {
       // db connection config
-      let connection = _mysql_.createConnection({
+      let connection = mysql.createConnection({
         host: val.host,
         user: val.username,
         password: val.password,
@@ -39,7 +40,7 @@ mysqlInProcess = (mysql_config, headDbShow, cb) => {
             headDbShow = false;
           }
           // declare to global mysql variable
-          mysql[ val.name ] = connection;
+          sql[ val.name ] = connection;
           console.log(' - [36m ' + val.name + ' [0m->[93m ' + connection.config.database + ':' + connection.config.port + '[0m');
           // checking recursive database connection
           if (mysql_config.length > 0) {

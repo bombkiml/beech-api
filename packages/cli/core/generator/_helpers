@@ -1,0 +1,10 @@
+module.exports = {
+
+  // textUpperCase(text) {
+  //  return text.toUpperCase();
+  // },
+  // textLowerCase(text) {
+  //  return text.toLowerCase();
+  // }
+
+};

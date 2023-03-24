@@ -170,7 +170,7 @@ module.exports = {
           } else {
             let condUser = {};
             condUser[(passport_config.strategy.google.local_profile_fields.google_id) ? passport_config.strategy.google.local_profile_fields.google_id : "google_id"] = req.user.google.id;
-            Beech.findOne(passport_config.model.table || "users", condUser, (err, result) => {
+            Beech.findOne([], condUser, (err, result) => {
               if (err) {
                 res.status(500).json({
                   code: 500,
@@ -225,7 +225,7 @@ module.exports = {
           } else {
             let condUser = {};
             condUser[(passport_config.strategy.facebook.local_profile_fields.facebook_id) ? passport_config.strategy.facebook.local_profile_fields.facebook_id : "facebook_id"] = req.user.facebook.id;
-            Beech.findOne(passport_config.model.table || "users", condUser, (err, result) => {
+            Beech.findOne([], condUser, (err, result) => {
               if (err) {
                 res.status(500).json({
                   code: 500,
