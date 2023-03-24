@@ -12,18 +12,18 @@ module.exports = {
   token_expired: 86400,
 
   model: {
-    // Main mysql connection same name inside `app.config.js` file
+    // Main sql connection name. You must make sure connection name like inside `app.config.js` file and choose one connection name.
     name: "default_db",
-    // The user table name for store your authenticate, default table `users`
+    // The user table name for store your authenticate, (default table `users`)
     table: "",
-    // The fields for authenticate, default fields: `username` and `password`
+    // The fields for authenticate, default fields: (`username` and `password`)
     username_field: "",
     password_field: "",
     // Show JWT fields, default show fields: ["id", "name", "email"]
     fields: []
   },
 
-  // Allow using with app_secret requset (Every request need app_secret parameter)
+  // Allow using with app_secret request (Every request must be using the app_secret parameter)
   app_secret_allow: false,
 
   // Official strategy

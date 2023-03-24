@@ -2,7 +2,7 @@
 exports.init = () => {
   // Initiate with basic request currently support GET, POST, PUT, PATCH and DELETE
 
-  /@GET/
+  //@GET
 	endpoint.get('{{endpoint}}', Credentials, (req, res) => {
     /**
      * @return json
@@ -16,7 +16,7 @@ exports.init = () => {
     res.json(data);
 	});
 
-  /@POST/
+  //@POST
   endpoint.post('{{endpoint}}', Credentials, (req, res) => {
     /**
      * @param Integer id
@@ -33,7 +33,7 @@ exports.init = () => {
     res.json(data);
   });
 
-  /@PUT/
+  //@PUT
   endpoint.put('{{endpoint}}/:id', Credentials, (req, res) => {
     /**
      * @param Integer id
@@ -50,7 +50,7 @@ exports.init = () => {
     res.json(data);
   });
 
-  /@PATCH/
+  //@PATCH
   endpoint.patch('{{endpoint}}/:id', Credentials, (req, res) => {
     /**
      * @param Integer id
@@ -67,7 +67,7 @@ exports.init = () => {
     res.json(data);
   });
 
-  /@DELETE/
+  //@DELETE
   endpoint.delete('{{endpoint}}/:id', Credentials, (req, res) => {
     /**
      * @param Integer id

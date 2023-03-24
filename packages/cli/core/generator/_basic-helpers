@@ -1,0 +1,23 @@
+module.exports = {
+
+  textLowerCase(text) {
+   return text.toLowerCase();
+  },
+
+  textUpperCase(text) {
+   return text.toUpperCase();
+  },
+
+  digit9(number) {
+    return ('000000000' + number).slice(-9);
+  },
+
+  dateToThai(date) {
+    return result = date.toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  },
+
+};

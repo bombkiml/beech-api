@@ -6,7 +6,6 @@ const _express_ = require("express");
 global._app_ = _express_();
 const cors = require("cors");
 global.endpoint = _express_.Router();
-global._mysql_ = require("mysql");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const expressSession = require("express-session");
@@ -15,7 +14,14 @@ const globalVariable = require(appRoot + "/global.config.js");
 globalVariable.init();
 // Local environments
 global._config_ = require(appRoot + "/app.config");
-const dbConnect = require("./databases/mysql.connection");
+const mySqlDbConnect = require("./databases/mysql");
+const SequelizeDbConnect = require("./databases/sequelize");
+// create global sequelize object
+const { QueryTypes, DataTypes, Op } = require("sequelize");
+global.QueryTypes = QueryTypes;
+global.DataTypes = DataTypes;
+global.Op = Op;
+// engine import
 const httpExpress = require("./services/http.express");
 const fileWalk = require("./file-walk/file-walk");
 // View engine
@@ -70,7 +76,7 @@ walker.on("end", () => {
 // Initialize the application
 init = async (jsfiles) => {
   try {
-    await new Promise((resolve) => resolve(dbConnect.mySqlConnection()));
+    await ((pool_base == "basic") ? new Promise((resolve) => resolve(mySqlDbConnect.connect())) : new Promise((resolve) => resolve(SequelizeDbConnect.connect())));
     await new Promise((resolve) => resolve(httpExpress.expressStart()));
     await new Promise((resolve) => resolve(authPassport.init()));
     await new Promise((resolve) => resolve(fileWalk.fileWalk(jsfiles)));

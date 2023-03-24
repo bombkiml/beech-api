@@ -106,12 +106,12 @@ $ beech make endpointName
 
   exports.init = () => {
 
-    /@GET/
+    //@GET
     endpoint.get('/fruits', (req, res) => {
       ...
     });
 
-    /@POST/
+    //@POST
     endpoint.post('/fruits', (req, res) => {
       ...
     });
@@ -131,7 +131,7 @@ The `models` keep the files of function(s) for retriving, inserting, updating an
 $ beech make modelName --model
 ```
 
-**Example:** Fruits model.
+**Example (basic):** Fruits model.
 
 ```js
   // Fruits.js
@@ -143,19 +143,48 @@ $ beech make modelName --model
       return { ... }
     },
 
-    // Example basic function get data from MySQL (must be return promise)
+    // Example basic function get data from MySQL table
     getFruits() {
-      return new Promise((resolve, reject) => {
-        try {
-          // call mysql `default_db` connection
-          mysql.default_db.query("SELECT * FROM fruits", (err, results) => {
-            if (err) { reject(err) }
-            resolve(results);
-          });
-        } catch (error) {
-          reject(error);
-        }
+      // call example mysql `mysql.default_db` connection name
+      mysql.default_db.query("SELECT * FROM fruits", (err, results) => {
+
+        if (err) { throw err }
+        return results;
+
       });
+    }
+
+  };
+```
+
+**Example (sequelize):** Fruits model.
+
+```js
+  // Fruits.js
+
+  // call example define table with `sql.default_db` connection name
+  const Fruits = sql.default_db.define("fruits", {
+    // asign more DataTypes see more: https://sequelize.org/docs/v6/core-concepts/model-basics/#data-types
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true
+    },
+    fruitsName: DataTypes.STRING,
+    fruitsQty: DataTypes.INTEGER,
+    fruitsPrice: DataTypes.INTEGER,
+  });
+
+  module.exports = {
+
+    // Example basic function get one by id
+    findFruitsById(id) {
+      return Fruits.findOne({ where: { id: id } });
+    },
+
+    // Example basic function get all data from table fruits
+    findAll() {
+      return Fruits.findAll();
     }
 
   };
@@ -216,7 +245,7 @@ module.exports = {
   token_expired: 86400,
 
   model: {
-    // your mysql connection name inside `app.config.js` file (users table storage)
+    // Main sql connection name. You must make sure connection name like inside `app.config.js` file and choose one connection name.
     name: "default_db",
 
     // table name of users store, default table `users`

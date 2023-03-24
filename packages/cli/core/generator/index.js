@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const logUpdate = require("log-update");
+const inquirer = require('inquirer');
 
 class Generator {
   constructor() {
@@ -10,6 +11,9 @@ class Generator {
           throw err;
         })
       )
+      .catch(err => {
+        throw err
+      });
   }
 
   init() {
@@ -92,16 +96,16 @@ class Generator {
           }
         } else if (this.option == "key:generate") {
           this.generateKeyConfigFile()
-          .then(resGenKey => resolve(resGenKey))
-          .catch(err => reject(err));;
+            .then(resGenKey => resolve(resGenKey))
+            .catch(err => reject(err));
         } else if (this.option == "add-on") {
           if (this.argument == "init") {
             this.makeAddOnInit()
               .then(make => resolve(make))
-              .catch(err => reject(err));            
+              .catch(err => reject(err));
           } else {
             resolve("\n[103m[90m Warning [0m[0m Using `add-on init` for initiate add-on.");
-          }          
+          }
         } else {
           resolve("\n[101m Faltal [0m commnad it's not available.");
         }
@@ -114,8 +118,8 @@ class Generator {
   make(rq = null) {
     return new Promise((resolve, reject) => {
       try {
-        let tmpEndpointsPath = __dirname + '/endpoints';
-        let tmpSpecPath = __dirname + '/spec';
+        let tmpEndpointsPath = __dirname + '/_endpoints';
+        let tmpSpecPath = __dirname + '/_spec';
         let endpointsPath = './src/endpoints/';
         let testPath = './__tests__/unit/endpoints/';
         // argument join `slash`
@@ -190,7 +194,65 @@ class Generator {
   makeModel() {
     return new Promise((resolve, reject) => {
       try {
-        let tmpModelsPath = __dirname + '/models';
+        // declare path model file
+        let tmpModelsPath = __dirname;
+        // read global.config.js file for check pool_base for generate model file
+        this.fs.readFile("./global.config.js", 'utf8', (err, data) => {
+          if (err) {
+            throw err;
+          } else {
+            let buffer = Buffer.from(data);
+            let buf2str = buffer.toString();
+            let buf2json = JSON.parse(JSON.stringify(buf2str));
+            let pool_base = /global.pool_base\s+=\s+(?:"|')([^"]+)(?:"|')(?:\r|\n|$|;|\r)/i.exec(buf2json);
+            if (pool_base) {
+              // read app.config.js file for get db connect name
+              this.fs.readFile("./app.config.js", 'utf8', (appErr, appData) => {
+                if (appErr) {
+                  throw appErr;
+                } else {
+                  let appBuffer = Buffer.from(appData);
+                  let appBuf2str = appBuffer.toString();
+                  let appBuf2json = JSON.parse(JSON.stringify(appBuf2str));
+                  let appBuf2eval = eval(appBuf2json);
+                  // choose one of database connect name
+                  inquirer.prompt([ {
+                    type: "list",
+                    name: "selectDbConnect",
+                    message: "[93mPlease select database connect name:[0m",
+                    choices: appBuf2eval.database_config.map(e => e.name),
+                  } ]).then(dbSelected => {
+                    // check pool_base
+                    if (pool_base[ 1 ] == "basic") {
+                      tmpModelsPath += '/_basic-models';
+                      this.generateModel(tmpModelsPath, dbSelected.selectDbConnect)
+                        .then(console.log)
+                        .catch(console.log);
+                    } else if (pool_base[ 1 ] == "sequelize") {
+                      tmpModelsPath += '/_models';
+                      this.generateModel(tmpModelsPath, dbSelected.selectDbConnect)
+                        .then(console.log)
+                        .catch(console.log);
+                    } else {
+                      resolve("\n[101m Faltal [0m The pool_base does not match the specific.");
+                    }
+                  });
+                }
+              });
+            } else {
+              resolve("\n[101m Faltal [0m The pool_base not found.");
+            }
+          }
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  generateModel(tmpModelsPath, dbSelected) {
+    return new Promise((resolve, reject) => {
+      try {
         let modelPath = './src/models/';
         // argument join `slash`
         let arg = this.argument.replace(/^\/+|\/+$/g, '');
@@ -200,13 +262,16 @@ class Generator {
         let subFolder = arg.join('/');
         // models
         let fullModels = modelPath + subFolder.concat('/') + models.concat('.js');
+
         // check file exists
         if (!this.fs.existsSync(fullModels)) {
           // generater model
           this.makeFolder(modelPath + subFolder)
             .then(this.copy.bind(this, tmpModelsPath, fullModels))
             .then(this.modelContentReplace.bind(this, fullModels, {
+              'modelNameUppercase': models,
               'modelName': models.toLowerCase(),
+              'dbSelected': dbSelected,
             }))
             .then(logUpdate("\n[104m [37mProcessing[0m [0m The model `" + models + "` it's generating..."))
             .then(generated => logUpdate(generated))
@@ -225,7 +290,7 @@ class Generator {
   makeHelper() {
     return new Promise((resolve, reject) => {
       try {
-        let tmpHelpersPath = __dirname + '/helpers';
+        let tmpHelpersPath = __dirname + '/_helpers';
         let helperPath = './src/helpers/';
         // argument join `slash`
         let arg = this.argument.replace(/^\/+|\/+$/g, '');
@@ -298,7 +363,7 @@ class Generator {
   makeAddOnInit() {
     return new Promise((resolve, reject) => {
       try {
-        let tmpEndpointsPath = __dirname + '/add-on';
+        let tmpEndpointsPath = __dirname + '/_add-on';
         let add_on_paste_point = "Add-on.js";
         let folder_add_on = "./src/";
         if (!this.fs.existsSync(folder_add_on + add_on_paste_point)) {
@@ -386,6 +451,11 @@ class Generator {
             } else {
               // content replace
               let text = data.replace(new RegExp('{{modelName}}', 'g'), modelName);
+              text = text.replace(new RegExp('{{dbSelected}}', 'g'), textCondition.dbSelected);
+              // check add model name text uppercase
+              if (Object.keys(textCondition).length > 1) {
+                text = text.replace(new RegExp('{{modelNameUppercase}}', 'g'), textCondition.modelNameUppercase);
+              }
               // writing the file
               this.fs.writeFile(pathFile, text, 'utf8', (err) => {
                 if (err) {
@@ -411,7 +481,7 @@ class Generator {
         let result = '';
         let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         let charactersLength = characters.length;
-        for ( var i = 0; i < length; i++ ) {
+        for (var i = 0; i < length; i++) {
           result += characters.charAt(Math.floor(Math.random() * charactersLength));
         }
         resolve(md5(result + secret));
@@ -445,7 +515,7 @@ class Generator {
                 } else {
                   resolve("\n[102m[90m Passed [0m[0m App secret it's new generated.");
                 }
-              });              
+              });
             });
           }
         });
@@ -458,7 +528,7 @@ class Generator {
   help() {
     return new Promise((resolve, reject) => {
       try {
-        this.fs.readFile(__dirname + "/help", 'utf8', function (err, data) {
+        this.fs.readFile(__dirname + "/_help", 'utf8', function (err, data) {
           if (err) {
             throw err;
           }
@@ -474,11 +544,12 @@ class Generator {
     return new Promise((resolve, reject) => {
       try {
         this.fs = require('fs');
+        this.cmd = require('node-cmd');
         this.argv = argv;
-        this.option = argv[2];
-        this.argument = argv[3];
-        this.special = argv[4];
-        this.extra = argv[5];
+        this.option = argv[ 2 ];
+        this.argument = argv[ 3 ];
+        this.special = argv[ 4 ];
+        this.extra = argv[ 5 ];
         resolve(this);
       } catch (error) {
         reject(err);

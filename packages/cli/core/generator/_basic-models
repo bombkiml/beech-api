@@ -1,0 +1,20 @@
+module.exports = {
+
+  // Example basic function return exam data
+  getData() {
+    return [
+      { "id": 1, "name": "Oggy" },
+      { "id": 2, "name": "Jack" },
+      { "id": 3, "name": "The Cockroaches Gang" }
+    ];
+  },
+
+  // Example basic function get data from table {{modelName}}
+  findAll() {
+    mysql.{{dbSelected}}.query("SELECT * FROM {{modelName}}", (err, results) => {
+      if (err) throw err;
+      return results;
+    });
+  }
+
+}
