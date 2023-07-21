@@ -328,14 +328,10 @@ class Generator {
      */
     return new Promise((resolve, reject) => {
       try {
-        let mkdirp = require('mkdirp');
-        mkdirp(path, (err) => {
-          if (err) {
-            throw err;
-          } else {
-            resolve(path);
-          }
-        })
+        const mkdirp = require("mkdirp");
+        mkdirp(path)
+          .then(p => resolve(p))
+          .catch(err => reject(err));
       } catch (error) {
         reject(error);
       }

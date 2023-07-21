@@ -154,6 +154,10 @@ module.exports = {
         callbackURL: auth_endpoint + facebook_callbackURL,
         profileFields: allow_permisions_fields
       }, (accessToken, refreshToken, profile, done) => {
+        // Check if the email permission is granted
+        if (!profile.emails || profile.emails.length === 0) {
+          return done(new Error('Email permission not granted.'));
+        }
         // find facebook user
         let faecbookIdField = (passport_config.strategy.facebook.local_profile_fields.facebook_id) ? passport_config.strategy.facebook.local_profile_fields.facebook_id : "facebook_id";
         this.findOrCreate(passport_config, "facebook", passportFields, passportTable, accessToken, refreshToken, profile, faecbookIdField, (err, res, dbFailed) => {

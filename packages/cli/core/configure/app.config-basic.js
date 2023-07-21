@@ -12,7 +12,7 @@ module.exports = {
     app_port: 9000,
     app_host: "localhost",
     client_host: "http://0.0.0.0:9000",
-    app_secret: ["2cc118cd91b52ff99e3c005ddced76fb"]
+    app_secret: [ "2cc118cd91b52ff99e3c005ddced76fb" ]
   },
 
   // Add-on it's work when enabled. You can enable add-on by run CMD `$ beech add-on init`.
@@ -31,7 +31,7 @@ module.exports = {
    * @exports is_connect : The sql connection flag (boolean)
    * 
    */
-  mysql_config: [
+  database_config: [
     {
       name: "default_db",
       host: "127.0.0.1",
@@ -40,7 +40,7 @@ module.exports = {
       database: "example1_db",
       port: "3306",
       charset: "utf8",
-      is_connect: false
+      is_connect: false,
     },
     {
       name: "second_db",
@@ -50,7 +50,7 @@ module.exports = {
       database: "example2_db",
       port: "3306",
       charset: "utf8",
-      is_connect: false
+      is_connect: false,
     }
   ]
 };

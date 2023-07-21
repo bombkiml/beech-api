@@ -208,10 +208,10 @@ class Beech {
      */
     return new Promise((resolve, reject) => {
       try {
-        let mkdirp = require('mkdirp');
+        const mkdirp = require("mkdirp");
         mkdirp(path)
           .then(p => resolve(p))
-          .catch(err => reject(err))
+          .catch(err => reject(err));
       } catch (error) {
         reject(error);
       }

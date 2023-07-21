@@ -52,6 +52,8 @@ connectInProcess = async (database_config, headDbShow, cb) => {
           socketPath: ((val.dialectOptions) ? ((val.dialectOptions.socketPath) ? val.dialectOptions.socketPath : "") : ""), //Applications/MAMP/tmp/mysql/mysql.sock
           supportBigNumbers: ((val.dialectOptions) ? ((val.dialectOptions.supportBigNumbers) ? val.dialectOptions.supportBigNumbers : false) : false),
           bigNumberStrings: ((val.dialectOptions) ? ((val.dialectOptions.bigNumberStrings) ? val.dialectOptions.bigNumberStrings : false) : false),
+          options: { encrypt: false, },
+          options: ((val.dialectOptions) ? ((val.dialectOptions.options) ? ({ encrypt: false, ...val.dialectOptions.options }) : {}) : {}),
         },
 
         // disable inserting undefined values as NULL
@@ -95,13 +97,19 @@ connectInProcess = async (database_config, headDbShow, cb) => {
         // isolation level of each transaction
         // defaults to dialect default
         isolationLevel: val.isolationLevel || "Transaction.ISOLATION_LEVELS.REPEATABLE_READ",
-        
+
         // JSON response
         query: {
           raw: ((val.query) ? ((val.query.raw) ? val.query.raw : true) : true),
-          nest : ((val.query) ? ((val.query.nest) ? val.query.nest : true) : true),
+          nest: ((val.query) ? ((val.query.nest) ? val.query.nest : true) : true),
         }
       });
+
+      if (val.dialect == "mssql") {
+        console.log(val);
+        console.log(sq.options.dialectOptions);
+      }
+
       // show only one text db connnections
       if (headDbShow) {
         console.log('\n[102m[90m Passed [0m [0mDatabase is connected at:');
@@ -113,7 +121,7 @@ connectInProcess = async (database_config, headDbShow, cb) => {
           // create database pool
           sql[ val.name ] = sq;
           // checking dialect sql
-          if(val.dialect == "sqlite") {
+          if (val.dialect == "sqlite") {
             console.log(' - [91m[' + val.dialect + '] [0m[36m' + val.name + ' [0m->[93m ' + sq.options.storage + '[0m');
           } else {
             console.log(' - [91m[' + val.dialect + '] [0m[36m' + val.name + ' [0m->[93m ' + sq.config.database + ':' + sq.config.port + '[0m');

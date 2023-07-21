@@ -56,13 +56,13 @@ module.exports = {
           collate: "utf8_general_ci"
         },
       },
-      is_connect: false
+      is_connect: false,
     },
     {
       dialect: "sqlite",
       name: "second_db",
       storage: "usr/sqliteDB/mydatabase.sqlite", // or ":memory:"
-      is_connect: false
+      is_connect: false,
     },
     {
       dialect: "mssql",
@@ -78,7 +78,7 @@ module.exports = {
           collate: "utf8_general_ci"
         },
       },
-      is_connect: false
+      is_connect: false,
     },
   ]
 };

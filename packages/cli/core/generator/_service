@@ -1,0 +1,8 @@
+
+Usage:
+  $ beech-service [options]
+
+Options:
+  ?|-h, --help          Display this help message.
+  serve                 Start development service.
+  build                 Build production.
