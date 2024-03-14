@@ -80,19 +80,19 @@ Usage:
   $ beech [options] [arguments] [special]
 
 Options:
-  ?|-h, --help                    Display this help message.
-  -v, --version                   Display the application version.
+  ?|-h, --help                      Display this help message.
+  -v, --version                     Display the application version.
 
 The following commands are available:
 
-  $ beech make <endpoint>         Create a new Endpoints and unit test file,
-                                  You might using [special] `--require|-R`
-                                  for choose Model(s) used to endpoint file.
-  $ beech make <model> --model    Create a new models file.
-  $ beech make <helper> --helper  Create a new Helpers file.
-  $ beech passport init           Initialize authentication with passport-jwt.
-  $ beech add-on init             Initialize add-on file.
-  $ beech key:generate|key:gen    Re-Generate application key (Dangerous!).
+  $ beech make <endpoint>           Create a new Endpoints and unit test file,
+                                    You might using [special] `--require|-R`
+                                    for choose Model(s) used to endpoint file.
+  $ beech make <model> --model,-M   Create a new models file.
+  $ beech make <helper> --helper    Create a new Helpers file.
+  $ beech passport init             Initialize authentication with passport-jwt.
+  $ beech add-on init               Initialize add-on file.
+  $ beech key:generate|key:gen      Re-Generate application key (Dangerous!).
 ```
 
 ## Endpoints

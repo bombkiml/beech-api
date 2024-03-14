@@ -164,7 +164,7 @@ class Generator {
                   }
                 });
               });
-            } else if (this.special == '--model') {
+            } else if (this.special == '--model' || this.special == '-M') {
               this.makeModel()
                 .then(make => resolve(make))
                 .catch(err => reject(err));
@@ -351,15 +351,19 @@ class Generator {
   isModelFound(modelArr) {
     return new Promise((resolve, reject) => {
       try {
-        if(modelArr.length) {
-          modelArr.map((data, key) => {
-            if (!this.fs.existsSync('./src/models/' + data.concat('.js'))) {
-              resolve(data);
-            }
-            if (modelArr.length == key+1) {
-              resolve(true);
-            }
-          });
+        if(modelArr !== undefined) {
+          if(modelArr.length) {
+            modelArr.map((data, key) => {
+              if (!this.fs.existsSync('./src/models/' + data.concat('.js'))) {
+                resolve(data);
+              }
+              if (modelArr.length == key+1) {
+                resolve(true);
+              }
+            });
+          } else {
+            resolve(false);
+          }
         } else {
           resolve(false);
         }
