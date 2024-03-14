@@ -1,6 +1,6 @@
 {
   "name": "beech-api",
-  "version": "3.6.8",
+  "version": "3.6.0",
   "description": "Command line interface for rapid Beech API development",
   "keywords": [
     "api",
@@ -17,19 +17,10 @@
     "directory": "packages/cli"
   },
   "authors": "bombkiml",
-  "bin": {
-    "beech-app": "./packages/cli/bin/beech.js",
-    "beech-service": "./packages/cli/bin/beech-service.js",
-    "beech": "./packages/cli/core/generator/index.js"
-  },
   "bugs": {
     "url": "https://github.com/bombkiml/beech-api/issues"
   },
   "homepage": "https://github.com/bombkiml/beech-api/blob/master/README.md",
-  "deprecated": false,
-  "engines": {
-    "node": ">=12.18"
-  },
   "dependencies": {
     "app-root-path": "^3.0.0",
     "axios": "^0.26.1",
