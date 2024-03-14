@@ -2,15 +2,16 @@
   "name": "application",
   "version": "0.1.0",
   "description": "The project is powered by Beech API framework",
+  "license": "MIT",
   "main": "index.js",
   "scripts": {
-    "start": "npx run ./node_modules/beech-api/packages/cli/beech",
+    "start": "beech-service serve",
     "test": "node ./node_modules/jest/bin/jest __tests__ -o --watch --config"
   },
   "dependencies": {
-    "beech-api": "^3.5.7"
+    "beech-api": "^3.6.0"
   },
   "devDependencies": {
-    "jest": "^25.2.7"
+    "jest": "^28.1.3"
   }
 }

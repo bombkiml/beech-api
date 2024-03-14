@@ -63,22 +63,26 @@ class Beech {
                   message: "[93mCheck the features needed for your project:[0m",
                   choices: [ "Add-Ons", "Basic Helper", "Passport / JWT / Official Strategy Google, Facebook" ],
                 } ]).then(resFreat => {
-                  // init project
-                  this.makeFolder(this.argument)
-                    .then(this.copy.bind(this, tmpPackageFile, pastePackageFile))
-                    .then(this.contentReplace.bind(this, pastePackageFile, { 'application': this.argument }))
-                    .then(this.copy.bind(this, tmpConfigFile, pasteConfigFile))
-                    .then(this.copy.bind(this, tmpJestFile, pasteJestFile))
-                    .then(this.copy.bind(this, tmpJsConfigFile, pasteJsConfigFile))
-                    .then(this.copy.bind(this, tmpDotSequelizercFile, pasteDotSequelizercFile))
-                    .then(this.copy.bind(this, tmpGloablConfigFile, pasteGloablConfigFile))
-                    .then(this.copy.bind(this, tmpGitignoreFile, pasteGitignoreFile))
-                    .then(this.generateKeyConfigFile.bind(this, this.argument))
-                    .then(this.installPackage.bind(this, this.argument, resFreat.freature))
-                    .then(console.log("\n[104m [37mProcessing[0m [0m The Application `" + this.argument + "` is creating...\n"))
-                    .catch((err) => {
-                      throw err;
-                    });
+                  logUpdate(": Initialize...");
+                  setTimeout(() => {
+                    // init project
+                    this.makeFolder(this.argument)
+                      .then(this.copy.bind(this, tmpPackageFile, pastePackageFile))
+                      //.then(this.contentReplace.bind(this, pastePackageFile, { 'application': this.argument }))
+                      .then(this.copy.bind(this, tmpConfigFile, pasteConfigFile))
+                      .then(this.copy.bind(this, tmpJestFile, pasteJestFile))
+                      .then(this.copy.bind(this, tmpJsConfigFile, pasteJsConfigFile))
+                      .then(this.copy.bind(this, tmpDotSequelizercFile, pasteDotSequelizercFile))
+                      .then(this.copy.bind(this, tmpGloablConfigFile, pasteGloablConfigFile))
+                      .then(this.copy.bind(this, tmpGitignoreFile, pasteGitignoreFile))
+                      .then(this.contentReplace.bind(this, pastePackageFile, { 'application': this.argument }))
+                      .then(this.generateKeyConfigFile.bind(this, this.argument))
+                      .then(this.installPackage.bind(this, this.argument, resFreat.freature))
+                      .then(console.log("\n[104m [37mProcessing [0m [0m The Application `" + this.argument + "` is creating...\n"))
+                      .catch((err) => {
+                        throw err;
+                      });
+                  }, 2000);
                 });
               });
             } else {
@@ -88,7 +92,10 @@ class Beech {
             resolve("\n[103m[90m Warning [0m[0m Please specify your project name.");
           }
         } else {
-          resolve("\n[101m Faltal [0m commnad it's not available.");
+          // help for see avaliable command
+          this.help()
+            .then(help => resolve(help))
+            .catch(err => reject(err));
         }
       } catch (error) {
         reject(error);
@@ -138,26 +145,30 @@ class Beech {
     return new Promise((resolve, reject) => {
       try {
         let helperPath = argument + '/src/helpers/';
-        let tmpBasicHelperFile = __dirname + '/../core/generator/_basic-helpers';
+        let tmpBasicHelperFile = __dirname + '/../core/generator/_helpers_basic';
         let pasteBasicHelperFile = helperPath + '/Basic.js';
         let freatureLength = freatureArr.length;
-        freatureArr.map((f, key) => {
-          if (f.split(' ')[ 0 ] == "Add-Ons") {
-            (process.env.NODE_ENV == "development") ? this.cmd.get('cd ' + argument + ' && node cli/bin/beech.js add-on init') : this.cmd.get('cd ' + argument + ' && beech add-on init');
-            console.log("[" + (key + 1) + "/" + freatureLength + "] Installing Add-Ons");
-          }
-          if (f.split(' ')[ 0 ] == "Basic") {
-            this.makeFolder(helperPath).then(this.copy.bind(this, tmpBasicHelperFile, pasteBasicHelperFile))
-            console.log("[" + (key + 1) + "/" + freatureLength + "] Installing Basic helper");
-          }
-          if (f.split(' ')[ 0 ] == "Passport") {
-            (process.env.NODE_ENV == "development") ? this.cmd.get('cd ' + argument + ' && node cli/bin/beech.js passport init') : this.cmd.get('cd ' + argument + ' && beech passport init');
-            console.log("[" + (key + 1) + "/" + freatureLength + "] Installing Passport JWT, Official strategy Google, Facebook");
-          }
-          if (freatureArr.length == (key + 1)) {
-            resolve(true);
-          }
-        });
+        if (freatureLength) {
+          freatureArr.map((f, key) => {
+            if (f.split(' ')[ 0 ] == "Add-Ons") {
+              (process.env.NODE_ENV == "development") ? this.cmd.get('cd ' + argument + ' && node cli/bin/beech.js add-on init') : this.cmd.get('cd ' + argument + ' && beech add-on init');
+              console.log("[" + (key + 1) + "/" + freatureLength + "] Installing Add-Ons");
+            }
+            if (f.split(' ')[ 0 ] == "Basic") {
+              this.makeFolder(helperPath).then(this.copy.bind(this, tmpBasicHelperFile, pasteBasicHelperFile))
+              console.log("[" + (key + 1) + "/" + freatureLength + "] Installing Basic helper");
+            }
+            if (f.split(' ')[ 0 ] == "Passport") {
+              (process.env.NODE_ENV == "development") ? this.cmd.get('cd ' + argument + ' && node cli/bin/beech.js passport init') : this.cmd.get('cd ' + argument + ' && beech passport init');
+              console.log("[" + (key + 1) + "/" + freatureLength + "] Installing Passport JWT, Official strategy Google, Facebook");
+            }
+            if (freatureArr.length == (key + 1)) {
+              resolve(true);
+            }
+          });
+        } else {
+          resolve(true);
+        }
       } catch (error) {
         reject(error);
       }
@@ -293,7 +304,7 @@ class Beech {
   help() {
     return new Promise((resolve, reject) => {
       try {
-        this.fs.readFile(__dirname + "/../core/generator/_create", "utf8", (err, data) => {
+        this.fs.readFile(__dirname + "/../core/generator/_help_create", "utf8", (err, data) => {
           if (err) {
             reject(err);
           } else {

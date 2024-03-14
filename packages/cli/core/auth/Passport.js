@@ -1,6 +1,6 @@
 const appRoot = require("app-root-path");
 const fs = require("fs");
-const passport_config_file = appRoot + "/passport.config.js";
+const passport_config_file = appRoot + "\\passport.config.js";
 const md5 = require("md5");
 const secret = require("../../../lib/salt").salt;
 const { QueryTypes } = require("sequelize");
@@ -22,10 +22,11 @@ module.exports = {
           global.Credentials = auth.credentials;
         } else {
           global.Credentials = [];
-          return;
         }
       } else {
         global.Credentials = [];
+        //const Requests = require("./Request");
+        //global.Credentials = Requests.requests; ----> // TO DO check passport.config file if not exists show error when file src/ using the JWT (maybe for show JWT is ON/OFF)
         return;
       }
       // declare constant

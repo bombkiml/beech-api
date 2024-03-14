@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 const logUpdate = require("log-update");
 const inquirer = require('inquirer');
+const appRoot = require("app-root-path");
+const walk = require("walk");
 
 class Generator {
   constructor() {
@@ -36,44 +38,133 @@ class Generator {
               this.make()
                 .then(make => resolve(make))
                 .catch(err => reject(err));
-            } else if (this.special.length > 10) {
-              if (this.special.substring(0, 10) == '--require=') {
-                // check space
-                if (this.extra) {
-                  resolve("\n[103m[90m Warning [0m[0m Please remove a space(s) in special text `" + this.special + "[101m [0m" + this.extra + "...`");
-                  return;
-                }
-                let myRequire = this.special.substring(10);
-                myRequire = myRequire.split(',');
+            } else if (this.special == '--require' || this.special == '-R') {
+              // walking model files
+              const walkModelPromise = new Promise((resolve) => {
+                let walker = walk.walk(appRoot + "/src/models", { followLinks: false });
+                let modelFiles = [];
+                walker.on("file", (root, stat, next) => {
+                  let subFolderModel = root.split("src/models\\")[1];
+                  modelFiles.push((subFolderModel ? subFolderModel + "/" : "") + stat.name.split('.')[0]);
+                  next();
+                });
+                walker.on("end", () => {
+                  if(modelFiles.length) {
+                    inquirer.prompt([ {
+                      type: "checkbox",
+                      name: "selectModel",
+                      message: "[93mPlease select Models:[0m",
+                      choices: modelFiles.map(e => e.replace(/\\/g, "/")),
+                    } ]).then(selected => {
+                      resolve(selected.selectModel);
+                      //resolve(selected.selectModel.join(","));
+                    });
+                  } else {
+                    // model file not found, Only create endpoint
+                    resolve();
+                  }
+                });
+              });
+              Promise.all([walkModelPromise]).then((modelSelected) => {
+                let myModel = modelSelected[0];
                 // check require model exists
-                this.isModelFound(myRequire)
-                  .then(notExistsModel => {
-                    if (notExistsModel == true) {
-                      // generate & require
-                      if (!this.special) {
-                        resolve("\n[103m[90m Warning [0m[0m Please specify require file(s).");
-                      } else {
-                        // declare require model file
-                        let rqr = myRequire.map(data => {
-                          let modelName = data.split('/');
-                          modelName = modelName.pop();
-                          modelName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
-                          return `const ${modelName} = require(\"@/models/${data.substring(0, data.lastIndexOf('/') + 1) + modelName}\");\n`;
-                        });
-                        // make with require model file
-                        this.make(rqr)
-                          .then(make => resolve(make))
-                          .catch(err => reject(err));
-                      }
+                const modelExistsPromise = new Promise((resolve, reject) => {
+                this.isModelFound(myModel)
+                  .then(existsModel => {
+                    // check exists model
+                    if (existsModel == false) {
+                      inquirer.prompt([ {
+                        type: "confirm",
+                        name: "confirmModelNF",
+                        message: "[93mModel is not found, Do you only create Endpoint ?:[0m",
+                      } ]).then(confirm => {
+                        if(confirm.confirmModelNF) {
+                          resolve([true, []]);
+                        } else {
+                          resolve([false, []]);
+                        }
+                      });
                     } else {
-                      resolve("\n[103m[90m Warning [0m[0m The model `" + notExistsModel + "` it's not found.");
-                      return;
+                      resolve([true, myModel]);
                     }
                   })
-                  .catch(err => { throw err });
-              } else {
-                resolve("\n[101m Faltal [0m commnad it's not available.");
-              }
+                  .catch(err => reject(err));
+                });
+                // promise all check choose model(s)
+                Promise.all([modelExistsPromise]).then((modelRes) => {
+                  // Say Yes, Making...
+                  if(modelRes[0][0]) {
+                    const poolBasePromise = new Promise((resolve) => {
+                      // Check global config for prepare tmp endpoint
+                      this.fs.readFile("./global.config.js", 'utf8', (err, data) => {
+                        if (err) {
+                          console.log("\n[101m Faltal [0m Can't read `global.config.js` file.\n", err);
+                        } else {
+                          let buffer = Buffer.from(data);
+                          let buf2str = buffer.toString();
+                          let buf2json = JSON.parse(JSON.stringify(buf2str));
+                          let pool_base = /global.pool_base\s+=\s+(?:"|')([^"]+)(?:"|')(?:\r|\n|$|;|\r)/i.exec(buf2json);
+                          if (pool_base) {
+                            let myRequire = modelRes[0][1];
+                            if (pool_base[ 1 ] == "basic") {
+                              if(myRequire.length) {
+                                // declare basic require model file
+                                let rqr = "";
+                                myRequire.map((data, key) => {
+                                  let modelName = data.split('/');
+                                  let modelFolder = "";
+                                  modelName = modelName.pop();
+                                  modelName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
+                                  modelFolder = data.substring(0, data.lastIndexOf('/') + 1).replace(/\\/g, "/");
+                                  rqr += `const ${modelName} = require(\"@/models/${modelFolder + modelName}\");\n`;
+                                  if(myRequire.length == key+1) {
+                                    resolve([[rqr], myRequire]);
+                                  }
+                                });
+                              } else {
+                                resolve([[]]);
+                              }
+                            } else if (pool_base[ 1 ] == "sequelize") {
+                              // check null require resolve it
+                              if(myRequire.length) {
+                                // declare basic require model file
+                                let rqr = "";
+                                myRequire.map((data, key) => {
+                                  let modelName = data.split('/');
+                                  let modelFolder = "";
+                                  modelName = modelName.pop();
+                                  modelName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
+                                  modelFolder = data.substring(0, data.lastIndexOf('/') + 1).replace(/\\/g, "/");
+                                  rqr += `const { ${modelName}, findOne${modelName}byId } = require(\"@/models/${modelFolder + modelName}\");\n`;
+                                  if(myRequire.length == key+1) {
+                                    resolve([[rqr], myRequire]);
+                                  }
+                                });
+                              } else {
+                                resolve([[]]);
+                              }
+                            } else {
+                              console.log("\n[101m Faltal [0m The pool_base in `global.config.js` file does not match the specific.");
+                            }
+                          } else {
+                            console.log("\n[101m Faltal [0m The pool_base in `global.config.js` file is not found.");
+                          }
+                        }
+                      });
+                    });
+                    // Final promise for make
+                    Promise.all([poolBasePromise]).then((rqrRes) => {
+                      // make with require model file
+                      this.make(rqrRes[0])
+                        .then(make => resolve(make))
+                        .catch(err => reject(err));
+                    });
+                  } else {
+                    // Say No, Nothing...
+                    resolve(": Say no.");
+                  }
+                });
+              });
             } else if (this.special == '--model') {
               this.makeModel()
                 .then(make => resolve(make))
@@ -94,7 +185,7 @@ class Generator {
           } else {
             resolve("\n[103m[90m Warning [0m[0m Using `passport init` for initiate passport-jwt.");
           }
-        } else if (this.option == "key:generate") {
+        } else if (this.option == "key:generate" || this.option == "key:gen") {
           this.generateKeyConfigFile()
             .then(resGenKey => resolve(resGenKey))
             .catch(err => reject(err));
@@ -107,7 +198,10 @@ class Generator {
             resolve("\n[103m[90m Warning [0m[0m Using `add-on init` for initiate add-on.");
           }
         } else {
-          resolve("\n[101m Faltal [0m commnad it's not available.");
+          // help for see avaliable command
+          this.help()
+            .then(help => resolve(help))
+            .catch(err => reject(err));
         }
       } catch (error) {
         reject(error);
@@ -118,7 +212,8 @@ class Generator {
   make(rq = null) {
     return new Promise((resolve, reject) => {
       try {
-        let tmpEndpointsPath = __dirname + '/_endpoints';
+        // prepare data
+        let tmpEndpointsPath = __dirname;
         let tmpSpecPath = __dirname + '/_spec';
         let endpointsPath = './src/endpoints/';
         let testPath = './__tests__/unit/endpoints/';
@@ -127,42 +222,97 @@ class Generator {
         arg = arg.split('/');
         let endpoints = arg.pop();
         let subFolder = arg.join('/');
-        // endpoints
+        // endpoints file
         let fullEndpoints = endpointsPath + subFolder.concat('/') + endpoints.concat('-endpoints.js');
         let routeEndpoints = ((arg.length > 0) ? '/' : '') + subFolder.concat('/') + endpoints;
-        // test
+        // test file
         let fullTest = testPath + subFolder + '/' + endpoints.concat('-endpoints.spec.js');
-        if (!this.fs.existsSync(fullEndpoints)) {
-          // prepare state require file if `rq` not exists
-          let rqFile = '// You can require something \n';
-          // check exists requrie files
-          if (rq) {
-            rqFile = '';
-            // make require multiples line
-            rq.map((data) => {
-              rqFile += data;
-            })
+        // Check global config for prepare tmp endpoint
+        this.fs.readFile("./global.config.js", 'utf8', (err, data) => {
+          if (err) {
+            resolve("\n[101m Faltal [0m Can't read `global.config.js` file.", err);
+          } else {
+            let buffer = Buffer.from(data);
+            let buf2str = buffer.toString();
+            let buf2json = JSON.parse(JSON.stringify(buf2str));
+            let pool_base = /global.pool_base\s+=\s+(?:"|')([^"]+)(?:"|')(?:\r|\n|$|;|\r)/i.exec(buf2json);
+            if (pool_base) {
+              if (pool_base[ 1 ] == "basic") {
+                tmpEndpointsPath += '/_endpoints_basic';
+              } else if (pool_base[ 1 ] == "sequelize") {
+                tmpEndpointsPath += '/_endpoints';
+              } else {
+                resolve("\n[101m Faltal [0m The pool_base in `global.config.js` file does not match the specific.");
+              }
+            } else {
+              resolve("\n[101m Faltal [0m The pool_base in `global.config.js` file is not found.");
+            }
           }
-          // generater endpoint
-          this.makeFolder(endpointsPath + subFolder)
-            .then(this.copy.bind(this, tmpEndpointsPath, fullEndpoints))
-            .then(this.contentReplace.bind(this, fullEndpoints, {
-              'endpoint': routeEndpoints,
-              'endpointName': endpoints,
-              'rq': rqFile
-            }))
-            // generater test
-            .then(this.makeFolder.bind(this, testPath + subFolder))
-            .then(this.copy.bind(this, tmpSpecPath, fullTest))
-            .then(this.contentReplace.bind(this, fullTest, {
-              'endpoint': routeEndpoints,
-              'endpointName': endpoints
-            }))
-            .then(logUpdate("\n[104m [37mProcessing[0m [0m The endpoint `" + endpoints + "` it's generating..."))
-            .then(generated => logUpdate(generated))
-            .catch(err => {
-              throw err;
-            });
+        });
+        // Check exists endpoint file
+        if (!this.fs.existsSync(fullEndpoints)) {
+          // format Model for base use [Users, Xxx, ...]
+          const promise1 = new Promise((resolve) => {
+            if(rq[1]) {
+              let finalUseModel = [];
+              rq[1].map((data, key) => {
+                let lastModel = data.split("/");
+                finalUseModel.push(lastModel.pop());
+                if(rq[1].length == key+1) {
+                  resolve(finalUseModel);
+                }
+              });
+            } else {
+              resolve([]);
+            }
+          });
+          // format Require model file
+          const promise2 = new Promise((resolve) => {
+            // prepare state require file if `rq[0]` not exists
+            let requireFile = '// You can require something \n';
+            // check exists requrie files
+            if (rq[0].length) {
+              requireFile = '';
+              // make require multiples line
+              rq[0].map((data, key) => {
+                requireFile += data;
+                if(rq[0].length == key+1) {
+                  //setTimeout(() => {
+                    resolve(requireFile);
+                  //}, 2000);
+                }
+              })
+            } else {
+              resolve(requireFile);
+            }
+          });
+          // promise all generate endpoint with require(s)
+          Promise.all([promise1, promise2]).then((rqFileRes) => {
+            logUpdate(": Initialize...");
+            setTimeout(() => {
+              // generater endpoint
+              this.makeFolder(endpointsPath + subFolder)
+                .then(this.copy.bind(this, tmpEndpointsPath, fullEndpoints))
+                .then(this.contentReplace.bind(this, fullEndpoints, {
+                  'endpoint': routeEndpoints,
+                  'endpointName': endpoints,
+                  'rq': rqFileRes[1],
+                  'tables': rqFileRes[0],
+                }))
+                // generater test
+                .then(this.makeFolder.bind(this, testPath + subFolder))
+                .then(this.copy.bind(this, tmpSpecPath, fullTest))
+                .then(this.contentReplace.bind(this, fullTest, {
+                  'endpoint': routeEndpoints,
+                  'endpointName': endpoints
+                }))
+                .then(logUpdate("\n[104m [37mProcessing[0m [0m The endpoint `" + endpoints + "` it's generating..."))
+                .then(generated => logUpdate(generated))
+                .catch(err => {
+                  throw err;
+                });
+            }, 2000);
+          });
         } else {
           resolve("\n[103m[90m Warning [0m[0m The endpoint `" + endpoints + "` it's duplicated.");
         }
@@ -175,16 +325,18 @@ class Generator {
   isModelFound(modelArr) {
     return new Promise((resolve, reject) => {
       try {
-        let n = 1;
-        modelArr.map((data) => {
-          if (!this.fs.existsSync('./src/models/' + data.concat('.js'))) {
-            resolve(data);
-          }
-          if (modelArr.length == n) {
-            resolve(true);
-          }
-          n++;
-        })
+        if(modelArr.length) {
+          modelArr.map((data, key) => {
+            if (!this.fs.existsSync('./src/models/' + data.concat('.js'))) {
+              resolve(data);
+            }
+            if (modelArr.length == key+1) {
+              resolve(true);
+            }
+          });
+        } else {
+          resolve(false);
+        }
       } catch (error) {
         reject(error);
       }
@@ -199,7 +351,7 @@ class Generator {
         // read global.config.js file for check pool_base for generate model file
         this.fs.readFile("./global.config.js", 'utf8', (err, data) => {
           if (err) {
-            throw err;
+            resolve("\n[101m Faltal [0m Can't read `global.config.js` file.", err);
           } else {
             let buffer = Buffer.from(data);
             let buf2str = buffer.toString();
@@ -209,7 +361,7 @@ class Generator {
               // read app.config.js file for get db connect name
               this.fs.readFile("./app.config.js", 'utf8', (appErr, appData) => {
                 if (appErr) {
-                  throw appErr;
+                  resolve("\n[101m Faltal [0m Can't read `app.config.js` file.", appErr);
                 } else {
                   let appBuffer = Buffer.from(appData);
                   let appBuf2str = appBuffer.toString();
@@ -224,7 +376,7 @@ class Generator {
                   } ]).then(dbSelected => {
                     // check pool_base
                     if (pool_base[ 1 ] == "basic") {
-                      tmpModelsPath += '/_basic-models';
+                      tmpModelsPath += '/_models_basic';
                       this.generateModel(tmpModelsPath, dbSelected.selectDbConnect)
                         .then(console.log)
                         .catch(console.log);
@@ -234,13 +386,13 @@ class Generator {
                         .then(console.log)
                         .catch(console.log);
                     } else {
-                      resolve("\n[101m Faltal [0m The pool_base does not match the specific.");
+                      resolve("\n[101m Faltal [0m The pool_base in `global.config.js` file does not match the specific.");
                     }
                   });
                 }
               });
             } else {
-              resolve("\n[101m Faltal [0m The pool_base not found.");
+              resolve("\n[101m Faltal [0m The pool_base in `global.config.js` file is not found.");
             }
           }
         });
@@ -386,7 +538,7 @@ class Generator {
     return new Promise((resolve, reject) => {
       try {
         if (!this.fs.existsSync(to)) {
-          if (this.fs.createReadStream(path).pipe(this.fs.createWriteStream(to))) {
+          if (this.fs.ReadStream(path).pipe(this.fs.createWriteStream(to))) {
             resolve(to);
           } else {
             throw err;
@@ -407,6 +559,7 @@ class Generator {
         let endpointName = textCondition.endpointName;
         let rq = textCondition.rq;
         let modelName = textCondition.modelName;
+        let tables = textCondition.tables;
         // delay for generator
         setTimeout(() => {
           this.fs.readFile(pathFile, 'utf8', (err, data) => {
@@ -418,14 +571,17 @@ class Generator {
               text = text.replace(new RegExp('{{endpointName}}', 'g'), endpointName);
               text = text.replace(new RegExp('{{requireSomething}}', 'g'), rq);
               text = text.replace(new RegExp('{{modelName}}', 'g'), modelName);
-              // writing the file
-              this.fs.writeFile(pathFile, text, 'utf8', (err) => {
-                if (err) {
-                  throw err;
-                } else {
-                  resolve("\n[102m[90m Passed [0m[0m The endpoint `" + endpointName + "` it's generated.");
-                }
-              });
+              text = text.replace(new RegExp('{{tables}}', 'g'), tables ? tables : "// You can use base(Tables, ...)");
+              setTimeout(() => {
+                // writing the file
+                this.fs.writeFile(pathFile, text, 'utf8', (err) => {
+                  if (err) {
+                    throw err;
+                  } else {
+                    resolve("\n[102m[90m Passed [0m[0m The endpoint `" + endpointName + "` it's generated.");
+                  }
+                });
+              }, 1000);
             }
           })
         }, 1000);

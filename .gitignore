@@ -7,7 +7,7 @@ yarn.lock
 
 # development
 package.json
-packages/src
+packages/src*
 packages/__tests__
 packages/node_modules
 packages/package.json

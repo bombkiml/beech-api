@@ -4,4 +4,4 @@ Usage:
 
 Options:
   ?|-h, --help          Display this help message
-  -v, --version         Display this application version
+  -v, --version         Display the application version

@@ -1,8 +1,11 @@
 
 Usage:
-  $ beech-service [options]
+  $ beech-service [options] [arguments]
 
 Options:
   ?|-h, --help          Display this help message.
   serve                 Start development service.
   build                 Build production.
+  
+Arguments:
+  -S, --silent          Disabled notify compiler.

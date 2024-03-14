@@ -2,8 +2,11 @@
 
 exports.init = () => {
 
-  //Users.findAll().then(console.log)
+  /**
+   * TO DO something.
+   *
+   */
 
-  console.log("Add-on is work!")
+  //Users.findAll().then(console.log)
 
 }
