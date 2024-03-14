@@ -1,9 +1,5 @@
-const { Base } = require("beech-api");
 {{requireSomething}}
 exports.init = () => {
-  // Initialize Base endpoint
-  Base([{{tables}}]);
-
   // Initiate with Basic request currently support GET, POST, PUT, PATCH and DELETE
 
   endpoint.get("{{endpoint}}", Credentials, (req, res) => {

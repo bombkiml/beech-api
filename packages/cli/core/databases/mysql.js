@@ -4,7 +4,7 @@ global.sql = {};
 exports.connect = () => {
   return new Promise((resolve, reject) => {
     try {
-      mysqlInProcess(_config_.mysql_config, true, (err, result) => {
+      mysqlInProcess(_config_.database_config, true, (err, result) => {
         if (!err) {
           resolve(result);
         } else {
@@ -17,9 +17,9 @@ exports.connect = () => {
   })
 }
 
-mysqlInProcess = (mysql_config, headDbShow, cb) => {
+mysqlInProcess = (database_config, headDbShow, cb) => {
   try {
-    let val = mysql_config.shift();
+    let val = database_config.shift();
     // checking turn on db connect
     if (val.is_connect) {
       // db connection config
@@ -43,8 +43,8 @@ mysqlInProcess = (mysql_config, headDbShow, cb) => {
           sql[ val.name ] = connection;
           console.log(' - [36m ' + val.name + ' [0m->[93m ' + connection.config.database + ':' + connection.config.port + '[0m');
           // checking recursive database connection
-          if (mysql_config.length > 0) {
-            mysqlInProcess(mysql_config, headDbShow, e => {
+          if (database_config.length > 0) {
+            mysqlInProcess(database_config, headDbShow, e => {
               cb(e, true);
             });
           } else {
@@ -57,8 +57,8 @@ mysqlInProcess = (mysql_config, headDbShow, cb) => {
         }
       });
     } else {
-      if (mysql_config.length > 0) {
-        mysqlInProcess(mysql_config, headDbShow, e => {
+      if (database_config.length > 0) {
+        mysqlInProcess(database_config, headDbShow, e => {
           cb(e, true);
         });
       } else {

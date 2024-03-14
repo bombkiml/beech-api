@@ -13,31 +13,25 @@
 
 `Beech API` is a Very easy for using, very feather framework, easy to installation, easy to implementation, and high security.
 
-## Tutorial
-
-`Beech API` tutorial on [Youtube](https://www.youtube.com/channel/UCjBMmUfV6yF1dQkqXnCjn1g)
-
-- [EP.0 Why Beech API ?, basic usage (old version)](https://youtu.be/gEw1Ay_WQR4)
-- [EP.1 Setup enveronment & create project (new version 3.x.x)](https://youtu.be/Z7qaOJQ0a8g)
-- EP.2 Beech API with CRUD (MySQL) `is comming soon..`
-- EP.3 Beech API using security with Passport-JWT token
-- EP.4 Beech API Unit testing
-
 ## Powered by Node.js & Express.js
 
 ![N|Solid](https://i.ibb.co/CQqYZkK/node-epressjs.jpg)
 
 ## Environment
 
-- [`Node.js`](https://nodejs.org) >= 10.13.0+ (recommended)
+- [`Node.js`](https://nodejs.org) >= 12.18.0+ (recommended)
 - `npm` >= 6.4.1+ or `yarn` >= 1.22.4+
 
 ## Installation
 
-Beech API requires Node.js version 8.9 or above (10.13.0+ recommended). You can manage multiple versions of Node on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows). So, Let's go to install `beech api`
+Beech API requires Node.js version 12.18.0 or above. You can manage multiple versions of Node on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows). So, Let's go to install `beech api`
 
 ```sh
-$ npm install beech-api -g
+// NPM
+$ npm install beech-api --global
+
+// Yarn
+$ yarn global add beech-api
 ```
 
 After installation, you will have access to the `beech-app` binary in your command line.
@@ -55,9 +49,20 @@ create a new project run:
 $ beech-app create hello-world
 ```
 
-:grey_question: **Note:** The Beech API it's start server at [http://127.0.0.1:9000](http://127.0.0.1:9000) you can change new a port in `app.config.js` file.
+❓ **Note:** The Beech API it's start server at [http://127.0.0.1:9000](http://127.0.0.1:9000) you can change new a port in `app.config.js` file.
 
-:grey_question: **Note:** The Beech API will be generate ``app_secret`` key in ``app.config.js`` file, You can manual generate by use command ``$ beech key:generate``
+❓ **Note:** The Beech API will be generated ``app_secret`` key in ``app.config.js`` file, You can re-gen by use command ``$ beech key:generate`` or ``$ beech key:gen``
+
+## Update Package ##
+The Beech API new version avariable :
+
+```sh
+// NPM
+$ npm update beech-api --global
+
+// Yarn
+$ yarn global add beech-api
+```
 
 ## Part of generate file
 
@@ -72,21 +77,22 @@ The `beech` command line available:
 
 ```
 Usage:
-  $ beech [options] [arguments] <special>
+  $ beech [options] [arguments] [special]
 
 Options:
   ?|-h, --help                    Display this help message.
-  -v, --version                   Display this application version.
+  -v, --version                   Display the application version.
 
 The following commands are available:
 
-  $ beech make <endpoint>         Create a new endpoints and unit test file,
-                                  You might using <special> `--require=Model1,Model2,..`
-                                  for require model file(s) in generate processing.
+  $ beech make <endpoint>         Create a new Endpoints and unit test file,
+                                  You might using [special] `--require|-R`
+                                  for choose Model(s) used to endpoint file.
   $ beech make <model> --model    Create a new models file.
   $ beech make <helper> --helper  Create a new Helpers file.
   $ beech passport init           Initialize authentication with passport-jwt.
   $ beech add-on init             Initialize add-on file.
+  $ beech key:generate|key:gen    Re-Generate application key (Dangerous!).
 ```
 
 ## Endpoints
@@ -98,20 +104,19 @@ So, you might create new endpoints with constant `endpoint` object variable in `
 ```sh
 $ beech make endpointName
 ```
-
-**Example:** Fruits endpoints.
+**Example ***(Basic)***** : Fruits endpoints. 
 
 ```js
   // fruits-endpoints.js
 
   exports.init = () => {
 
-    //@GET
+    // GET method
     endpoint.get('/fruits', (req, res) => {
       ...
     });
 
-    //@POST
+    // POST method
     endpoint.post('/fruits', (req, res) => {
       ...
     });
@@ -121,7 +126,41 @@ $ beech make endpointName
   }
 ```
 
-:grey_question: **Note:** Inside the endpoints file must be export `init()` function for initialize the the endpoints.
+**Example ***(Sequelize)***** : Fruits endpoints. 
+
+```js
+  // fruits-endpoints.js
+
+  // You can declare Base with Beech Core for initial default endpoint [GET, POST, PATCH, DELETE]
+  const { Base } = require("beech-api"); 👈
+  // Model schema & function
+  const { Fruits } = require("@/models/Fruits");
+
+  exports.init = () => {
+
+    // initialize Fruits Model
+    Base([Fruits]); 👈 // It's like magic creating endpoints for you (CRUD) ✨
+
+    // (C) POST:   /fruits       with { body }
+    // (R) GET:    /fruits       /:limit?/:offset?
+    // (U) PATCH:  /fruits/:id   with { body }
+    // (D) DELETE: /fruits/:id
+
+    // Other GET method
+    endpoint.get('/fruits', (req, res) => {
+      ...
+    });
+
+    // Othre POST method
+    endpoint.post('/fruits', (req, res) => {
+      ...
+    });
+
+    ...
+
+  }
+```
+
 
 ## Models
 
@@ -131,7 +170,7 @@ The `models` keep the files of function(s) for retriving, inserting, updating an
 $ beech make modelName --model
 ```
 
-**Example (basic):** Fruits model.
+**Example ***(Basic)***** : Fruits model.
 
 ```js
   // Fruits.js
@@ -140,11 +179,17 @@ $ beech make modelName --model
 
     // Example basic function get data
     getData() {
-      return { ... }
+
+      return {
+        id: 1,
+        name: "John Doe",
+      }
+
     },
 
     // Example basic function get data from MySQL table
     getFruits() {
+
       // call example mysql `mysql.default_db` connection name
       mysql.default_db.query("SELECT * FROM fruits", (err, results) => {
 
@@ -152,19 +197,20 @@ $ beech make modelName --model
         return results;
 
       });
+
     }
 
   };
 ```
 
-**Example (sequelize):** Fruits model.
+**Example ***(Sequelize)***** : Fruits model.
 
+  You can asign more DataTypes, Learn more : [Sequelize docs](https://sequelize.org/docs/v6/core-concepts/model-basics/#data-types)
 ```js
   // Fruits.js
 
-  // call example define table with `sql.default_db` connection name
+  // Define table Schema with `sql.default_db` connection name
   const Fruits = sql.default_db.define("fruits", {
-    // asign more DataTypes see more: https://sequelize.org/docs/v6/core-concepts/model-basics/#data-types
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
@@ -172,23 +218,25 @@ $ beech make modelName --model
     },
     fruitsName: DataTypes.STRING,
     fruitsQty: DataTypes.INTEGER,
-    fruitsPrice: DataTypes.INTEGER,
+    fruitsPrice: {
+      type: DataTypes.INTEGER,
+      allowNull: false, // Allow null feilds
+    },
+    createdAt: DataTypes.DATE,
+    updatedAt: DataTypes.DATE,
   });
 
-  module.exports = {
+  // Example basic function get one by id
+  function findFruitsById(id) {
+    return Fruits.findOne({ where: { id: id } });
+  }
 
-    // Example basic function get one by id
-    findFruitsById(id) {
-      return Fruits.findOne({ where: { id: id } });
-    },
+  ...
 
-    // Example basic function get all data from table fruits
-    findAll() {
-      return Fruits.findAll();
-    }
-
-  };
+  // Export Schema, Function, ...
+  module.exports = { Fruits, findFruitsById, ... };
 ```
+
 
 ## Helpers
 
@@ -267,7 +315,7 @@ module.exports = {
 };
 ```
 
-Simple ``users`` table:
+***Example :*** Simple ``users`` table:
 ```
 ==============================================================
 |  id  |  username | password |     name     |     email     |
@@ -276,12 +324,13 @@ Simple ``users`` table:
 |  2   |  johnson  |  secret  | johnson BA.  | john@bomb.com |
 ```
 
-You can easy management `users` data with Beech helper just define below:
+You can easy management `users` data with Beech Core, With only ```Store, Update``` NO ```Delete```, Anything you can make DELETE endpoint by yourself
+
 ```js
-  const Beech = require("beech-api").User;
+  const { Store, Update } = require("beech-api");
 ```
 
-- Store users with ``store()``
+- ***Store*** users data with ``Store()``
 ```js
   // store users
   var data = {
@@ -291,12 +340,16 @@ You can easy management `users` data with Beech helper just define below:
     email: "bomb@bomb.com"
   }
 
-  Beech.store(data, (err) => {
+  Store(data, (err, stored) => {
     if (err) throw err;
+    
+    // response affected data
+    console.log(stored.insertId, stored.affectedRows);
+
   });
 ```
 
-- Update users with ``update()``
+- ***Update*** users data with ``Update()``
 ```js
   // update users
   var data = {
@@ -305,8 +358,12 @@ You can easy management `users` data with Beech helper just define below:
     email: "bombkiml@bomb.com"
   }
 
-  Beech.update(data, id, (err) => {
+  Update(data, id, (err, updated) => {
     if (err) throw err;
+
+    // response affected data
+    console.log(updated.updateId, updated.affectedRows);
+
   });
 ```
 
@@ -373,7 +430,7 @@ Place a button on the application's login page, prompting the user to sign in wi
 <a href="/authentication/google" class="button">Sign in with Google</a>
 ```
 
-:grey_question: **Note:** The URL "``/authentication``" will be follow by ``auth_endpoint`` when you custom it.
+❓ **Note:** The URL "``/authentication``" will be follow by ``auth_endpoint`` when you custom it.
 
 
 ### Facebook Strategy
@@ -437,7 +494,7 @@ Place a button on the application's login page, prompting the user to sign in wi
 <a href="/authentication/facebook" class="button">Log In With Facebook</a>
 ```
 
-:grey_question: **Note:** The URL "``/authentication``" will be follow by ``auth_endpoint`` when you custom it.
+❓ **Note:** The URL "``/authentication``" will be follow by ``auth_endpoint`` when you custom it.
 
 
 
@@ -494,9 +551,9 @@ Before continuing further we will need to tell CLI how to connect to database. T
 }
 ```
 
-:grey_question: **Note:** The database connect default port 3306 if you another port you can add object ``port`` in config.
+❓ **Note:** The database connect default port 3306 if you another port you can add object ``port`` in config.
 
-:grey_question: **Note:** If your database doesn't exists yet, you can just call `npx sequelize-cli db:create` command. With proper access it will create that database for you.
+❓ **Note:** If your database doesn't exists yet, you can just call `npx sequelize-cli db:create` command. With proper access it will create that database for you.
 
 ### # Creating first Migrations
 
@@ -638,7 +695,7 @@ The docker build command builds an image from a Dockerfile and a context. The bu
 $ docker build -t <imageName> .
 ```
 
-:grey_question: **Note:** You can specify a repository and tag at which to save the new image : ``` $ docker build -t <imageName>:<tags> . ```
+❓ **Note:** You can specify a repository and tag at which to save the new image : ``` $ docker build -t <imageName>:<tags> . ```
 
 - **Run docker**
 

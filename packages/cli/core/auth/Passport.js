@@ -1,6 +1,6 @@
 const appRoot = require("app-root-path");
 const fs = require("fs");
-const passport_config_file = appRoot + "/passport.config.js";
+const passport_config_file = appRoot + "\\passport.config.js";
 const md5 = require("md5");
 const secret = require("../../../lib/salt").salt;
 const { QueryTypes } = require("sequelize");
@@ -22,10 +22,11 @@ module.exports = {
           global.Credentials = auth.credentials;
         } else {
           global.Credentials = [];
-          return;
         }
       } else {
         global.Credentials = [];
+        //const Requests = require("./Request");
+        //global.Credentials = Requests.requests; ----> // TO DO check passport.config file if not exists show error when file src/ using the JWT (maybe for show JWT is ON/OFF)
         return;
       }
       // declare constant
@@ -154,6 +155,10 @@ module.exports = {
         callbackURL: auth_endpoint + facebook_callbackURL,
         profileFields: allow_permisions_fields
       }, (accessToken, refreshToken, profile, done) => {
+        // Check if the email permission is granted
+        if (!profile.emails || profile.emails.length === 0) {
+          return done(new Error('Email permission not granted.'));
+        }
         // find facebook user
         let faecbookIdField = (passport_config.strategy.facebook.local_profile_fields.facebook_id) ? passport_config.strategy.facebook.local_profile_fields.facebook_id : "facebook_id";
         this.findOrCreate(passport_config, "facebook", passportFields, passportTable, accessToken, refreshToken, profile, faecbookIdField, (err, res, dbFailed) => {

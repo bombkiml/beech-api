@@ -1,23 +1,26 @@
+// {{modelNameUppercase}} structure
 const {{modelNameUppercase}} = sql.{{dbSelected}}.define("{{modelName}}", {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   },
-  examField1: DataTypes.STRING, // asign more DataTypes see more: https://sequelize.org/docs/v6/core-concepts/model-basics/#data-types
+  examField1: DataTypes.STRING, // Asign more DataTypes, Learn more: https://sequelize.org/docs/v6/core-concepts/model-basics/#data-types
   examField2: DataTypes.DATE,
+  examField3: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    // set(value) {
+    //   this.setDataValue("password", md5(value));
+    // },
+  },
+  createdAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE,
 });
 
-module.exports = {
-
-  // Example basic function get one by id
-  find{{modelNameUppercase}}ById(id) {
-    return {{modelNameUppercase}}.findOne({ where: { id: id } });
-  },
-
-  // Example basic function get all data from table {{modelName}}
-  findAll() {
-    return {{modelNameUppercase}}.findAll();
-  }
-
+// Example basic function Get one data by id
+function findOne{{modelNameUppercase}}ById(id) {
+  return {{modelNameUppercase}}.findOne({ where: { id: id } });
 }
+
+module.exports = { {{modelNameUppercase}}, findOne{{modelNameUppercase}}ById };

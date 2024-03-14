@@ -14,16 +14,14 @@ module.exports = {
         if (info.name == 'TokenExpiredError') {
           return res.status(401).json({
             code: 401,
-            status: 'error',
-            error: 'TOKEN_EXPIRED',
+            status: 'TOKEN_EXPIRED',
             message: info
           });
         }
         if (info.name == 'Error') {
           return res.status(401).json({
             code: 401,
-            status: 'error',
-            error: 'NO_AUTH_TOKEN',
+            status: 'NO_AUTH_TOKEN',
             message: {
               name: 'NoTokenError',
               message: 'No auth token'
@@ -33,8 +31,7 @@ module.exports = {
         if (info.name == 'SyntaxError') {
           return res.status(401).json({
             code: 401,
-            status: 'error',
-            error: 'PAYLOAD_SYNTAX_ERROR',
+            status: 'PAYLOAD_SYNTAX_ERROR',
             message: {
               name: 'SyntaxError',
               message: 'Unexpected token < in JSON at position 0'
@@ -43,8 +40,7 @@ module.exports = {
         }
         return res.status(401).json({
           code: 401,
-          status: 'error',
-          error: 'UNAUTHORIZED_USER',
+          status: 'UNAUTHORIZED_USER',
           message: info
         });
       }

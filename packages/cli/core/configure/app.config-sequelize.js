@@ -25,9 +25,9 @@ module.exports = {
    * @exports dialect The engine SQL connection one of 'mysql' | 'sqlite' | 'mariadb' | 'postgres' | 'mssql'
    * The Dialect need of the following:
    * - $ npm install --save  pg pg-hstore # Postgres
-   * - $ npm install --save  mysql2
+   * - $ npm install --save  mysql2 (MySQL suppport version ^5.7, Learn more : https://sequelize.org/releases/#mysql-support-table)
    * - $ npm install --save  mariadb
-   * - $ npm install --save  sqlite3 (Need NodeJS v12.x)
+   * - $ npm install --save  sqlite3 (Need NodeJS ^12.x)
    * - $ npm install --save  tedious # Microsoft SQL Server (Need NodeJS v14.x)
    * @exports name The Connection name
    * @exports host The Host address
@@ -56,13 +56,13 @@ module.exports = {
           collate: "utf8_general_ci"
         },
       },
-      is_connect: false
+      is_connect: false,
     },
     {
       dialect: "sqlite",
       name: "second_db",
       storage: "usr/sqliteDB/mydatabase.sqlite", // or ":memory:"
-      is_connect: false
+      is_connect: false,
     },
     {
       dialect: "mssql",
@@ -78,7 +78,12 @@ module.exports = {
           collate: "utf8_general_ci"
         },
       },
-      is_connect: false
+      dialectOptions: { // ssl
+        options: {
+          encrypt: false,
+        }
+      },
+      is_connect: false,
     },
   ]
 };
