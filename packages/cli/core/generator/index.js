@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 const logUpdate = require("log-update");
 const inquirer = require('inquirer');
-const appRoot = require("app-root-path");
 const walk = require("walk");
 
 class Generator {
@@ -41,7 +40,7 @@ class Generator {
             } else if (this.special == '--require' || this.special == '-R') {
               // walking model files
               const walkModelPromise = new Promise((resolve) => {
-                let walker = walk.walk(appRoot + "/src/models", { followLinks: false });
+                let walker = walk.walk("./src/models", { followLinks: false });
                 let modelFiles = [];
                 walker.on("file", (root, stat, next) => {
                   let subFolderModel = root.split("src/models\\")[1];
@@ -57,7 +56,6 @@ class Generator {
                       choices: modelFiles.map(e => e.replace(/\\/g, "/")),
                     } ]).then(selected => {
                       resolve(selected.selectModel);
-                      //resolve(selected.selectModel.join(","));
                     });
                   } else {
                     // model file not found, Only create endpoint
@@ -69,26 +67,26 @@ class Generator {
                 let myModel = modelSelected[0];
                 // check require model exists
                 const modelExistsPromise = new Promise((resolve, reject) => {
-                this.isModelFound(myModel)
-                  .then(existsModel => {
-                    // check exists model
-                    if (existsModel == false) {
-                      inquirer.prompt([ {
-                        type: "confirm",
-                        name: "confirmModelNF",
-                        message: "[93mModel is not found, Do you only create Endpoint ?:[0m",
-                      } ]).then(confirm => {
-                        if(confirm.confirmModelNF) {
-                          resolve([true, []]);
-                        } else {
-                          resolve([false, []]);
-                        }
-                      });
-                    } else {
-                      resolve([true, myModel]);
-                    }
-                  })
-                  .catch(err => reject(err));
+                  this.isModelFound(myModel)
+                    .then(existsModel => {
+                      // check exists model
+                      if (existsModel == false) {
+                        inquirer.prompt([ {
+                          type: "confirm",
+                          name: "confirmModelNF",
+                          message: "[93mModel is not found, Do you only create Endpoint ?:[0m",
+                        } ]).then(confirm => {
+                          if(confirm.confirmModelNF) {
+                            resolve([true, []]);
+                          } else {
+                            resolve([false, []]);
+                          }
+                        });
+                      } else {
+                        resolve([true, myModel]);
+                      }
+                    })
+                    .catch(err => reject(err));
                 });
                 // promise all check choose model(s)
                 Promise.all([modelExistsPromise]).then((modelRes) => {
@@ -99,6 +97,7 @@ class Generator {
                       this.fs.readFile("./global.config.js", 'utf8', (err, data) => {
                         if (err) {
                           console.log("\n[101m Faltal [0m Can't read `global.config.js` file.\n", err);
+                          return; // break;
                         } else {
                           let buffer = Buffer.from(data);
                           let buf2str = buffer.toString();
@@ -227,91 +226,118 @@ class Generator {
         let routeEndpoints = ((arg.length > 0) ? '/' : '') + subFolder.concat('/') + endpoints;
         // test file
         let fullTest = testPath + subFolder + '/' + endpoints.concat('-endpoints.spec.js');
-        // Check global config for prepare tmp endpoint
-        this.fs.readFile("./global.config.js", 'utf8', (err, data) => {
-          if (err) {
-            resolve("\n[101m Faltal [0m Can't read `global.config.js` file.", err);
-          } else {
-            let buffer = Buffer.from(data);
-            let buf2str = buffer.toString();
-            let buf2json = JSON.parse(JSON.stringify(buf2str));
-            let pool_base = /global.pool_base\s+=\s+(?:"|')([^"]+)(?:"|')(?:\r|\n|$|;|\r)/i.exec(buf2json);
-            if (pool_base) {
-              if (pool_base[ 1 ] == "basic") {
-                tmpEndpointsPath += '/_endpoints_basic';
-              } else if (pool_base[ 1 ] == "sequelize") {
-                tmpEndpointsPath += '/_endpoints';
-              } else {
-                resolve("\n[101m Faltal [0m The pool_base in `global.config.js` file does not match the specific.");
-              }
-            } else {
-              resolve("\n[101m Faltal [0m The pool_base in `global.config.js` file is not found.");
-            }
-          }
-        });
+
         // Check exists endpoint file
         if (!this.fs.existsSync(fullEndpoints)) {
-          // format Model for base use [Users, Xxx, ...]
-          const promise1 = new Promise((resolve) => {
-            if(rq[1]) {
-              let finalUseModel = [];
-              rq[1].map((data, key) => {
-                let lastModel = data.split("/");
-                finalUseModel.push(lastModel.pop());
-                if(rq[1].length == key+1) {
-                  resolve(finalUseModel);
+          // STEP 0 : Check global config for prepare tmp endpoint
+          const promise0 = new Promise((resolve) => {
+            this.fs.readFile("./global.config.js", 'utf8', (err, data) => {
+              if (err) {
+                console.log("\n[101m Faltal [0m Can't read `global.config.js` file.", err);
+                resolve([false, null]);
+              } else {
+                let buffer = Buffer.from(data);
+                let buf2str = buffer.toString();
+                let buf2json = JSON.parse(JSON.stringify(buf2str));
+                let pool_base = /global.pool_base\s+=\s+(?:"|')([^"]+)(?:"|')(?:\r|\n|$|;|\r)/i.exec(buf2json);
+                if (pool_base) {
+                  if (pool_base[ 1 ] == "basic") {
+                    resolve([true, tmpEndpointsPath += '/_endpoints_basic']);
+                  } else if (pool_base[ 1 ] == "sequelize") {
+                    resolve([true, tmpEndpointsPath += '/_endpoints']);
+                  } else {
+                    console.log("\n[101m Faltal [0m The pool_base in `global.config.js` file does not match the specific.");
+                    resolve([false, null]);
+                  }
+                } else {
+                  console.log("\n[101m Faltal [0m The pool_base in `global.config.js` file is not found.");
+                  resolve([false, null]);
                 }
-              });
+              }
+            });
+          });
+
+          // STEP 1 : format Model for base use [Users, Xxx, ...]
+          const promise1 = new Promise((resolve) => {
+            if(rq) {
+              if(rq[1]) {
+                let finalUseModel = [];
+                rq[1].map((data, key) => {
+                  let lastModel = data.split("/");
+                  finalUseModel.push(lastModel.pop());
+                  if(rq[1].length == key+1) {
+                    resolve(finalUseModel);
+                  }
+                });
+              } else {
+                resolve([]);
+              }
             } else {
               resolve([]);
             }
           });
-          // format Require model file
+
+          // STEP 2 : Format Require model file
           const promise2 = new Promise((resolve) => {
             // prepare state require file if `rq[0]` not exists
             let requireFile = '// You can require something \n';
             // check exists requrie files
-            if (rq[0].length) {
-              requireFile = '';
-              // make require multiples line
-              rq[0].map((data, key) => {
-                requireFile += data;
-                if(rq[0].length == key+1) {
-                  //setTimeout(() => {
-                    resolve(requireFile);
-                  //}, 2000);
-                }
-              })
+            if(rq) {
+              if (rq[0].length) {
+                requireFile = '';
+                // make require multiples line
+                rq[0].map((data, key) => {
+                  requireFile += data;
+                  if(rq[0].length == key+1) {
+                    //setTimeout(() => {
+                      resolve(requireFile);
+                    //}, 2000);
+                  }
+                })
+              } else {
+                resolve(requireFile);
+              }
             } else {
               resolve(requireFile);
             }
           });
           // promise all generate endpoint with require(s)
-          Promise.all([promise1, promise2]).then((rqFileRes) => {
-            logUpdate(": Initialize...");
-            setTimeout(() => {
-              // generater endpoint
-              this.makeFolder(endpointsPath + subFolder)
-                .then(this.copy.bind(this, tmpEndpointsPath, fullEndpoints))
-                .then(this.contentReplace.bind(this, fullEndpoints, {
-                  'endpoint': routeEndpoints,
-                  'endpointName': endpoints,
-                  'rq': rqFileRes[1],
-                  'tables': rqFileRes[0],
-                }))
-                // generater test
-                .then(this.makeFolder.bind(this, testPath + subFolder))
-                .then(this.copy.bind(this, tmpSpecPath, fullTest))
-                .then(this.contentReplace.bind(this, fullTest, {
-                  'endpoint': routeEndpoints,
-                  'endpointName': endpoints
-                }))
-                .then(logUpdate("\n[104m [37mProcessing[0m [0m The endpoint `" + endpoints + "` it's generating..."))
-                .then(generated => logUpdate(generated))
-                .catch(err => {
-                  throw err;
-                });
-            }, 2000);
+          Promise.all([promise0, promise1, promise2]).then((rqFileRes) => {
+            /**
+             * @return
+             * 
+             * rqFileRes[0] : Array[0 = global file true, 1 = tmp endpoint file ]
+             * rqFileRes[1] : Array[Users, ...] array tables
+             * rqFileRes[2] : Text require file
+             * 
+             */
+            // check global file exists.
+            if(rqFileRes[0][0]) {
+              logUpdate(": Initialize...");
+              setTimeout(() => {
+                // generater endpoint
+                this.makeFolder(endpointsPath + subFolder)
+                  .then(this.copy.bind(this, tmpEndpointsPath, fullEndpoints))
+                  .then(this.contentReplace.bind(this, fullEndpoints, {
+                    'endpoint': routeEndpoints,
+                    'endpointName': endpoints,
+                    'rq': rqFileRes[2],
+                    'tables': rqFileRes[1],
+                  }))
+                  // generater test
+                  .then(this.makeFolder.bind(this, testPath + subFolder))
+                  .then(this.copy.bind(this, tmpSpecPath, fullTest))
+                  .then(this.contentReplace.bind(this, fullTest, {
+                    'endpoint': routeEndpoints,
+                    'endpointName': endpoints
+                  }))
+                  .then(logUpdate("\n[104m [37mProcessing [0m [0m The endpoint `" + endpoints + "` it's generating..."))
+                  .then(generated => logUpdate(generated))
+                  .catch(err => {
+                    throw err;
+                  });
+              }, 2000);
+            }
           });
         } else {
           resolve("\n[103m[90m Warning [0m[0m The endpoint `" + endpoints + "` it's duplicated.");
