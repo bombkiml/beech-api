@@ -34,7 +34,7 @@ function Schema(Sequelize) {
 
 mapDataToModel = async (data, modelsArr = [], results = [], cb) => {
   let dataArr = await data;
-  var models = modelsArr.slice();
+  var models = modelsArr.length ? modelsArr.slice() : modelsArr;
   let row = dataArr.shift();
   let buildModelData = [];
   recursiveBuildModels(models, row, buildModelData, (builed, e) => {
@@ -50,7 +50,7 @@ mapDataToModel = async (data, modelsArr = [], results = [], cb) => {
 };
 
 recursiveBuildModels = (models, row, data = [], cb) => {
-  let model = models.shift();
+  let model = models.length ? models.shift() : models;
   data.push(model.build(row).dataValues);
   if (models.length > 0) {
     recursiveBuildModels(models, row, data, cb);

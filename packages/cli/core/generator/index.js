@@ -659,7 +659,7 @@ class Generator {
     return new Promise((resolve, reject) => {
       try {
         let md5 = require("md5");
-        let secret = require(__dirname + "/../../../lib/salt").salt;
+        let secret = require(__dirname + "/../../../lib/src/salt").salt;
         let result = '';
         let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         let charactersLength = characters.length;
