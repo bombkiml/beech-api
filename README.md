@@ -112,13 +112,45 @@ $ beech make endpointName
   exports.init = () => {
 
     // GET method
-    endpoint.get('/fruits', (req, res) => {
-      ...
+    endpoint.get("/fruits", Credentials, (req, res) => {
+      // @response
+      res.json({
+        code: 200,
+        message: "Got a GET request.",
+      });
     });
 
+
     // POST method
-    endpoint.post('/fruits', (req, res) => {
-      ...
+    endpoint.post("/fruits", Credentials, (req, res) => {
+      // @response
+      res.json({
+        code: 200,
+        result: {
+          id: req.body.id,
+          name: req.body.name,
+        },
+      });
+    });
+
+
+    // PUT method
+    endpoint.put("/fruits/:id", Credentials, (req, res) => {
+      // @response
+      res.json({
+        code: 200,
+        message: "Got a PUT request /fruits/" + req.params.id,
+      });
+    });
+
+
+    // DELETE method
+    endpoint.delete("/fruits/:id", Credentials, (req, res) => {
+      // @response
+      res.json({
+        code: 200,
+        message: "Got a DELETE request /fruits/" + req.params.id,
+      });
     });
 
     ...
@@ -133,6 +165,7 @@ $ beech make endpointName
 
   // You can declare Base with Beech Core for initial default endpoint [GET, POST, PATCH, DELETE]
   const { Base } = require("beech-api"); 👈
+
   // Model schema & function
   const { Fruits } = require("@/models/Fruits");
 
@@ -141,18 +174,14 @@ $ beech make endpointName
     // initialize Fruits Model
     Base([Fruits]); 👈 // It's like magic creating endpoints for you (CRUD) ✨
 
+    // Now you can request /fruits with methods GET, POST, PATCH and DELETE
     // (C) POST:   /fruits       with { body }
     // (R) GET:    /fruits       /:limit?/:offset?
     // (U) PATCH:  /fruits/:id   with { body }
     // (D) DELETE: /fruits/:id
 
     // Other GET method
-    endpoint.get('/fruits', (req, res) => {
-      ...
-    });
-
-    // Othre POST method
-    endpoint.post('/fruits', (req, res) => {
+    endpoint.get('/exampleFruits', (req, res) => {
       ...
     });
 
@@ -209,9 +238,11 @@ $ beech make modelName --model
 ```js
   // Fruits.js
 
-  // Define table Schema with `sql.default_db` connection name
-  const Fruits = sql.default_db.define("fruits", {
-    id: {
+  const { Schema } = require("beech-api");
+  // Define table Schema with `Schema(sql.default_db)` connection name
+  const Fruits = Schema(sql.default_db).define("fruits", {
+    fruit_id: {
+      field: "id", // Ref: field `id` in fruits table
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true
@@ -226,15 +257,34 @@ $ beech make modelName --model
     updatedAt: DataTypes.DATE,
   });
 
-  // Example basic function get one by id
-  function findFruitsById(id) {
+  // Example Finder by id (ORM), Learn more: https://sequelize.org/docs/v6/core-concepts/model-querying-finders/
+  function exampleFindFruitsById(id) {
     return Fruits.findOne({ where: { id: id } });
+  }
+
+  // Example Raw Query, Learn more: https://sequelize.org/docs/v6/core-concepts/raw-queries/
+  function exampleGetAllFruits(id) {
+    return Fruits.query("SELECT * FROM fruits");
+  }
+
+  // Example Raw Query with Model Instances. This allows you to easily map a query to a predefined model
+  function exampleGetAllFruitsWithModelInstance(id) {
+    return Fruits.query("SELECT * FROM fruits", {
+      model: Fruits, // When JOIN table needed register that table [Fruits, ...]
+      mapToModel: true // pass true here if you have any mapped fields
+    });
   }
 
   ...
 
   // Export Schema, Function, ...
-  module.exports = { Fruits, findFruitsById, ... };
+  module.exports = {
+    Fruits,
+    exampleFindFruitsById,
+    exampleGetAllFruits,
+    exampleGetAllFruitsWithModelInstance,
+    ...
+  };
 ```
 
 

@@ -1,10 +1,10 @@
 const appRoot = require("app-root-path");
-const passport_config = require(appRoot + "/passport.config.js");
 const md5 = require("md5");
 const secret = require("./salt").salt;
 
 async function FindOne(fields, fieldCondArr, cb) {
   try {
+    const passport_config = require(appRoot + "/passport.config.js");
     let stm = '';
     let cond = '1';
     let table = await [passport_config.model.table || "users"];
@@ -42,31 +42,32 @@ async function FindOne(fields, fieldCondArr, cb) {
 
 async function Store(fields, cb) {
     try {
-    let stm = '';
-    let keys = [];
-    let escaped = [];
-    let values = await [passport_config.model.table || "users"];
-    let passwordField = await String(passport_config.model.password_field || "password");
-    const pool = await eval("sql." + passport_config.model.name);
-    // asign password hash
-    fields[passwordField] = md5(fields[passwordField] + secret);
-    // sql generate
-    await Object.keys(fields).forEach(key => {
-      keys.push(key);
-      values.push(fields[key]);
-      escaped.push('?');
-    });
-    // check base pool
-    if (pool_base == "basic") {
-      // pool base is MySQL
-      stm += 'INSERT INTO ?? (' + keys.join() + ') VALUES (' + escaped.join() + ')';
-      await pool.query(stm, values, (err, result) => {
-        cb(err, {
-          insertId: result.insertId,
-          affectedRows: result.affectedRows,
-        });
+      const passport_config = require(appRoot + "/passport.config.js");
+      let stm = '';
+      let keys = [];
+      let escaped = [];
+      let values = await [passport_config.model.table || "users"];
+      let passwordField = await String(passport_config.model.password_field || "password");
+      const pool = await eval("sql." + passport_config.model.name);
+      // asign password hash
+      fields[passwordField] = md5(fields[passwordField] + secret);
+      // sql generate
+      await Object.keys(fields).forEach(key => {
+        keys.push(key);
+        values.push(fields[key]);
+        escaped.push('?');
       });
-    } else if (pool_base == "sequelize") {
+      // check base pool
+      if (pool_base == "basic") {
+        // pool base is MySQL
+        stm += 'INSERT INTO ?? (' + keys.join() + ') VALUES (' + escaped.join() + ')';
+        await pool.query(stm, values, (err, result) => {
+          cb(err, {
+            insertId: result.insertId,
+            affectedRows: result.affectedRows,
+          });
+        });
+      } else if (pool_base == "sequelize") {
       // pool base is Sequelize
       try {
         stm += `INSERT INTO ${values.shift()} (` + keys.join() + ') VALUES (' + escaped.join() + ')';
@@ -91,6 +92,7 @@ async function Store(fields, cb) {
 
 async function Update(someFields, id, cb) {
   try {
+    const passport_config = require(appRoot + "/passport.config.js");
     let stm = '';
     let keys = [];
     let values = await [passport_config.model.table || "users"];

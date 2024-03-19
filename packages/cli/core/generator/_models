@@ -1,6 +1,8 @@
+const { Schema } = require("beech-api");
 // {{modelNameUppercase}} structure
-const {{modelNameUppercase}} = sql.{{dbSelected}}.define("{{modelName}}", {
-  id: {
+const {{modelNameUppercase}} = Schema(sql.{{dbSelected}}).define("{{modelName}}", {
+  {{modelName}}_id: {
+    field: "id",
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
@@ -11,7 +13,7 @@ const {{modelNameUppercase}} = sql.{{dbSelected}}.define("{{modelName}}", {
     type: DataTypes.STRING,
     allowNull: false,
     // set(value) {
-    //   this.setDataValue("password", md5(value));
+    //   this.setDataValue("examField3", md5(value));
     // },
   },
   createdAt: DataTypes.DATE,
@@ -19,8 +21,8 @@ const {{modelNameUppercase}} = sql.{{dbSelected}}.define("{{modelName}}", {
 });
 
 // Example basic function Get one data by id
-function findOne{{modelNameUppercase}}ById(id) {
+function exampleFindOne{{modelNameUppercase}}ById(id) {
   return {{modelNameUppercase}}.findOne({ where: { id: id } });
 }
 
-module.exports = { {{modelNameUppercase}}, findOne{{modelNameUppercase}}ById };
+module.exports = { {{modelNameUppercase}}, exampleFindOne{{modelNameUppercase}}ById };

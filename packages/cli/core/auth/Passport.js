@@ -26,7 +26,7 @@ module.exports = {
       } else {
         global.Credentials = [];
         //const Requests = require("./Request");
-        //global.Credentials = Requests.requests; ----> // TO DO check passport.config file if not exists show error when file src/ using the JWT (maybe for show JWT is ON/OFF)
+        //global.Credentials = Requests.requests; ----> // [Closed] TODO check passport.config file if not exists show error when file src/ using the JWT (maybe for show JWT is ON/OFF)
         return;
       }
       // declare constant
