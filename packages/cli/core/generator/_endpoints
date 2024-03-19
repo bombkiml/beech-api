@@ -2,39 +2,15 @@ const { Base } = require("beech-api");
 {{requireSomething}}
 exports.init = () => {
   // Initialize Base endpoint
-  Base([{{tables}}]);
+  Base([{{tables}}]); // It's like magic creating endpoints for you (CRUD)
 
-  // Initiate with Basic request currently support GET, POST, PUT, PATCH and DELETE
-
-  endpoint.get("{{endpoint}}", Credentials, (req, res) => {
-    // @return
-    res.json({
-      code: 200,
-      message: "Got a GET request.",
-    });
-  });
-
-  endpoint.post("{{endpoint}}", Credentials, (req, res) => {
-    let id = req.body.id;
-    let name = req.body.name;
-    // @return
-    res.json({
-      code: 200,
-      result: {
-        id,
-        name,
-      },
-    });
-  });
-
-  endpoint.put("{{endpoint}}/:id", Credentials, (req, res) => {
-    let id = req.params.id;
-    // @return
-    res.json({
-      code: 200,
-      message: "Got a PUT request at {{endpoint}}/" + id,
-    });
-  });
+  // Create Endpoint, Learn more: https://github.com/bombkiml/beech-api?tab=readme-ov-file#endpoints
+  
+  // Now you can request {{endpoint}} with methods GET, POST, PATCH and DELETE
+  // (C) POST:   {{endpoint}}       with { body }
+  // (R) GET:    {{endpoint}}       /:limit?/:offset?
+  // (U) PATCH:  {{endpoint}}/:id   with { body }
+  // (D) DELETE: {{endpoint}}/:id
 
   // More request...
 

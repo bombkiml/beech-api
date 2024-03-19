@@ -83,7 +83,7 @@ module.exports = {
         var passport_config = null;
         var jwt = null;
         var passport = null;
-        var Beech = null;
+        var User = null;
         var passport_config_file_exists = true;
 
         // First promise 
@@ -95,7 +95,7 @@ module.exports = {
               passport_config = require(appRoot + passport_config_file);
               jwt = require('jsonwebtoken');
               passport = require('passport');
-              Beech = require("../../../lib/beech");
+              User = require("../../../lib/src/user");
               if (!passport_config.jwt_allow) {
                 // jwt is false
                 console.log("- [91mJWT[0m:     [90mOFF[0m");
@@ -187,7 +187,7 @@ module.exports = {
                 Promise.all([promise])
                   .then((secret) => {
                     if(secret) {
-                      Beech.Store(req.body, (err, result) => {
+                      User.Store(req.body, (err, result) => {
                         if (err) {
                           res.status(501).json({ code: 501, status: "CREATE_FAILED", error: err });
                         } else {
@@ -227,7 +227,7 @@ module.exports = {
                   .then((secret) => {
                     if(secret) {
                       // require some fields with body params
-                      Beech.Update(req.body, req.params.id, (err, result) => {
+                      User.Update(req.body, req.params.id, (err, result) => {
                         if (err) {
                           res.status(501).json({ code: 501, status: "UPDATE_FAILED", error: err });
                         } else {
@@ -273,7 +273,7 @@ module.exports = {
                   } else {
                     let condUser = {};
                     condUser[ (passport_config.strategy.google.local_profile_fields.google_id) ? passport_config.strategy.google.local_profile_fields.google_id : "google_id" ] = req.user.google.id;
-                    Beech.FindOne([], condUser, (err, result) => {
+                    User.FindOne([], condUser, (err, result) => {
                       if (err) {
                         res.status(500).json({
                           code: 500,
@@ -325,7 +325,7 @@ module.exports = {
                   } else {
                     let condUser = {};
                     condUser[ (passport_config.strategy.facebook.local_profile_fields.facebook_id) ? passport_config.strategy.facebook.local_profile_fields.facebook_id : "facebook_id" ] = req.user.facebook.id;
-                    Beech.FindOne([], condUser, (err, result) => {
+                    User.FindOne([], condUser, (err, result) => {
                       if (err) {
                         res.status(500).json({
                           code: 500,

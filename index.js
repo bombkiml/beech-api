@@ -1,4 +1,2 @@
-const { Store, Update } = require("./packages/lib/beech");
-const { Base } = require("./packages/lib/endpoint");
-
-module.exports = { Base, Store, Update };
+const { Base, Schema, Store, Update } = require("./packages/lib/index");
+module.exports = { Base, Schema, Store, Update };
