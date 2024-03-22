@@ -181,7 +181,7 @@ $ beech make endpointName
     // (D) DELETE: /fruits/:id
 
     // Other GET method
-    endpoint.get('/exampleFruits', (req, res) => {
+    endpoint.get('/example-fruits', (req, res) => {
       ...
     });
 

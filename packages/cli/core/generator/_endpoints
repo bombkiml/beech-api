@@ -4,14 +4,16 @@ exports.init = () => {
   // Initialize Base endpoint
   Base([{{tables}}]); // It's like magic creating endpoints for you (CRUD)
 
-  // Create Endpoint, Learn more: https://github.com/bombkiml/beech-api?tab=readme-ov-file#endpoints
+  // Example GET request
+  endpoint.get("/example-{{endpoint}}", Credentials, (req, res) => {
+    // @response
+    res.json({
+      code: 200,
+      message: "Got a GET example request.",
+    });
+  });
   
-  // Now you can request {{endpoint}} with methods GET, POST, PATCH and DELETE
-  // (C) POST:   {{endpoint}}       with { body }
-  // (R) GET:    {{endpoint}}       /:limit?/:offset?
-  // (U) PATCH:  {{endpoint}}/:id   with { body }
-  // (D) DELETE: {{endpoint}}/:id
-
-  // More request...
+  // Your more request...
+  // Create more Endpoints, Learn more: https://github.com/bombkiml/beech-api?tab=readme-ov-file#endpoint
 
 };
