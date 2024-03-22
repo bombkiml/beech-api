@@ -234,7 +234,7 @@ class Generator {
             this.fs.readFile("./global.config.js", 'utf8', (err, data) => {
               if (err) {
                 console.log("\n[101m Faltal [0m Can't read `global.config.js` file.", err);
-                resolve([false, null]);
+                resolve([false, null, null]);
               } else {
                 let buffer = Buffer.from(data);
                 let buf2str = buffer.toString();
@@ -242,16 +242,16 @@ class Generator {
                 let pool_base = /global.pool_base\s+=\s+(?:"|')([^"]+)(?:"|')(?:\r|\n|$|;|\r)/i.exec(buf2json);
                 if (pool_base) {
                   if (pool_base[ 1 ] == "basic") {
-                    resolve([true, tmpEndpointsPath += '/_endpoints_basic']);
+                    resolve([true, tmpEndpointsPath += '/_endpoints_basic', pool_base[ 1 ]]);
                   } else if (pool_base[ 1 ] == "sequelize") {
-                    resolve([true, tmpEndpointsPath += '/_endpoints']);
+                    resolve([true, tmpEndpointsPath += '/_endpoints', pool_base[ 1 ]]);
                   } else {
                     console.log("\n[101m Faltal [0m The pool_base in `global.config.js` file does not match the specific.");
-                    resolve([false, null]);
+                    resolve([false, null, null]);
                   }
                 } else {
                   console.log("\n[101m Faltal [0m The pool_base in `global.config.js` file is not found.");
-                  resolve([false, null]);
+                  resolve([false, null, null]);
                 }
               }
             });
@@ -306,7 +306,7 @@ class Generator {
             /**
              * @return
              * 
-             * rqFileRes[0] : Array[0 = global file true, 1 = tmp endpoint file ]
+             * rqFileRes[0] : Array[0 = global file true, 1 = tmp endpoint file, 2 = pool_base type ]
              * rqFileRes[1] : Array[Users, ...] array tables
              * rqFileRes[2] : Text require file
              * 
@@ -314,6 +314,11 @@ class Generator {
             // check global file exists.
             if(rqFileRes[0][0]) {
               logUpdate(": Initialize...");
+              // check for remove / slash from route endpoint
+              if(rqFileRes[0][2] == 'sequelize') {
+                routeEndpoints = routeEndpoints.replace(/\\|\//g,'');
+              }
+              // timeout generate endpoint and replace content
               setTimeout(() => {
                 // generater endpoint
                 this.makeFolder(endpointsPath + subFolder)
@@ -601,7 +606,7 @@ class Generator {
               text = text.replace(new RegExp('{{endpointName}}', 'g'), endpointName);
               text = text.replace(new RegExp('{{requireSomething}}', 'g'), rq);
               text = text.replace(new RegExp('{{modelName}}', 'g'), modelName);
-              text = text.replace(new RegExp('{{tables}}', 'g'), tables ? tables : "// You can use base(Tables, ...)");
+              text = text.replace(new RegExp('{{tables}}', 'g'), tables ? tables : "// You can use Base([Tables, ...])");
               setTimeout(() => {
                 // writing the file
                 this.fs.writeFile(pathFile, text, 'utf8', (err) => {
