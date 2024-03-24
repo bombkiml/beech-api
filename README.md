@@ -258,7 +258,7 @@ $ beech make modelName --model
   });
 
   // Example Finder by id (ORM), Learn more: https://sequelize.org/docs/v6/core-concepts/model-querying-finders/
-  function exampleFindFruitsById(id) {
+  function exampleFindOneFruitsById(id) {
     return Fruits.findOne({ where: { id: id } });
   }
 
