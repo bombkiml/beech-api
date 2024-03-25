@@ -3,7 +3,7 @@ Usage:
   $ beech-service [options] [arguments]
 
 Options:
-  ?|-h, --help          Display this help message.
+  ?, -h, --help         Display this help message.
   serve                 Start development service.
   build                 Build production.
   

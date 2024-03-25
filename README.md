@@ -53,15 +53,15 @@ $ beech-app create hello-world
 
 ❓ **Note:** The Beech API will be generated ``app_secret`` key in ``app.config.js`` file, You can re-gen by use command ``$ beech key:generate`` or ``$ beech key:gen``
 
-## Update Package ##
-The Beech API new version avariable :
+## Upgrade to latest version ##
+The Beech API upgrade to latest version command avariable :
 
 ```sh
-// NPM
-$ npm update beech-api --global
+// Project upgrade
+$ beech-app update
 
-// Yarn
-$ yarn global add beech-api
+// Global upgrade
+$ beech-app update -g, --global
 ```
 
 ## Part of generate file
@@ -80,19 +80,19 @@ Usage:
   $ beech [options] [arguments] [special]
 
 Options:
-  ?|-h, --help                      Display this help message.
+  ?, -h, --help                     Display this help message.
   -v, --version                     Display the application version.
 
 The following commands are available:
 
   $ beech make <endpoint>           Create a new Endpoints and unit test file,
-                                    You might using [special] `--require|-R`
+                                    You might using [special] `-R, --require`
                                     for choose Model(s) used to endpoint file.
-  $ beech make <model> --model,-M   Create a new models file.
+  $ beech make <model> -M, --model  Create a new Models file.
   $ beech make <helper> --helper    Create a new Helpers file.
   $ beech passport init             Initialize authentication with passport-jwt.
   $ beech add-on init               Initialize add-on file.
-  $ beech key:generate|key:gen      Re-Generate application key (Dangerous!).
+  $ beech key:generate, key:gen     Re-Generate application key (Dangerous!).
 ```
 
 ## Endpoints
@@ -258,7 +258,7 @@ $ beech make modelName --model
   });
 
   // Example Finder by id (ORM), Learn more: https://sequelize.org/docs/v6/core-concepts/model-querying-finders/
-  function exampleFindFruitsById(id) {
+  function exampleFindOneFruitsById(id) {
     return Fruits.findOne({ where: { id: id } });
   }
 

@@ -134,7 +134,7 @@ class Generator {
                                   modelName = modelName.pop();
                                   modelName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
                                   modelFolder = data.substring(0, data.lastIndexOf('/') + 1).replace(/\\/g, "/");
-                                  rqr += `const { ${modelName}, findOne${modelName}byId } = require(\"@/models/${modelFolder + modelName}\");\n`;
+                                  rqr += `const { ${modelName}, exampleFindOne${modelName}ById } = require(\"@/models/${modelFolder + modelName}\");\n`;
                                   if(myRequire.length == key+1) {
                                     resolve([[rqr], myRequire]);
                                   }
