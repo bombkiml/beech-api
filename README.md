@@ -53,15 +53,15 @@ $ beech-app create hello-world
 
 ❓ **Note:** The Beech API will be generated ``app_secret`` key in ``app.config.js`` file, You can re-gen by use command ``$ beech key:generate`` or ``$ beech key:gen``
 
-## Update Package ##
-The Beech API new version avariable :
+## Upgrade to latest version ##
+The Beech API upgrade to latest version command avariable :
 
 ```sh
-// NPM
-$ npm update beech-api --global
+// Project upgrade
+$ beech-app update
 
-// Yarn
-$ yarn global add beech-api
+// Global upgrade
+$ beech-app update -g, --global
 ```
 
 ## Part of generate file
