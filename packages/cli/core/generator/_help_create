@@ -1,7 +1,11 @@
 
 Usage:
   $ beech-app create <app-name>
+  $ beech-app update [arguments]
 
 Options:
-  ?|-h, --help          Display this help message
-  -v, --version         Display the application version
+  ?, -h, --help     Display this help message.
+  -v, --version     Display the application version.update            
+
+Arguments:
+  -g, --global      Global upgrade The beech-api to latest version.

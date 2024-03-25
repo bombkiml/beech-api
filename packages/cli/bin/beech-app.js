@@ -91,6 +91,54 @@ class Beech {
           } else {
             resolve("\n[103m[90m Warning [0m[0m Please specify your project name.");
           }
+        } else if (this.option == "update") {
+          // upgrade the beech-api package
+          let isGlobalYarn = "yarn add beech-api";
+          let isGlobalNpm = "npm update beech-api";
+          let processUpdate = null;
+          let lineStdout = "";
+          if (this.argument == '-g' || this.argument == '--global') {
+            isGlobalNpm = "npm update beech-api -g";
+            isGlobalYarn = "yarn global add beech-api";
+          }
+          // prompt select
+          inquirer.prompt([ {
+            type: "list",
+            name: "package",
+            message: "[93mPlease pick a package control:[0m",
+            choices: [ "NPM", "Yarn" ],
+          } ]).then(selectedPackage => {
+            logUpdate(": Initialize...");
+            // delay for update package
+            setTimeout(() => {
+              if(selectedPackage.package == "NPM") {
+                processUpdate = this.cmd.get(isGlobalNpm, (err) => {
+                  if (err) { throw err }
+                });
+                // npm install line shoutout
+                processUpdate.stdout.on('data', (npmData) => {
+                  lineStdout += npmData;
+                  if (lineStdout[ lineStdout.length - 1 ] == '\n') {
+                    logUpdate('\n' + lineStdout);
+                  }
+                });
+              } else if(selectedPackage.package == "Yarn") {
+                processUpdate = this.cmd.get(isGlobalYarn, (err) => {
+                  if (err) { throw err }
+                });
+                // yarn install line shoutout
+                processUpdate.stdout.on('data', (yarnData) => {
+                  lineStdout += yarnData;
+                  if (lineStdout[ lineStdout.length - 1 ] == '\n') {
+                    logUpdate('\n' + lineStdout);
+                  }
+                });
+              } else {
+                logUpdate("\n[101m Faltal [0m Catch update package. Try again...");
+                return;
+              }
+            }, 1000);
+          });
         } else {
           // help for see avaliable command
           this.help()
@@ -98,7 +146,7 @@ class Beech {
             .catch(err => reject(err));
         }
       } catch (error) {
-        reject(error);
+        throw error;
       }
     });
   }
@@ -151,7 +199,7 @@ class Beech {
         if (freatureLength) {
           freatureArr.map((f, key) => {
             if (f.split(' ')[ 0 ] == "Add-Ons") {
-              (process.env.NODE_ENV == "development") ? this.cmd.get('cd ' + argument + ' && node cli/bin/beech.js add-on init') : this.cmd.get('cd ' + argument + ' && beech add-on init');
+              (process.env.NODE_ENV == "development") ? this.cmd.get('cd ' + argument + ' && node cli/bin/beech-app.js add-on init') : this.cmd.get('cd ' + argument + ' && beech add-on init');
               console.log("[" + (key + 1) + "/" + freatureLength + "] Installing Add-Ons");
             }
             if (f.split(' ')[ 0 ] == "Basic") {
@@ -159,7 +207,7 @@ class Beech {
               console.log("[" + (key + 1) + "/" + freatureLength + "] Installing Basic helper");
             }
             if (f.split(' ')[ 0 ] == "Passport") {
-              (process.env.NODE_ENV == "development") ? this.cmd.get('cd ' + argument + ' && node cli/bin/beech.js passport init') : this.cmd.get('cd ' + argument + ' && beech passport init');
+              (process.env.NODE_ENV == "development") ? this.cmd.get('cd ' + argument + ' && node cli/bin/beech-app.js passport init') : this.cmd.get('cd ' + argument + ' && beech passport init');
               console.log("[" + (key + 1) + "/" + freatureLength + "] Installing Passport JWT, Official strategy Google, Facebook");
             }
             if (freatureArr.length == (key + 1)) {
