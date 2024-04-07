@@ -41,7 +41,7 @@ mysqlInProcess = (database_config, headDbShow, cb) => {
           }
           // declare to global mysql variable
           sql[ val.name ] = connection;
-          console.log(' - [36m ' + val.name + ' [0m->[93m ' + connection.config.database + ':' + connection.config.port + '[0m');
+          console.log('-[36m ' + val.name + ' [0m->[93m ' + connection.config.database + ':' + connection.config.port + '[0m');
           // checking recursive database connection
           if (database_config.length > 0) {
             mysqlInProcess(database_config, headDbShow, e => {

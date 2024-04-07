@@ -19,7 +19,7 @@ module.exports = {
     // The fields for authenticate, default fields: (`username` and `password`)
     username_field: "",
     password_field: "",
-    // Show JWT fields, default show fields: ["id", "name", "email"]
+    // JWT playload data
     fields: []
   },
 
@@ -37,13 +37,9 @@ module.exports = {
     google: {
       // Allow using google strategy
       allow: false,
-      // Local user profile fields, default fields name: `name`, `email`, `photos`, `locate`
+      // Authen profile store fields available: `google_id`, `name`, `email`, `photos`, `locate`
       local_profile_fields: {
         google_id: "google_id", // Google ID field, default field name: `google_id`
-        name: "name",
-        email: "email",
-        photos: "profile_url",
-        locate: "" // If you not store set to null
       },
       // Google development Credentials OAuth 2.0 Client IDs
       client_id: "GOOGLE_CLIENT_ID",
@@ -65,19 +61,13 @@ module.exports = {
     facebook: {
       // Allow using facebook strategy
       allow: false,
-      // Local user profile fields, default fields name: `name`, `email`, `photos`, `locate`
+      // Authen profile store fields available: `facebook_id`, `name`, `email`, `photos`, `locate`
       local_profile_fields: {
         facebook_id: "facebook_id", // Facebook ID field, default field name: `facebook_id`
-        name: "name",
-        email: "email",
-        photos: "profile_url",
-        locate: "" // If you not store set to null
       },
       // Facebook development Credentials OAuth 2.0
       app_id: "FACEBOOK_APP_ID",
       app_secret: "FACEBOOK_APP_SECRET",
-      // Allow Permissions facebook profile fields: see more (https://developers.facebook.com/docs/graph-api/reference/v13.0/user#readperms)
-      profileFieldsAllow: [ 'id', 'displayName', 'name', 'photos', 'email', 'location' ],
       // Callback endpoint default `/facebook/callback`
       callbackURL: "",
       // Failure redirect to your route

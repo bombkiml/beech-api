@@ -43,10 +43,18 @@ $ beech-app --version
 
 ## Creating a project
 
-create a new project run:
+Create a new project run:
 
 ```sh
 $ beech-app create hello-world
+```
+Run your project:
+```sh
+$ cd hello-world
+
+$ npm start
+// OR
+$ yarn start
 ```
 
 ❓ **Note:** The Beech API it's start server at [http://127.0.0.1:9000](http://127.0.0.1:9000) you can change new a port in `app.config.js` file.
@@ -353,7 +361,7 @@ module.exports = {
     username_field: "",
     password_field: "",
 
-    // show fields, default show fields ["id", "name", "email"]
+    // JWT playload data, You can add it. Example: ["name", "email", ...]
     fields: []
   },
 
@@ -365,7 +373,7 @@ module.exports = {
 };
 ```
 
-***Example :*** Simple ``users`` table:
+***Authentication structure :*** Simple ``users`` table:
 ```
 ==============================================================
 |  id  |  username | password |     name     |     email     |
@@ -374,7 +382,47 @@ module.exports = {
 |  2   |  johnson  |  secret  | johnson BA.  | john@bomb.com |
 ```
 
-You can easy management `users` data with Beech Core, With only ```Store, Update``` NO ```Delete```, Anything you can make DELETE endpoint by yourself
+When you config passport with ```users``` table already. You will got Auth endpoint in available.
+```js
+POST:  "/authentication"               // Request token
+POST:  "/authentication/create"        // Create new Auth data
+PATCH: "/authentication/update/:id"    // Update old Auth data
+```
+
+Example :
+
+```js
+// Request with body for gether Token
+POST: "/authentication"
+{
+  username: "bombkiml",
+  password: "secret"
+}
+
+
+// Request with body for Create Auth data
+POST: "/authentication/create"
+{
+  username: "add_new_username",
+  password: "add_new_secret",
+  name: "add_new_my_name",
+  email: "add_new_email"
+}
+
+
+// Request with body for Update Auth data
+PATCH: "/authentication/update/1"
+Bearer Authorization: your_token
+{
+  username: "update_bombkiml",
+  password: "update_secret",
+  name: "update_my_name",
+  email: "my_update_email@bomb.com"
+}
+```
+
+### Beech auth managements with User ###
+You can easy management `users` data with Beech, Only ```Store, Update``` NO ```Delete```, Anything you can make DELETE endpoint by yourself
 
 ```js
   const { Store, Update } = require("beech-api");
@@ -443,13 +491,13 @@ Go to open file ``passport.config.js`` and go to ``google strategy`` then turn a
       // Allow using google strategy
       allow: true,
 
-      // Local user profile fields, default fields name: `name`, `email`, `photos`, `locate`
+      // Authen profile store fields available: `google_id`, `name`, `email`, `photos`, `locate`
       local_profile_fields: {
         google_id: "google_id", // Google ID field, default field name: `google_id`
-        name: "name",
-        email: "email",
-        photos: "profile_url",
-        locate: "" // If you not store set to null
+        name: "your_name_field",
+        email: "your_email_field",
+        photos: "your_profile_url_field",
+        locate: "" // If you not store set to null or remove it.
       },
       // Google development Credentials OAuth 2.0 Client IDs
       client_id: "GOOGLE_CLIENT_ID",
@@ -504,19 +552,22 @@ Go to open file ``passport.config.js`` and go to ``facebook strategy`` then turn
       // Allow using facebook strategy
       allow: true,
 
-      // Local user profile fields, default fields name: `name`, `email`, `photos`, `locate`
+      // Authen profile store fields available: `facebook_id`, `name`, `email`, `photos`, `locate`
       local_profile_fields: {
         facebook_id: "facebook_id", // Facebook ID field, default field name: `facebook_id`
-        name: "name",
-        email: "email",
-        photos: "profile_url",
-        locate: "" // If you not store set to null
+        name: "your_name_field",
+        email: "your_email_field",
+        photos: "your_profile_url_field",
+        locate: "" // If you not store set to null or remove it.
       },
       // Facebook development Credentials OAuth 2.0
       app_id: "FACEBOOK_APP_ID",
       app_secret: "FACEBOOK_APP_SECRET",
-      // Allow Permissions facebook profile fields: see more (https://developers.facebook.com/docs/graph-api/reference/v13.0/user#readperms)
-      profileFieldsAllow: [ 'id', 'displayName', 'name', 'photos', 'email', 'location' ],
+
+      // You can allow Permissions facebook profile fields. Learn more (https://developers.facebook.com/docs/graph-api/reference/v13.0/user#readperms)
+      // **Update 2024, Now! Facebook requests permission for show Email. Learn more (https://developers.facebook.com/docs/permissions)
+      profileFieldsAllow: [ 'id', 'displayName', 'name', 'photos', 'email', 'location' ], // Default allowed
+
       // Callback endpoint default `/facebook/callback`
       callbackURL: "",
       // Failure redirect to your route

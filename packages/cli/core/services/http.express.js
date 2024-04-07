@@ -144,7 +144,7 @@ module.exports = {
                             accessToken
                           });
                         } else {
-                          res.status(401).json({ code: 401, message: "Unauthorized." });
+                          res.status(401).json({ code: 401, message: "Unauthorized with wrong key." });
                         }
                       } else {
                         res.status(422).json({ code: 422, message: "Unprocessable Entity." });
@@ -164,8 +164,8 @@ module.exports = {
                   }
                 })(req, res, next);
               });
-              // create users endpoints
-              _app_.post(auth_endpoint + '/users', (req, res) => {
+              // create auth data endpoints
+              _app_.post(auth_endpoint + '/create', (req, res) => {
                 const promise = new Promise((resolve) => {
                   if (passport_config.app_secret_allow) {
                     if (req.body.app_secret) {
@@ -174,7 +174,7 @@ module.exports = {
                           resolve(true);
                         }
                       } else {
-                        res.status(401).json({ code: 401, message: "Unauthorized." });
+                        res.status(401).json({ code: 401, message: "Unauthorized with wrong key." });
                       }
                     } else {
                       res.status(422).json({ code: 422, message: "Unprocessable Entity." });
@@ -203,8 +203,8 @@ module.exports = {
                   });
                 });
               });
-              // patch users endpoints
-              _app_.patch(auth_endpoint + '/users/:id', auth.credentials, (req, res) => {
+              // patch auth data endpoints
+              _app_.patch(auth_endpoint + '/update/:id', auth.credentials, (req, res) => {
                 const promise = new Promise((resolve) => {
                   if (passport_config.app_secret_allow) {
                     if (req.body.app_secret) {
@@ -213,7 +213,7 @@ module.exports = {
                           resolve(true);
                         }
                       } else {
-                        res.status(401).json({ code: 401, message: "Unauthorized." });
+                        res.status(401).json({ code: 401, message: "Unauthorized with wrong key." });
                       }
                     } else {
                       res.status(422).json({ code: 422, message: "Unprocessable Entity." });
@@ -359,7 +359,7 @@ module.exports = {
             reject(error);
           }
         });
-        // Promise all 
+        // Promise all
         Promise.all([ p1, p2 ]).then(() => resolve(true)).catch((err) => reject(err));
       } catch (error) {
         reject(error);
