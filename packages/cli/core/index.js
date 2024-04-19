@@ -91,9 +91,19 @@ init = async (jsfiles) => {
     await (pool_base == "basic"
       ? new Promise((resolve) => resolve(mySqlDbConnect.connect()))
       : new Promise((resolve) => resolve(SequelizeDbConnect.connect())));
-    await new Promise((resolve) => resolve(authPassport.init()));
-    await new Promise((resolve) => resolve(fileWalk.fileWalk(jsfiles)));
-    await new Promise((resolve) => resolve(httpExpress.expressStart()));
+    await authPassport.init().then(async (x) => {
+      if(x[0]) {
+        throw x[0];
+      } else {
+        await new Promise((resolve) => resolve(fileWalk.fileWalk(jsfiles)));
+        await new Promise((resolve) => {
+          httpExpress.expressStart()
+            .then((expss) => {
+              resolve(expss);
+            });
+        });
+      }
+    });
   } catch (error) {
     console.log("[101m Compile failed [0m", error);
     throw error;

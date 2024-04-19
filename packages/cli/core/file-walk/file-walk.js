@@ -7,7 +7,7 @@ exports.fileWalk = (files) => {
     try {
       if (files.length) {
         let route;
-        files.forEach((val, key) => {
+        files.map((val, key) => {
           let endpointFile = val.replace(".js", "");
           try {
             route = require(endpointFile);

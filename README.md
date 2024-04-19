@@ -19,12 +19,11 @@
 
 ## Environment
 
-- [`Node.js`](https://nodejs.org) >= 12.18.0+ (recommended)
-- `npm` >= 6.4.1+ or `yarn` >= 1.22.4+
+- [`Node.js`](https://nodejs.org) >= 14.19.0+ (recommended)
 
 ## Installation
 
-Beech API requires Node.js version 12.18.0 or above. You can manage multiple versions of Node on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows). So, Let's go to install `beech api`
+Beech API requires Node.js version 14.19.0 or above. You can manage multiple versions of Node on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows). So, Let's go to install `beech-api`
 
 ```sh
 // NPM
@@ -43,15 +42,22 @@ $ beech-app --version
 
 ## Creating a project
 
-create a new project run:
+Create a new project run:
 
 ```sh
 $ beech-app create hello-world
 ```
+Run your project:
+```sh
+$ cd hello-world
 
-❓ **Note:** The Beech API it's start server at [http://127.0.0.1:9000](http://127.0.0.1:9000) you can change new a port in `app.config.js` file.
+$ npm start
+// OR
+$ yarn start
+```
 
-❓ **Note:** The Beech API will be generated ``app_secret`` key in ``app.config.js`` file, You can re-gen by use command ``$ beech key:generate`` or ``$ beech key:gen``
+❓ **Note:** The Beech API it's start server at [http://localhost:9000](http://localhost:9000) you can change new a port in `app.config.js` file.
+
 
 ## Upgrade to latest version ##
 The Beech API upgrade to latest version command avariable :
@@ -64,8 +70,7 @@ $ beech-app update
 $ beech-app update -g, --global
 ```
 
-## Part of generate file
-
+## Beech CLI tool available ##
 After installation, you will have access to the `beech` binary in your command line.
 The `beech` command has a number of options and you can explore them all by running:
 
@@ -80,22 +85,75 @@ Usage:
   $ beech [options] [arguments] [special]
 
 Options:
-  ?, -h, --help                     Display this help message.
-  -v, --version                     Display the application version.
+  ?, -h, --help                       Display this help message.
+  -v, --version                       Display the application version.
 
 The following commands are available:
 
-  $ beech make <endpoint>           Create a new Endpoints and unit test file,
-                                    You might using [special] `-R, --require`
-                                    for choose Model(s) used to endpoint file.
-  $ beech make <model> -M, --model  Create a new Models file.
-  $ beech make <helper> --helper    Create a new Helpers file.
-  $ beech passport init             Initialize authentication with passport-jwt.
-  $ beech add-on init               Initialize add-on file.
-  $ beech key:generate, key:gen     Re-Generate application key (Dangerous!).
+  $ beech make <endpoint>             Create a new Endpoints and unit test file,
+                                      You might using [special] `-R, --require`
+                                      for choose Model(s) used to endpoint file.
+  $ beech make <model> -M, --model    Create a new Models file.
+  $ beech make <helper> --helper      Create a new Helpers file.
+  $ beech passport init               Initialize authentication with passport-jwt.
+  $ beech add-on init                 Initialize add-on file.
+  $ beech key:generate, key:gen       Re-Generate application key (Dangerous!).
+  $ beech hash:<text>                 Hash text for Access to Database connection.
+```
+❓ **Note:** Every to create new project will be generated new ``app_key`` in ``app.config.js`` file, If you can re-generate. Can use command ``$ beech key:generate`` or ``$ beech key:gen``
+
+## Database connection ##
+
+You might connection to Database with `database_config` object in `app.config.js` file. Anything can support to multiple Database connections.
+
+The connection base on `pool_base` in `global.config.js` file.
+
+- `basic` = Support only Raw Query with Only MySQL.
+- `sequelize` = Support PDO, Raw Query with various Database Engine.
+
+In case Access to Database must to Hash the `username` and `password` with Beech CLI like this.
+
+```sh
+// Hash username
+$ beech hash:root
+Output: m42BVxQ6Q4kLdRX7xS_Hm7WbQiNqShJDvw9SfuLCgI431oafWBtQJoJDnoCL
+
+// Hash password
+$ beech hash:password
+Output: FjgcgJPylkV7EeQJjea_EeifPwaHVO9onD3T4ATk3YYAyvprdrQejtMGu3dcDS0ejA
+
 ```
 
-## Endpoints
+Example : `app.config.js`
+```js
+// basic & sequelize (needed Hash)
+
+...
+
+database_config: [
+  {
+    dialect: "mysql",
+    name: "mysql_my_store_db",
+    host: "localhost",
+    username: "DB_USERNAME_HASH",
+    password: "DB_PASSWORD_HASH",
+    database: "my_store_db",
+    port: "3306",
+    is_connect: true,
+  },
+  
+  ...
+
+],
+
+...
+
+```
+❓ **Caution! :**  Every re-new generate `app_key`. Must to new Hash your Access and change to ALL Database connections.
+
+## Part of generate file
+
+### # Generate Endpoints ###
 
 The `endpoints` keep the endpoints basic request files currently support `GET`, `POST`, `PUT`, `PATCH` and `DELETE`.
 
@@ -191,7 +249,7 @@ $ beech make endpointName
 ```
 
 
-## Models
+### # Generate Models ###
 
 The `models` keep the files of function(s) for retriving, inserting, updating and deleting with SQL data. for understanding you might make model name same your table name in `src/models` folder.
 
@@ -288,7 +346,7 @@ $ beech make modelName --model
 ```
 
 
-## Helpers
+### # Generate Helpers ###
 
 The `helpers` keep the files of functions for process specific something in the project. So, you might create the `helpers` in path `src/helpers` folder.
 
@@ -353,19 +411,19 @@ module.exports = {
     username_field: "",
     password_field: "",
 
-    // show fields, default show fields ["id", "name", "email"]
+    // JWT playload data, You can add it. Example: ["name", "email", ...]
     fields: []
   },
 
-  // allow using with app_secret requset (Every request need app_secret parameter)
-  app_secret_allow: false
+  // allow using request with app_key (Every request needed app_key headers)
+  app_key_allow: false
 
   ...
 
 };
 ```
 
-***Example :*** Simple ``users`` table:
+***Authentication structure :*** Simple ``users`` table:
 ```
 ==============================================================
 |  id  |  username | password |     name     |     email     |
@@ -374,7 +432,47 @@ module.exports = {
 |  2   |  johnson  |  secret  | johnson BA.  | john@bomb.com |
 ```
 
-You can easy management `users` data with Beech Core, With only ```Store, Update``` NO ```Delete```, Anything you can make DELETE endpoint by yourself
+When you config passport with ```users``` table already. You will got Auth endpoint in available.
+```js
+POST:  "/authentication"               // Request token
+POST:  "/authentication/create"        // Create new Auth data
+PATCH: "/authentication/update/:id"    // Update old Auth data
+```
+
+Example :
+
+```js
+// Request with body for gether Token
+POST: "/authentication"
+{
+  username: "bombkiml",
+  password: "secret"
+}
+
+
+// Request with body for Create Auth data
+POST: "/authentication/create"
+{
+  username: "add_new_username",
+  password: "add_new_secret",
+  name: "add_new_my_name",
+  email: "add_new_email"
+}
+
+
+// Request with body for Update Auth data
+PATCH: "/authentication/update/1"
+Bearer Authorization: your_token
+{
+  username: "update_bombkiml",
+  password: "update_secret",
+  name: "update_my_name",
+  email: "my_update_email@bomb.com"
+}
+```
+
+### Beech auth managements with User ###
+You can easy management `users` data with Beech, Only ```Store, Update``` NO ```Delete```, Anything you can make DELETE endpoint by yourself
 
 ```js
   const { Store, Update } = require("beech-api");
@@ -443,13 +541,13 @@ Go to open file ``passport.config.js`` and go to ``google strategy`` then turn a
       // Allow using google strategy
       allow: true,
 
-      // Local user profile fields, default fields name: `name`, `email`, `photos`, `locate`
+      // Authen profile store fields available: `google_id`, `name`, `email`, `photos`, `locate`
       local_profile_fields: {
         google_id: "google_id", // Google ID field, default field name: `google_id`
-        name: "name",
-        email: "email",
-        photos: "profile_url",
-        locate: "" // If you not store set to null
+        name: "your_name_field",
+        email: "your_email_field",
+        photos: "your_profile_url_field",
+        locate: "" // If you not store set to null or remove it.
       },
       // Google development Credentials OAuth 2.0 Client IDs
       client_id: "GOOGLE_CLIENT_ID",
@@ -504,19 +602,22 @@ Go to open file ``passport.config.js`` and go to ``facebook strategy`` then turn
       // Allow using facebook strategy
       allow: true,
 
-      // Local user profile fields, default fields name: `name`, `email`, `photos`, `locate`
+      // Authen profile store fields available: `facebook_id`, `name`, `email`, `photos`, `locate`
       local_profile_fields: {
         facebook_id: "facebook_id", // Facebook ID field, default field name: `facebook_id`
-        name: "name",
-        email: "email",
-        photos: "profile_url",
-        locate: "" // If you not store set to null
+        name: "your_name_field",
+        email: "your_email_field",
+        photos: "your_profile_url_field",
+        locate: "" // If you not store set to null or remove it.
       },
       // Facebook development Credentials OAuth 2.0
       app_id: "FACEBOOK_APP_ID",
       app_secret: "FACEBOOK_APP_SECRET",
-      // Allow Permissions facebook profile fields: see more (https://developers.facebook.com/docs/graph-api/reference/v13.0/user#readperms)
-      profileFieldsAllow: [ 'id', 'displayName', 'name', 'photos', 'email', 'location' ],
+
+      // You can allow Permissions facebook profile fields. Learn more (https://developers.facebook.com/docs/graph-api/reference/v13.0/user#readperms)
+      // **Update 2024, Now! Facebook requests permission for show Email. Learn more (https://developers.facebook.com/docs/permissions)
+      profileFieldsAllow: [ 'id', 'displayName', 'name', 'photos', 'email', 'location' ], // Default allowed
+
       // Callback endpoint default `/facebook/callback`
       callbackURL: "",
       // Failure redirect to your route
@@ -727,7 +828,7 @@ Docker builds images automatically by reading the instructions from a Dockerfile
 ```js
 // Dockerfile
 
-FROM node:12.18-alpine
+FROM node:14.19-alpine
 ENV NODE_ENV=production
 WORKDIR /usr/src/api
 COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]

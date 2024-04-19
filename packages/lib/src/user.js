@@ -1,89 +1,120 @@
 const appRoot = require("app-root-path");
 const md5 = require("md5");
 const secret = require("./salt").salt;
+const { findPassportPk } = require("../../cli/core/helpers/poolEntity");
 
 async function FindOne(fields, fieldCondArr, cb) {
   try {
     const passport_config = require(appRoot + "/passport.config.js");
     let stm = '';
     let cond = '1';
-    let table = await [passport_config.model.table || "users"];
-    let passportFields = await (fields[0]) ? fields : (passport_config.model.fields.length) ? passport_config.model.fields : ["id", "name", "email"];
+    let passportTable = await [passport_config.model.table || "users"];
     const pool = await eval("sql." + passport_config.model.name);
-    // Generate condition
-    await Object.keys(fieldCondArr).forEach(key => {
-      cond += ' AND ' + key + '=' + fieldCondArr[key]
-    });
-    // check base pool
-    if (pool_base == "basic") {
-      // pool base is MySQL
-      stm += 'SELECT ?? FROM ?? WHERE ' + cond;
-      await pool.query(stm, [passportFields, table], (err, row) => {
-        cb(err, row);
-      });
-    } else if (pool_base == "sequelize") {
-      // pool base is Sequelize
-      try {
-        stm += `SELECT ${passportFields} FROM ${table} WHERE ` + cond;
-        let result = await pool.query(stm, {
-          type: QueryTypes.SELECT
+    let expectFields = await (fields[0]) ? fields : (passport_config.model.fields.length) ? passport_config.model.fields : [];
+    await findPassportPk(pool_base, pool, passportTable, expectFields, async (err, passportFields) => {
+      if(err) {
+        cb(err, null);
+      } else {
+        // Generate condition
+        await Object.keys(fieldCondArr).forEach(key => {
+          cond += ' AND ' + key + '=' + fieldCondArr[key]
         });
-        return cb(null, result);
-      } catch (error) {
-        return cb(error, null);
+        // check base pool
+        if (pool_base == "basic") {
+          // pool base is MySQL
+          stm += 'SELECT ?? FROM ?? WHERE ' + cond;
+          await pool.query(stm, [passportFields, passportTable], (err, row) => {
+            if(err) {
+              cb(err, null);
+            } else {
+              cb(null, row);
+            }
+          });
+        } else if (pool_base == "sequelize") {
+          // pool base is Sequelize
+          try {
+            stm += `SELECT ${passportFields} FROM ${passportTable} WHERE ` + cond;
+            let result = await pool.query(stm, {
+              type: QueryTypes.SELECT
+            });
+            return cb(null, result);
+          } catch (error) {
+            return cb(error.errors[0], null);
+          }
+        } else {
+          return cb({ error: "The Base pool error. UNKNOWN pool_base = '"+ pool_base +"'" }, null);
+        }
       }
-    } else {
-      return cb({ error: "Base pool SQL error." }, null);
-    }
+    });
   } catch (error) {
     cb(error, null);
   }
 }
 
 async function Store(fields, cb) {
-    try {
-      const passport_config = require(appRoot + "/passport.config.js");
-      let stm = '';
-      let keys = [];
-      let escaped = [];
-      let values = await [passport_config.model.table || "users"];
-      let passwordField = await String(passport_config.model.password_field || "password");
-      const pool = await eval("sql." + passport_config.model.name);
+  try {
+    const passport_config = require(appRoot + "/passport.config.js");
+    let stm = '';
+    let keys = [];
+    let escaped = [];
+    let values = await [passport_config.model.table || "users"];
+    let usernameField = await String(passport_config.model.username_field || "username");
+    let passwordField = await String(passport_config.model.password_field || "password");
+    const pool = await eval("sql." + passport_config.model.name);
+    // declare for check have a username and password ?
+    let haveUsernameAndPassword = 0;
+    // sql generate
+    await Object.keys(fields).forEach(key => {
+      // check have a username and password fields
+      if(key == usernameField) {
+        haveUsernameAndPassword += 1;
+      }
+      if(key == passwordField) {
+        haveUsernameAndPassword += 1;
+      }
+      keys.push(key);
+      values.push(fields[key]);
+      escaped.push('?');
+    });
+    if(haveUsernameAndPassword > 1) {
       // asign password hash
       fields[passwordField] = md5(fields[passwordField] + secret);
-      // sql generate
-      await Object.keys(fields).forEach(key => {
-        keys.push(key);
-        values.push(fields[key]);
-        escaped.push('?');
-      });
       // check base pool
       if (pool_base == "basic") {
         // pool base is MySQL
         stm += 'INSERT INTO ?? (' + keys.join() + ') VALUES (' + escaped.join() + ')';
         await pool.query(stm, values, (err, result) => {
-          cb(err, {
-            insertId: result.insertId,
-            affectedRows: result.affectedRows,
-          });
+          if(err) {
+            let error = JSON.parse(JSON.stringify(err));
+            delete error.sql;
+            cb(error, null);
+          } else {
+            cb(null, {
+              insertId: result.insertId,
+              affectedRows: result.affectedRows,
+            });
+          }
         });
       } else if (pool_base == "sequelize") {
-      // pool base is Sequelize
-      try {
-        stm += `INSERT INTO ${values.shift()} (` + keys.join() + ') VALUES (' + escaped.join() + ')';
-        let result = await pool.query(stm, {
-          replacements: values,
-          type: QueryTypes.INSERT
-        });
-        return cb(null, {
-          insertId: result[0],
-          affectedRows: result[1]
-        });
-      } catch (error) {
-        return cb(`${error}`, null);
+        // pool base is Sequelize
+        try {
+          stm += `INSERT INTO ${values.shift()} (` + keys.join() + ') VALUES (' + escaped.join() + ')';
+          let result = await pool.query(stm, {
+            replacements: values,
+            type: QueryTypes.INSERT
+          });
+          return cb(null, {
+            insertId: result[0],
+            affectedRows: result[1]
+          });
+        } catch (error) {
+          return cb(error.errors[0], null);
+        }
+      } else {
+        return cb({ error: "The Base pool error. UNKNOWN pool_base = '"+ pool_base +"'" }, null);
       }
     } else {
-      return cb({ error: "Base pool SQL error." }, null);
+      cb({ code: "ER_BAD_FIELD_ERROR", message: `You lost some fields ${usernameField} or ${passwordField} ?` }, null);
     }
   } catch (error) {
     cb(`${error}`, null);
@@ -111,35 +142,55 @@ async function Update(someFields, id, cb) {
     // check base pool
     if (pool_base == "basic") {
       // pool base is MySQL
-      stm += 'UPDATE ?? SET ' + keys.join() + ' WHERE id = ?';
-      await pool.query(stm, values, (err, result) => {
-        cb(err, {
-          updateId: parseInt(id),
-          affectedRows: result.changedRows
-        });
+      pool.query("SHOW KEYS FROM " + values[0] + " WHERE Key_name = 'PRIMARY'", (err, pk) => {
+        if(err) {
+          return done(err, null);
+        } else {
+          let fieldPk = pk[0].Column_name;
+          stm += 'UPDATE ?? SET ' + keys.join() + ' WHERE ' + fieldPk + ' = ?';
+          pool.query(stm, values, (err, result) => {
+            if(err) {
+              let error = JSON.parse(JSON.stringify(err));
+              delete error.sql;
+              cb(error, null);
+            } else {
+              cb(null, {
+                updateId: parseInt(id),
+                affectedRows: result.changedRows
+              });
+            }
+          });
+        }
       });
     } else if (pool_base == "sequelize") {
       // pool base is Sequelize
       try {
-        stm += `UPDATE ${values.shift()} SET ` + keys.join() + ' WHERE id = ?';
-        let result = await pool.query(stm, {
-          replacements: values,
-          type: QueryTypes.UPDATE
-        });
-        return cb(null, {
-          updateId: parseInt(id),
-          affectedRows: result[1]
+        pool.query("SHOW KEYS FROM " + values[0] + " WHERE Key_name = 'PRIMARY'", { type: QueryTypes.SELECT }).then((pk) => {
+          let fieldPk = pk[0].Column_name;
+          stm += `UPDATE ${values.shift()} SET ` + keys.join() + ' WHERE ' + fieldPk + ' = ?';
+          pool.query(stm, {
+            replacements: values,
+            type: QueryTypes.UPDATE
+          }).then((result) => {
+            return cb(null, {
+              updateId: parseInt(id),
+              affectedRows: result[1]
+            });
+          }).catch((err) => {
+            return cb(err.errors[0], null);
+          });
+        }).catch((err) => {
+          return cb(err, null);
         });
       } catch (error) {
-        return cb(error, null);
+        return cb(error.errors[0], null);
       }
     } else {
-      return cb({ error: "Base pool SQL error." }, null);
+      return cb({ error: "The Base pool error. UNKNOWN pool_base = '"+ pool_base +"'" }, null);
     }
-
   } catch (error) {
     cb(error, null);
   }
 }
 
-module.exports = { Store, Update };
+module.exports = { Store, Update, FindOne };

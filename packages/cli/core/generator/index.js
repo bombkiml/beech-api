@@ -188,6 +188,22 @@ class Generator {
           this.generateKeyConfigFile()
             .then(resGenKey => resolve(resGenKey))
             .catch(err => reject(err));
+        } else if (this.option.match(/hash:.*/)) {
+          if(this.option.length > 5) {
+            const { HashIt, Z } = require(__dirname + "/../helpers/math");
+            Z((err, ak) => {
+              if(err) {
+                logUpdate(err);
+              } else {
+                let txt = this.option.split(":");
+                HashIt(txt, ak, null, (5).toString().length, (hashed) => {
+                  logUpdate(hashed);
+                });
+              }
+            });
+          } else {
+            resolve("\n[103m[90m Info. [0m[0m No text hash.");
+          }
         } else if (this.option == "add-on") {
           if (this.argument == "init") {
             this.makeAddOnInit()
@@ -690,7 +706,7 @@ class Generator {
             let buf2str = buffer.toString();
             let buf2json = JSON.parse(JSON.stringify(buf2str));
             let buf2eval = eval(buf2json);
-            let oldSecret = buf2eval.main_config.app_secret;
+            let oldSecret = buf2eval.main_config.app_key;
             // generate new key secret
             this.appKeyGenerator(8).then(newAppSecret => {
               // content replace

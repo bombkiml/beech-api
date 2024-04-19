@@ -4,8 +4,8 @@ const notifier = require("node-notifier");
 const path = require("path");
 const clear = require("cli-clear");
 const express = require("express");
-const _app_ = express();
 const Sequelize = require('sequelize');
+const _app_ = express();
 let testSql = {};
 
 class Beech {
@@ -29,20 +29,22 @@ class Beech {
           }
           // check project config file exists ?
           if (this.fs.existsSync(this.configFile)) {
-            const testServ = _app_.listen(this._config_.main_config.app_port, () => {
-              //console.log("Test Started.");
-              testServ.close();
+            let testServ = require("http").createServer(_app_);
+            testServ.listen(this._config_.main_config.app_port, async () => {
+              await testServ.close();
               // Start real service.
-              this.getStart(turnNoti, this.argument, (err, res) => {
+              await this.getStart(turnNoti, this.argument, (err, res) => {
                 if (err) {
                   reject("\n[101m Faltal [0m start service catch.");
                   return;
                 }
                 // show info
-                console.clear();
                 //console.log(res);
+                console.clear();
               });
-            });
+            }).on('error', (err) => {
+              console.log("\n[101m Faltal [0m", err);
+            })
           } else {
             resolve("\n[101m Faltal [0m The app.conifg.js file is not found.");
           }
@@ -83,48 +85,69 @@ class Beech {
 
   initSequelize(val, cb) {
     try {
-      const sq = new Sequelize({
-        dialect: val.dialect || "mysql",
-        host: val.host,
-        username: val.username,
-        password: val.password,
-        database: val.database,
-        port: val.port,
-        storage: val.storage || ":memory:",
-        protocol: val.protocol || null,
-        logging: val.logging || false,
-        dialectOptions: {
-          socketPath: ((val.dialectOptions) ? ((val.dialectOptions.socketPath) ? val.dialectOptions.socketPath : "") : ""), //Applications/MAMP/tmp/mysql/mysql.sock
-          supportBigNumbers: ((val.dialectOptions) ? ((val.dialectOptions.supportBigNumbers) ? val.dialectOptions.supportBigNumbers : false) : false),
-          bigNumberStrings: ((val.dialectOptions) ? ((val.dialectOptions.bigNumberStrings) ? val.dialectOptions.bigNumberStrings : false) : false),
-          options: ((val.dialectOptions) ? ((val.dialectOptions.options) ? ({ encrypt: false, ...val.dialectOptions.options }) : { encrypt: false }) : { encrypt: false }),
-        },
-        omitNull: val.omitNull || false,
-        native: val.native || false,
-        define: {
-          underscored: ((val.define) ? ((val.define.underscored) ? val.define.underscored : false) : false),
-          freezeTableName: ((val.define) ? ((val.define.freezeTableName === false) ? val.define.freezeTableName : true) : true),
-          charset: ((val.define) ? ((val.define.charset) ? val.define.charset : "utf8") : "utf8"),
-          dialectOptions: {
-            collate: ((val.define) ? ((val.define.dialectOptions) ? ((val.define.dialectOptions.timestamps) ? val.define.dialectOptions.timestamps : "utf8_general_ci") : "utf8_general_ci") : "utf8_general_ci"),
-          },
-          timestamps: ((val.define) ? ((val.define.timestamps) ? val.define.timestamps : false) : false),
-        },
-        sync: {
-          force: ((val.sync) ? ((val.sync.force) ? val.sync.force : false) : false),
-        },
-        pool: {
-          max: ((val.pool) ? ((val.pool.max) ? val.pool.max : 5) : 5),
-          idle: ((val.pool) ? ((val.pool.idle) ? val.pool.idle : 30000) : 30000),
-          acquire: ((val.pool) ? ((val.pool.acquire) ? val.pool.acquire : 60000) : 60000),
-        },
-        isolationLevel: val.isolationLevel || "Transaction.ISOLATION_LEVELS.REPEATABLE_READ",
-        query: {
-          raw: ((val.query) ? ((val.query.raw) ? val.query.raw : true) : true),
-          nest: ((val.query) ? ((val.query.nest) ? val.query.nest : true) : true),
+      const { DeHashIt, M, X } = require(__dirname + "/../core/helpers/math");
+      //let app_key = "";
+      const promise = new Promise((resolve) => {
+        // check hash ?
+        if(val.username.length < 10 || val.password < 10) {
+          return cb("Error: No Hash access for connect to database.\n", null);
         }
+        let accessDb = [];
+        [val.username, val.password].map((e, k) => {
+          DeHashIt(e.toString(), null, (17).toString().slice(0,-1).length, (err, d) => {
+            if(!err) {
+              accessDb.push(d.split("sh,")[1].split(M(X).toString().slice(0,2)+M(X).toString())[0].slice(0,-1));
+            }
+          });
+          if(k+1==2) {
+            resolve(accessDb);
+          }
+        });
       });
-      cb(false, sq);
+      Promise.all([promise]).then(final => {
+        const sq = new Sequelize({
+          dialect: val.dialect || "mysql",
+          host: val.host,
+          username: final[0][0],
+          password: final[0][1],
+          database: val.database,
+          port: val.port,
+          storage: val.storage || ":memory:",
+          protocol: val.protocol || null,
+          logging: val.logging || false,
+          dialectOptions: {
+            socketPath: ((val.dialectOptions) ? ((val.dialectOptions.socketPath) ? val.dialectOptions.socketPath : "") : ""), //Applications/MAMP/tmp/mysql/mysql.sock
+            supportBigNumbers: ((val.dialectOptions) ? ((val.dialectOptions.supportBigNumbers) ? val.dialectOptions.supportBigNumbers : false) : false),
+            bigNumberStrings: ((val.dialectOptions) ? ((val.dialectOptions.bigNumberStrings) ? val.dialectOptions.bigNumberStrings : false) : false),
+            options: ((val.dialectOptions) ? ((val.dialectOptions.options) ? ({ encrypt: false, ...val.dialectOptions.options }) : { encrypt: false }) : { encrypt: false }),
+          },
+          omitNull: val.omitNull || false,
+          native: val.native || false,
+          define: {
+            underscored: ((val.define) ? ((val.define.underscored) ? val.define.underscored : false) : false),
+            freezeTableName: ((val.define) ? ((val.define.freezeTableName === false) ? val.define.freezeTableName : true) : true),
+            charset: ((val.define) ? ((val.define.charset) ? val.define.charset : "utf8") : "utf8"),
+            dialectOptions: {
+              collate: ((val.define) ? ((val.define.dialectOptions) ? ((val.define.dialectOptions.timestamps) ? val.define.dialectOptions.timestamps : "utf8_general_ci") : "utf8_general_ci") : "utf8_general_ci"),
+            },
+            timestamps: ((val.define) ? ((val.define.timestamps) ? val.define.timestamps : false) : false),
+          },
+          sync: {
+            force: ((val.sync) ? ((val.sync.force) ? val.sync.force : false) : false),
+          },
+          pool: {
+            max: ((val.pool) ? ((val.pool.max) ? val.pool.max : 5) : 5),
+            idle: ((val.pool) ? ((val.pool.idle) ? val.pool.idle : 30000) : 30000),
+            acquire: ((val.pool) ? ((val.pool.acquire) ? val.pool.acquire : 60000) : 60000),
+          },
+          isolationLevel: val.isolationLevel || "Transaction.ISOLATION_LEVELS.REPEATABLE_READ",
+          query: {
+            raw: ((val.query) ? ((val.query.raw) ? val.query.raw : true) : true),
+            nest: ((val.query) ? ((val.query.nest) ? val.query.nest : true) : true),
+          }
+        });
+        cb(false, sq);
+      });
     } catch (error) {
       cb(error, null);
     }
@@ -220,12 +243,13 @@ class Beech {
 
   serviceDevStart(argument) {
     let firstCount = 0;
-    // run which
-    this.cmd.get(`npx which`);
     // check Dev. run service
-    let command = this.cmd.get(`npx nodemon -q ./node_modules/beech-api/packages/cli/beech`); // For Prd.
+    let command = this.cmd.get(`npx which`); // run which
     if(argument == "-D" || argument == "--dev") {
+      //command = this.cmd.get(`npx run ./cli/beech`); // For Dev.
       command = this.cmd.get(`npx nodemon -q ./cli/beech`); // For Dev.
+    } else {
+      command = this.cmd.get(`npx nodemon -q ./node_modules/beech-api/packages/cli/beech`); // For Prd.
     }
     // delay for start service
     setTimeout(() => {
