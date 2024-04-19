@@ -19,12 +19,11 @@
 
 ## Environment
 
-- [`Node.js`](https://nodejs.org) >= 12.18.0+ (recommended)
-- `npm` >= 6.4.1+ or `yarn` >= 1.22.4+
+- [`Node.js`](https://nodejs.org) >= 14.19.0+ (recommended)
 
 ## Installation
 
-Beech API requires Node.js version 12.18.0 or above. You can manage multiple versions of Node on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows). So, Let's go to install `beech api`
+Beech API requires Node.js version 14.19.0 or above. You can manage multiple versions of Node on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows). So, Let's go to install `beech-api`
 
 ```sh
 // NPM
@@ -57,9 +56,8 @@ $ npm start
 $ yarn start
 ```
 
-❓ **Note:** The Beech API it's start server at [http://127.0.0.1:9000](http://127.0.0.1:9000) you can change new a port in `app.config.js` file.
+❓ **Note:** The Beech API it's start server at [http://localhost:9000](http://localhost:9000) you can change new a port in `app.config.js` file.
 
-❓ **Note:** The Beech API will be generated ``app_secret`` key in ``app.config.js`` file, You can re-gen by use command ``$ beech key:generate`` or ``$ beech key:gen``
 
 ## Upgrade to latest version ##
 The Beech API upgrade to latest version command avariable :
@@ -72,8 +70,7 @@ $ beech-app update
 $ beech-app update -g, --global
 ```
 
-## Part of generate file
-
+## Beech CLI tool available ##
 After installation, you will have access to the `beech` binary in your command line.
 The `beech` command has a number of options and you can explore them all by running:
 
@@ -88,22 +85,75 @@ Usage:
   $ beech [options] [arguments] [special]
 
 Options:
-  ?, -h, --help                     Display this help message.
-  -v, --version                     Display the application version.
+  ?, -h, --help                       Display this help message.
+  -v, --version                       Display the application version.
 
 The following commands are available:
 
-  $ beech make <endpoint>           Create a new Endpoints and unit test file,
-                                    You might using [special] `-R, --require`
-                                    for choose Model(s) used to endpoint file.
-  $ beech make <model> -M, --model  Create a new Models file.
-  $ beech make <helper> --helper    Create a new Helpers file.
-  $ beech passport init             Initialize authentication with passport-jwt.
-  $ beech add-on init               Initialize add-on file.
-  $ beech key:generate, key:gen     Re-Generate application key (Dangerous!).
+  $ beech make <endpoint>             Create a new Endpoints and unit test file,
+                                      You might using [special] `-R, --require`
+                                      for choose Model(s) used to endpoint file.
+  $ beech make <model> -M, --model    Create a new Models file.
+  $ beech make <helper> --helper      Create a new Helpers file.
+  $ beech passport init               Initialize authentication with passport-jwt.
+  $ beech add-on init                 Initialize add-on file.
+  $ beech key:generate, key:gen       Re-Generate application key (Dangerous!).
+  $ beech hash:<text>                 Hash text for Access to Database connection.
+```
+❓ **Note:** Every to create new project will be generated new ``app_key`` in ``app.config.js`` file, If you can re-generate. Can use command ``$ beech key:generate`` or ``$ beech key:gen``
+
+## Database connection ##
+
+You might connection to Database with `database_config` object in `app.config.js` file. Anything can support to multiple Database connections.
+
+The connection base on `pool_base` in `global.config.js` file.
+
+- `basic` = Support only Raw Query with Only MySQL.
+- `sequelize` = Support PDO, Raw Query with various Database Engine.
+
+In case Access to Database must to Hash the `username` and `password` with Beech CLI like this.
+
+```sh
+// Hash username
+$ beech hash:root
+Output: m42BVxQ6Q4kLdRX7xS_Hm7WbQiNqShJDvw9SfuLCgI431oafWBtQJoJDnoCL
+
+// Hash password
+$ beech hash:password
+Output: FjgcgJPylkV7EeQJjea_EeifPwaHVO9onD3T4ATk3YYAyvprdrQejtMGu3dcDS0ejA
+
 ```
 
-## Endpoints
+Example : `app.config.js`
+```js
+// basic & sequelize (needed Hash)
+
+...
+
+database_config: [
+  {
+    dialect: "mysql",
+    name: "mysql_my_store_db",
+    host: "localhost",
+    username: "DB_USERNAME_HASH",
+    password: "DB_PASSWORD_HASH",
+    database: "my_store_db",
+    port: "3306",
+    is_connect: true,
+  },
+  
+  ...
+
+],
+
+...
+
+```
+❓ **Caution! :**  Every re-new generate `app_key`. Must to new Hash your Access and change to ALL Database connections.
+
+## Part of generate file
+
+### # Generate Endpoints ###
 
 The `endpoints` keep the endpoints basic request files currently support `GET`, `POST`, `PUT`, `PATCH` and `DELETE`.
 
@@ -199,7 +249,7 @@ $ beech make endpointName
 ```
 
 
-## Models
+### # Generate Models ###
 
 The `models` keep the files of function(s) for retriving, inserting, updating and deleting with SQL data. for understanding you might make model name same your table name in `src/models` folder.
 
@@ -296,7 +346,7 @@ $ beech make modelName --model
 ```
 
 
-## Helpers
+### # Generate Helpers ###
 
 The `helpers` keep the files of functions for process specific something in the project. So, you might create the `helpers` in path `src/helpers` folder.
 
@@ -365,8 +415,8 @@ module.exports = {
     fields: []
   },
 
-  // allow using with app_secret requset (Every request need app_secret parameter)
-  app_secret_allow: false
+  // allow using request with app_key (Every request needed app_key headers)
+  app_key_allow: false
 
   ...
 
@@ -778,7 +828,7 @@ Docker builds images automatically by reading the instructions from a Dockerfile
 ```js
 // Dockerfile
 
-FROM node:12.18-alpine
+FROM node:14.19-alpine
 ENV NODE_ENV=production
 WORKDIR /usr/src/api
 COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]

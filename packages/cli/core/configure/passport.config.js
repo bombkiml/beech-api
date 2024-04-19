@@ -23,8 +23,8 @@ module.exports = {
     fields: []
   },
 
-  // Allow using with app_secret request (Every request must be using the app_secret parameter)
-  app_secret_allow: false,
+  // Allow using with app_key request (Every request must be using the app_key header)
+  app_key_allow: false,
 
   // Official strategy
   strategy: {

@@ -327,17 +327,17 @@ class Beech {
             let buf2str = buffer.toString();
             let buf2json = JSON.parse(JSON.stringify(buf2str));
             let buf2eval = eval(buf2json);
-            let oldSecret = buf2eval.main_config.app_secret;
-            // generate new key secret
-            this.appKeyGenerator(8).then(newAppSecret => {
+            let oldKey = buf2eval.main_config.app_key;
+            // generate new key
+            this.appKeyGenerator(8).then(newAppKey => {
               // content replace
-              let text = data.replace(new RegExp(oldSecret, 'g'), newAppSecret);
+              let text = data.replace(new RegExp(oldKey, 'g'), newAppKey);
               // writing the file
               this.fs.writeFile(pjName + "/app.config.js", text, 'utf8', (err) => {
                 if (err) {
                   throw err;
                 } else {
-                  resolve("\n[102m[90m Passed [0m[0m App secret it's new generated.");
+                  resolve("\n[102m[90m Passed [0m[0m App key it's new generated.");
                 }
               });
             });

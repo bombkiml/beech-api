@@ -5,14 +5,14 @@ module.exports = {
    * @exports app_port : Listening for start service
    * @exports app_host : Server http localhost
    * @exports client_host : Production http client host
-   * @exports app_secret : App secret key for request with endpoints
+   * @exports app_key : App key for request with endpoints
    * 
    */
   main_config: {
     app_port: 9000,
     app_host: "localhost",
     client_host: "http://0.0.0.0:9000",
-    app_secret: [ "2cc118cd91b52ff99e3c005ddced76fb" ]
+    app_key: [ "2cc118cd91b52ff99e3c005ddced76fb" ]
   },
 
   // Add-on it's work when enabled. You can enable add-on by run CMD `$ beech add-on init`.
@@ -31,8 +31,8 @@ module.exports = {
    * - $ npm install --save  tedious # Microsoft SQL Server (Need NodeJS v14.x)
    * @exports name The Connection name
    * @exports host The Host address
-   * @exports username The Host username connection
-   * @exports password Host The password connection
+   * @exports username The Host username connection (Hash needed)
+   * @exports password Host The password connection (Hash needed)
    * @exports database  The database name
    * @exports port The sql port (default port by dialect mysql:3306, marialdb:3306, postgres:5432 and mssql:1433)
    * @exports define The character encoding and optional. See more: https://sequelize.org/docs/v6/other-topics/dialect-specific-things/
@@ -45,9 +45,9 @@ module.exports = {
     {
       dialect: "mysql",
       name: "default_db",
-      host: "127.0.0.1",
-      username: "root",
-      password: "",
+      host: "localhost",
+      username: "DB_USERNAME_HASH",
+      password: "DB_PASSWORD_HASH",
       database: "example1_db",
       port: "3306",
       define: {
@@ -67,9 +67,9 @@ module.exports = {
     {
       dialect: "mssql",
       name: "thirdth_db",
-      host: "127.0.0.1",
-      username: "root",
-      password: "",
+      host: "localhost",
+      username: "DB_USERNAME_HASH",
+      password: "DB_PASSWORD_HASH",
       database: "example3_db",
       port: "1433",
       define: {
