@@ -240,10 +240,10 @@ module.exports = {
             }); // end findPassportPk
           } else if(final[0][0] && final[0][1] && final[0][2] === false) {
             // Database connection mapped is Closed.
-            resolve([`Connection name \`${passport_config.model.name}\` Passport DB Mapped is CLOSED. Checking The app.config.js file.`, true, true, false]);
+            resolve([`Database connection name \`${passport_config.model.name}\` is CLOSED. Checking ON/OFF inside app.conifg.js file.`, true, true, false]);
           } else if(final[0][0] && final[0][1] && !final[0][2]) {
             // Passport Database connection name is NOT MATCH.
-            resolve([`Connection name \`${passport_config.model.name}\` Passport DB Mapped is NOT MATCH. Checking The app.config.js file.`, true, true, false]);
+            resolve([`Connection name \`${passport_config.model.name}\` with Passport model name mapped is NOT MATCH. Checking name to match it.`, true, true, false]);
           } else if(final[0][0] && !final[0][1] && final[0][2] === null) {
             // JWT not allow
             resolve([null, true, false, null]);

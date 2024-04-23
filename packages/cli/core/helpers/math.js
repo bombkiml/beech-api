@@ -32,7 +32,7 @@ function getAppKey(cb) {
       } else {
         cb(null, eval(e).main_config.app_key);
       }
-    });;
+    });
   }
 }
 

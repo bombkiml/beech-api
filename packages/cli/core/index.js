@@ -22,9 +22,20 @@ const { QueryTypes, DataTypes, Op } = require("sequelize");
 global.QueryTypes = QueryTypes;
 global.DataTypes = DataTypes;
 global.Op = Op;
-// engine import
-const httpExpress = require("./services/http.express");
-const fileWalk = require("./file-walk/file-walk");
+// allow whitelist cors
+_app_.use(cors({ origin: true, credentials: true }));
+const { whitelist, sign } = require("./origin/index");
+whitelist((lists, originSensitive) => {
+  _app_.use((req, res, next) => {
+    sign(req, res, lists, originSensitive, (err) => {
+      if (!err) {
+        next();
+      } else {
+        throw err;
+      }
+    });
+  });
+});
 // View engine
 _app_.use(bodyParser.json());
 _app_.use(bodyParser.urlencoded({ extended: true }));
@@ -32,25 +43,13 @@ _app_.use(methodOverride());
 _app_.use(cookieParser());
 _app_.use(
   expressSession({
-    secret: "keyboard cat",
+    secret: "surprise you mother f*cker",
     resave: true,
     saveUninitialized: true,
   })
 );
 _app_.use(expressValidator());
-_app_.use(cors({ origin: true, credentials: true }));
-// Allow Origin
-_app_.all("/", (req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "X-Requested-With");
-  res.header(
-    "Access-Control-Allow-Methods",
-    "GET, PUT, PATCH, POST, DELETE, OPTIONS"
-  );
-  res.header("Content-Type", "application/json; charset=utf-8");
-  next();
-});
-
+// Dev. activity
 _app_.use((req, res, next) => {
   console.log("Request URL:", req.method, req.originalUrl);
   var t0 = performance.now();
@@ -60,7 +59,9 @@ _app_.use((req, res, next) => {
   });
   next();
 });
-
+// engine import
+const httpExpress = require("./services/http.express");
+const fileWalk = require("./file-walk/file-walk");
 // passport initialization
 const authPassport = require("./auth/Passport");
 const passport = require("passport");
@@ -92,15 +93,14 @@ init = async (jsfiles) => {
       ? new Promise((resolve) => resolve(mySqlDbConnect.connect()))
       : new Promise((resolve) => resolve(SequelizeDbConnect.connect())));
     await authPassport.init().then(async (x) => {
-      if(x[0]) {
+      if (x[0]) {
         throw x[0];
       } else {
         await new Promise((resolve) => resolve(fileWalk.fileWalk(jsfiles)));
         await new Promise((resolve) => {
-          httpExpress.expressStart()
-            .then((expss) => {
-              resolve(expss);
-            });
+          httpExpress.expressStart().then((expss) => {
+            resolve(expss);
+          });
         });
       }
     });

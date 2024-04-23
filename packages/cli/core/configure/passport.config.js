@@ -24,7 +24,7 @@ module.exports = {
   },
 
   // Allow using with app_key request (Every request must be using the app_key header)
-  app_key_allow: false,
+  app_key_allow: true,
 
   // Official strategy
   strategy: {
