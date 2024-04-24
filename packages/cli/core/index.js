@@ -25,17 +25,6 @@ global.Op = Op;
 // allow whitelist cors
 _app_.use(cors({ origin: true, credentials: true }));
 const { whitelist, sign } = require("./origin/index");
-whitelist((lists, originSensitive) => {
-  _app_.use((req, res, next) => {
-    sign(req, res, lists, originSensitive, (err) => {
-      if (!err) {
-        next();
-      } else {
-        throw err;
-      }
-    });
-  });
-});
 // View engine
 _app_.use(bodyParser.json());
 _app_.use(bodyParser.urlencoded({ extended: true }));
@@ -92,17 +81,28 @@ init = async (jsfiles) => {
     await (pool_base == "basic"
       ? new Promise((resolve) => resolve(mySqlDbConnect.connect()))
       : new Promise((resolve) => resolve(SequelizeDbConnect.connect())));
-    await authPassport.init().then(async (x) => {
-      if (x[0]) {
-        throw x[0];
-      } else {
-        await new Promise((resolve) => resolve(fileWalk.fileWalk(jsfiles)));
-        await new Promise((resolve) => {
-          httpExpress.expressStart().then((expss) => {
-            resolve(expss);
-          });
+    await whitelist(async (lists, originSensitive) => {
+      await _app_.use((req, res, next) => {
+        sign(req, res, lists, originSensitive, (err) => {
+          if (!err) {
+            next();
+          } else {
+            throw err;
+          }
         });
-      }
+      });
+      await authPassport.init().then(async (x) => {
+        if (x[0]) {
+          throw x[0];
+        } else {
+          await new Promise((resolve) => resolve(fileWalk.fileWalk(jsfiles)));
+          await new Promise((resolve) => {
+            httpExpress.expressStart().then((expss) => {
+              resolve(expss);
+            });
+          });
+        }
+      });
     });
   } catch (error) {
     console.log("[101m Compile failed [0m", error);
