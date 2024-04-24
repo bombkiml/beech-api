@@ -19,7 +19,8 @@ packages/jsconfig.json
 packages/.sequelizerc
 packages/beech
 packages/passport.config.js
+packages/beech.config.js
 build.bat
 
-# sequelize-cli migration
-packages/cli/databases
+# sequelize-cli migration & seeder
+packages/databases

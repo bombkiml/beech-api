@@ -16,4 +16,4 @@ The following commands are available:
   $ beech passport init               Initialize authentication with passport-jwt.
   $ beech add-on init                 Initialize add-on file.
   $ beech key:generate, key:gen       Re-Generate application key (Dangerous!).
-  $ beech hash:<text>                Hash text for Access to Database connection.
+  $ beech hash:<text>                 Hash text for Access to Database connection.

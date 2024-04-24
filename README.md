@@ -114,17 +114,18 @@ The connection base on `pool_base` in `global.config.js` file.
 In case Access to Database must to Hash the `username` and `password` with Beech CLI like this.
 
 ```sh
-// Hash username
+// Hash database username
 $ beech hash:root
 Output: m42BVxQ6Q4kLdRX7xS_Hm7WbQiNqShJDvw9SfuLCgI431oafWBtQJoJDnoCL
 
-// Hash password
+// Hash database password
 $ beech hash:password
 Output: FjgcgJPylkV7EeQJjea_EeifPwaHVO9onD3T4ATk3YYAyvprdrQejtMGu3dcDS0ejA
 
 ```
+Example:
 
-Example : `app.config.js`
+📂 app.config.js
 ```js
 // basic & sequelize (needed Hash)
 
@@ -135,11 +136,11 @@ database_config: [
     dialect: "mysql",
     name: "mysql_my_store_db",
     host: "localhost",
-    username: "DB_USERNAME_HASH",
-    password: "DB_PASSWORD_HASH",
+    username: "m42BVxQ6Q4kLdRX7xS_Hm7WbQiNqShJDvw9SfuLCgI431oafWBtQJoJDnoCL",
+    password: "FjgcgJPylkV7EeQJjea_EeifPwaHVO9onD3T4ATk3YYAyvprdrQejtMGu3dcDS0ejA",
     database: "my_store_db",
     port: "3306",
-    is_connect: true,
+    is_connect: true, // boolean, Turn ON/OFF to connect
   },
   
   ...
@@ -147,7 +148,6 @@ database_config: [
 ],
 
 ...
-
 ```
 ❓ **Caution! :**  Every re-new generate `app_key`. Must to new Hash your Access and change to ALL Database connections.
 
@@ -164,63 +164,61 @@ $ beech make endpointName
 ```
 **Example ***(Basic)***** : Fruits endpoints. 
 
+📂 fruits-endpoints.js
 ```js
-  // fruits-endpoints.js
+exports.init = () => {
 
-  exports.init = () => {
-
-    // GET method
-    endpoint.get("/fruits", Credentials, (req, res) => {
-      // @response
-      res.json({
-        code: 200,
-        message: "Got a GET request.",
-      });
+  // GET method
+  endpoint.get("/fruits", Credentials, (req, res) => {
+    // @response
+    res.json({
+      code: 200,
+      message: "Got a GET request.",
     });
+  });
 
 
-    // POST method
-    endpoint.post("/fruits", Credentials, (req, res) => {
-      // @response
-      res.json({
-        code: 200,
-        result: {
-          id: req.body.id,
-          name: req.body.name,
-        },
-      });
+  // POST method
+  endpoint.post("/fruits", Credentials, (req, res) => {
+    // @response
+    res.json({
+      code: 200,
+      result: {
+        id: req.body.id,
+        name: req.body.name,
+      },
     });
+  });
 
 
-    // PUT method
-    endpoint.put("/fruits/:id", Credentials, (req, res) => {
-      // @response
-      res.json({
-        code: 200,
-        message: "Got a PUT request /fruits/" + req.params.id,
-      });
+  // PUT method
+  endpoint.put("/fruits/:id", Credentials, (req, res) => {
+    // @response
+    res.json({
+      code: 200,
+      message: "Got a PUT request /fruits/" + req.params.id,
     });
+  });
 
 
-    // DELETE method
-    endpoint.delete("/fruits/:id", Credentials, (req, res) => {
-      // @response
-      res.json({
-        code: 200,
-        message: "Got a DELETE request /fruits/" + req.params.id,
-      });
+  // DELETE method
+  endpoint.delete("/fruits/:id", Credentials, (req, res) => {
+    // @response
+    res.json({
+      code: 200,
+      message: "Got a DELETE request /fruits/" + req.params.id,
     });
+  });
 
-    ...
+  ...
 
-  }
+}
 ```
 
 **Example ***(Sequelize)***** : Fruits endpoints. 
 
+📂 fruits-endpoints.js
 ```js
-  // fruits-endpoints.js
-
   // You can declare Base with Beech Core for initial default endpoint [GET, POST, PATCH, DELETE]
   const { Base } = require("beech-api"); 👈
 
@@ -259,90 +257,90 @@ $ beech make modelName --model
 
 **Example ***(Basic)***** : Fruits model.
 
+📂 Fruits.js
 ```js
-  // Fruits.js
+module.exports = {
 
-  module.exports = {
+  // Example basic function get data
+  getData() {
 
-    // Example basic function get data
-    getData() {
-
-      return {
-        id: 1,
-        name: "John Doe",
-      }
-
-    },
-
-    // Example basic function get data from MySQL table
-    getFruits() {
-
-      // call example mysql `mysql.default_db` connection name
-      mysql.default_db.query("SELECT * FROM fruits", (err, results) => {
-
-        if (err) { throw err }
-        return results;
-
-      });
-
+    return {
+      id: 1,
+      name: "John Doe",
     }
 
-  };
+  },
+
+  // Example basic function get data from MySQL table
+  getFruits() {
+
+    // call example mysql `mysql.default_db` connection name
+    mysql.default_db.query("SELECT * FROM fruits", (err, results) => {
+
+      if (err) { throw err }
+      return results;
+
+    });
+
+  }
+
+};
 ```
 
 **Example ***(Sequelize)***** : Fruits model.
 
   You can asign more DataTypes, Learn more : [Sequelize docs](https://sequelize.org/docs/v6/core-concepts/model-basics/#data-types)
+
+📂Fruits.js
 ```js
-  // Fruits.js
+const { Schema } = require("beech-api");
 
-  const { Schema } = require("beech-api");
-  // Define table Schema with `Schema(sql.default_db)` connection name
-  const Fruits = Schema(sql.default_db).define("fruits", {
-    fruit_id: {
-      field: "id", // Ref: field `id` in fruits table
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true
-    },
-    fruitsName: DataTypes.STRING,
-    fruitsQty: DataTypes.INTEGER,
-    fruitsPrice: {
-      type: DataTypes.INTEGER,
-      allowNull: false, // Allow null feilds
-    },
-    createdAt: DataTypes.DATE,
-    updatedAt: DataTypes.DATE,
+// Define table Schema with `Schema(sql.default_db)` connection name
+const Fruits = Schema(sql.default_db).define("fruits", {
+  fruit_id: {
+    field: "id", // Ref: field `id` in fruits table
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  fruitsName: DataTypes.STRING,
+  fruitsQty: DataTypes.INTEGER,
+  fruitsPrice: {
+    type: DataTypes.INTEGER,
+    allowNull: false, // Allow null feilds
+  },
+  createdAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE,
+});
+
+// Example Finder by id (ORM), Learn more: https://sequelize.org/docs/v6/core-concepts/model-querying-finders/
+function exampleFindOneFruitsById(id) {
+  return Fruits.findOne({ where: { id: id } });
+}
+
+// Example Raw Query, Learn more: https://sequelize.org/docs/v6/core-concepts/raw-queries/
+function exampleGetAllFruits(id) {
+  return Fruits.query("SELECT * FROM fruits");
+}
+
+// Example Raw Query with Model Instances. This allows you to easily map a query to a predefined model
+function exampleGetAllFruitsWithModelInstance(id) {
+  return Fruits.query("SELECT * FROM fruits", {
+    model: Fruits, // When JOIN table needed register that table [Fruits, ...]
+    mapToModel: true // pass true here if you have any mapped fields
   });
+}
 
-  // Example Finder by id (ORM), Learn more: https://sequelize.org/docs/v6/core-concepts/model-querying-finders/
-  function exampleFindOneFruitsById(id) {
-    return Fruits.findOne({ where: { id: id } });
-  }
+...
 
-  // Example Raw Query, Learn more: https://sequelize.org/docs/v6/core-concepts/raw-queries/
-  function exampleGetAllFruits(id) {
-    return Fruits.query("SELECT * FROM fruits");
-  }
-
-  // Example Raw Query with Model Instances. This allows you to easily map a query to a predefined model
-  function exampleGetAllFruitsWithModelInstance(id) {
-    return Fruits.query("SELECT * FROM fruits", {
-      model: Fruits, // When JOIN table needed register that table [Fruits, ...]
-      mapToModel: true // pass true here if you have any mapped fields
-    });
-  }
-
+// Export Schema, Function, ...
+module.exports = {
+  Fruits,
+  exampleFindFruitsById,
+  exampleGetAllFruits,
+  exampleGetAllFruitsWithModelInstance,
   ...
-
-  // Export Schema, Function, ...
-  module.exports = {
-    Fruits,
-    exampleFindFruitsById,
-    exampleGetAllFruits,
-    exampleGetAllFruitsWithModelInstance,
-    ...
-  };
+};
 ```
 
 
@@ -356,22 +354,21 @@ $ beech make helperName --helper
 
 **Example:** Text editor helper.
 
+📂 TextEditor.js
 ```js
-  // TextEditor.js
+module.exports = {
 
-  module.exports = {
+  textUpperCase(text) {
+    return text.toUpperCase();
+  },
+  
+  textTrim(text) {
+    return text.trim();
+  },
 
-    textUpperCase(text) {
-      return text.toUpperCase();
-    },
-    
-    textTrim(text) {
-      return text.trim();
-    },
+  ...
 
-    ...
-
-  };
+};
 ```
 
 ## Authentication (passport-jwt)
@@ -386,6 +383,7 @@ $ beech passport init
 
 After passport initialized the `passport.config.js` it's appeared
 
+📂 passport.config.js
 ```js
 module.exports = {
   // allow using passport-jwt
@@ -475,44 +473,44 @@ Bearer Authorization: your_token
 You can easy management `users` data with Beech, Only ```Store, Update``` NO ```Delete```, Anything you can make DELETE endpoint by yourself
 
 ```js
-  const { Store, Update } = require("beech-api");
+const { Store, Update } = require("beech-api");
 ```
 
 - ***Store*** users data with ``Store()``
 ```js
-  // store users
-  var data = {
-    username: "bombkiml",
-    password: "secret",
-    name: "bombkiml nc.",
-    email: "bomb@bomb.com"
-  }
+// prepare data for store users
+var data = {
+  username: "bombkiml",
+  password: "secret",
+  name: "bombkiml nc.",
+  email: "bomb@bomb.com"
+}
 
-  Store(data, (err, stored) => {
-    if (err) throw err;
-    
-    // response affected data
-    console.log(stored.insertId, stored.affectedRows);
+Store(data, (err, stored) => {
+  if (err) throw err;
+  
+  // response affected data
+  console.log(stored.insertId, stored.affectedRows);
 
-  });
+});
 ```
 
 - ***Update*** users data with ``Update()``
 ```js
-  // update users
-  var data = {
-    password: "new_secret",
-    name: "bombkiml NC.",
-    email: "bombkiml@bomb.com"
-  }
+// prepare data for update users
+var data = {
+  password: "new_secret",
+  name: "bombkiml NC.",
+  email: "bombkiml@bomb.com"
+}
 
-  Update(data, id, (err, updated) => {
-    if (err) throw err;
+Update(data, id, (err, updated) => {
+  if (err) throw err;
 
-    // response affected data
-    console.log(updated.updateId, updated.affectedRows);
+  // response affected data
+  console.log(updated.updateId, updated.affectedRows);
 
-  });
+});
 ```
 
 ## Beech with Official Strategy
@@ -529,38 +527,36 @@ Before your application can make use of Sign In With Google, you must register y
 
 Go to open file ``passport.config.js`` and go to ``google strategy`` then turn allow Google Strategy is ``allow: true`` something like this.
 
+📂 passport.config.js
 ```js
-  // passport.config.js
+...
 
-  ...
+strategy: {
 
-  strategy: {
+  google: {
 
-    google: {
+    // Allow using google strategy
+    allow: true,
 
-      // Allow using google strategy
-      allow: true,
-
-      // Authen profile store fields available: `google_id`, `name`, `email`, `photos`, `locate`
-      local_profile_fields: {
-        google_id: "google_id", // Google ID field, default field name: `google_id`
-        name: "your_name_field",
-        email: "your_email_field",
-        photos: "your_profile_url_field",
-        locate: "" // If you not store set to null or remove it.
-      },
-      // Google development Credentials OAuth 2.0 Client IDs
-      client_id: "GOOGLE_CLIENT_ID",
-      client_secret: "GOOGLE_CLIENT_SECRET",
-      // Callback endpoint default `/google/callback`
-      callbackURL: "",
-      // Failure redirect to your route
-      failureRedirect: "/login"
-    }
+    // Authen profile store fields available: `google_id`, `name`, `email`, `photos`, `locate`
+    local_profile_fields: {
+      google_id: "google_id", // Google ID field, default field name: `google_id`
+      name: "your_name_field",
+      email: "your_email_field",
+      photos: "your_profile_url_field",
+      locate: "" // If you not store set to null or remove it.
+    },
+    // Google development Credentials OAuth 2.0 Client IDs
+    client_id: "GOOGLE_CLIENT_ID",
+    client_secret: "GOOGLE_CLIENT_SECRET",
+    // Callback endpoint default `/google/callback`
+    callbackURL: "",
+    // Failure redirect to your route
+    failureRedirect: "/login"
   }
+}
 
-  ...
-    
+...
 ```
 
 The above code is a configures and registers the Google Strategy.
@@ -590,43 +586,41 @@ Before your application can make use of Facebook Login, you must register your a
 
 Go to open file ``passport.config.js`` and go to ``facebook strategy`` then turn allow Facebook Strategy is ``allow: true`` something like this.
 
+📂 passport.config.js
 ```js
-  // passport.config.js
+...
 
-  ...
+strategy: {
 
-  strategy: {
+  facebook: {
 
-    facebook: {
+    // Allow using facebook strategy
+    allow: true,
 
-      // Allow using facebook strategy
-      allow: true,
+    // Authen profile store fields available: `facebook_id`, `name`, `email`, `photos`, `locate`
+    local_profile_fields: {
+      facebook_id: "facebook_id", // Facebook ID field, default field name: `facebook_id`
+      name: "your_name_field",
+      email: "your_email_field",
+      photos: "your_profile_url_field",
+      locate: "" // If you not store set to null or remove it.
+    },
+    // Facebook development Credentials OAuth 2.0
+    app_id: "FACEBOOK_APP_ID",
+    app_secret: "FACEBOOK_APP_SECRET",
 
-      // Authen profile store fields available: `facebook_id`, `name`, `email`, `photos`, `locate`
-      local_profile_fields: {
-        facebook_id: "facebook_id", // Facebook ID field, default field name: `facebook_id`
-        name: "your_name_field",
-        email: "your_email_field",
-        photos: "your_profile_url_field",
-        locate: "" // If you not store set to null or remove it.
-      },
-      // Facebook development Credentials OAuth 2.0
-      app_id: "FACEBOOK_APP_ID",
-      app_secret: "FACEBOOK_APP_SECRET",
+    // You can allow Permissions facebook profile fields. Learn more (https://developers.facebook.com/docs/graph-api/reference/v13.0/user#readperms)
+    // **Update 2024, Now! Facebook requests permission for show Email. Learn more (https://developers.facebook.com/docs/permissions)
+    profileFieldsAllow: [ 'id', 'displayName', 'name', 'photos', 'email', 'location' ], // Default allowed
 
-      // You can allow Permissions facebook profile fields. Learn more (https://developers.facebook.com/docs/graph-api/reference/v13.0/user#readperms)
-      // **Update 2024, Now! Facebook requests permission for show Email. Learn more (https://developers.facebook.com/docs/permissions)
-      profileFieldsAllow: [ 'id', 'displayName', 'name', 'photos', 'email', 'location' ], // Default allowed
-
-      // Callback endpoint default `/facebook/callback`
-      callbackURL: "",
-      // Failure redirect to your route
-      failureRedirect: "/login"
-    }
+    // Callback endpoint default `/facebook/callback`
+    callbackURL: "",
+    // Failure redirect to your route
+    failureRedirect: "/login"
   }
+}
 
-  ...
-
+...
 ```
 
 The above code is a configures and registers the Facebook Strategy.
@@ -647,6 +641,22 @@ Place a button on the application's login page, prompting the user to sign in wi
 
 ❓ **Note:** The URL "``/authentication``" will be follow by ``auth_endpoint`` when you custom it.
 
+## CORS Origin allowments
+The origin array to the callback can be any value allowed for the origin option of the middleware. Certain CORS requests are considered `complex` and require an initial OPTIONS request (called the `pre-flight request`). You can allowed CORS origin inside file `beech.config.js`
+
+📂 beech.config.js
+```js
+module.exports = {
+  defineConfig: {
+    server: {
+      origin: ["http://example.com", "http://my-webapp:8080", "https://cat.io"],
+      originSensitive: false, // Sensitive with contrasts wording
+    },
+  },
+}
+```
+
+❓ **Note:** When you must to allowed all Origin. You can assign `*` or `[]` null value to `origin` variable.
 
 
 ## Databases managements
@@ -676,7 +686,7 @@ This will create following folders inside `databases` folder.
 
 Before continuing further we will need to tell CLI how to connect to database. To do that let's open default config file `databases/config/database.json` It looks something like this:
 
-```
+```json
 {
   "development": {
     "username": "root",
@@ -780,11 +790,10 @@ Test using [Jest](https://jestjs.io/en/) for testing the project. Jest is a deli
 
 So, When you make the new endpoints it's automatic create test file end with `.spec.js` in `__test__` folder with constant `baseUrl` variable and `axios` package.
 
-Example endpoints testing
+Example endpoints testing :
 
+📂 fruits-endpoints.spec.js
 ```js
-// fruits-endpoints.spec.js
-
 const endpoint = baseUrl.concat("/fruits/fruits");
 
 describe("Test endpoint : " + endpoint, () => {
@@ -825,9 +834,8 @@ $ pm2 start ./node_modules/beech-api/packages/cli/beech --name <serviceName> -i 
 
 Docker builds images automatically by reading the instructions from a Dockerfile -- a text file that contains all commands, in order, needed to build a given image. A Dockerfile adheres to a specific format and set of instructions which you can find at [Dockerfile reference](https://docs.docker.com/engine/reference/builder/).
 
+📂 Dockerfile
 ```js
-// Dockerfile
-
 FROM node:14.19-alpine
 ENV NODE_ENV=production
 WORKDIR /usr/src/api
@@ -879,9 +887,8 @@ $ npm install line-api
 
 Create file `Line.js` in `src/helpers` folder and copy code below:
 
+📂 Line.js
 ```js
-// Line.js
-
 const Line = require("line-api");
 
 module.exports = {

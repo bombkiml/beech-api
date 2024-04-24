@@ -2,6 +2,14 @@
 .git
 .vscode
 __tests__
+beech
 node_modules
 package-lock.json
 yarn.lock
+
+# config
+app.config.js
+passport.config.js
+
+# sequelize-cli
+databases

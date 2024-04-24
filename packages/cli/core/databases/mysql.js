@@ -1,5 +1,5 @@
 const mysql = require("mysql");
-const { DeHashIt, M, X, app_key } = require(__dirname + "/../helpers/math");
+const { DeHashIt, M, X } = require(__dirname + "/../helpers/math");
 global.sql = {};
 
 exports.connect = () => {

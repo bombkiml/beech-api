@@ -41,6 +41,8 @@ class Beech {
           let pasteGloablConfigFile = this.argument + '/global.config.js';
           let tmpGitignoreFile = __dirname + '/../core/configure/_gitignore';
           let pasteGitignoreFile = this.argument + '/.gitignore';
+          let tmpBeechConfigFile = __dirname + '/../core/configure/beech.config.js';
+          let pasteBeechConfigFile = this.argument + '/beech.config.js';
           // start log clear screen
           clear();
           logUpdate("[94mBeech CLI v" + require(__dirname + "/../../../package.json").version);
@@ -75,6 +77,7 @@ class Beech {
                       .then(this.copy.bind(this, tmpDotSequelizercFile, pasteDotSequelizercFile))
                       .then(this.copy.bind(this, tmpGloablConfigFile, pasteGloablConfigFile))
                       .then(this.copy.bind(this, tmpGitignoreFile, pasteGitignoreFile))
+                      .then(this.copy.bind(this, tmpBeechConfigFile, pasteBeechConfigFile))
                       .then(this.contentReplace.bind(this, pastePackageFile, { 'application': this.argument }))
                       .then(this.generateKeyConfigFile.bind(this, this.argument))
                       .then(this.installPackage.bind(this, this.argument, resFreat.freature))
