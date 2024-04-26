@@ -28,6 +28,7 @@
   "dependencies": {
     "app-root-path": "^3.0.0",
     "axios": "^0.26.1",
+    "child-process-promise": "^2.2.1",
     "cli-clear": "^1.0.4",
     "cookie-parser": "1.4.3",
     "cors": "^2.8.1",
@@ -45,7 +46,7 @@
     "module-alias": "^2.2.2",
     "mysql": "^2.18.1",
     "mysql2": "^2.3.3",
-    "node-cmd": "^3.0.0",
+    "node-emoji": "^1.11.0",
     "node-notifier": "^10.0.1",
     "passport": "^0.6.0",
     "passport-facebook": "^3.0.0",

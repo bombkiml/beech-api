@@ -25,20 +25,24 @@ mysqlInProcess = (database_config, headDbShow, cb) => {
     if (val.is_connect) {
       const promise = new Promise((resolve) => {
         // check hash ?
-        if(val.username.length < 10 || val.password < 10) {
-          return cb("Error: No Hash access for connect to database.\n", null);
-        }
-        let accessDb = [];
-        [val.username, val.password].map((e, k) => {
-          DeHashIt(e.toString(), null, (17).toString().slice(0,-1).length, (err, d) => {
-            if(!err) {
-              accessDb.push(d.split("sh,")[1].split(M(X).toString().slice(0,2)+M(X).toString())[0].slice(0,-1));
+        if(val.username && val.password) {
+          if(val.username.length < 55 || val.password < 55) {
+            return cb("Error: No Hash access for connect to database.\n", null);
+          }
+          let accessDb = [];
+          [val.username, val.password].map((e, k) => {
+            DeHashIt(e.toString(), null, (17).toString().slice(0,-1).length, (err, d) => {
+              if(!err) {
+                accessDb.push(d.split("sh,")[1].split(M(X).toString().slice(0,2)+M(X).toString())[0].slice(0,-1));
+              }
+            });
+            if(k+1==2) {
+              resolve(accessDb);
             }
           });
-          if(k+1==2) {
-            resolve(accessDb);
-          }
-        });
+        } else {
+          resolve([null, null]);
+        }
       });
       Promise.all([promise]).then(final => {
         // db connection config
@@ -55,7 +59,7 @@ mysqlInProcess = (database_config, headDbShow, cb) => {
           if (!err) {
             // show only one text db connnections
             if (headDbShow) {
-              console.log('\n[102m[90m Passed [0m [0mDatabase is connected at:');
+              console.log('[102m[90m Passed [0m [0mDatabase is connected at:');
               headDbShow = false;
             }
             // declare to global mysql variable
