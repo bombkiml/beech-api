@@ -30,19 +30,11 @@ class Beech {
             testServ.listen(this._config_.main_config.app_port, async () => {
               await testServ.close();
               // Start real service.
-              /* await this.getStart(turnNoti, this.argument, (err, res) => {
-                if (err) {
-                  reject("\n[101m Faltal [0m start service catch.");
-                  return;
-                }
-                // show info
-                //console.log(res);
-                console.clear();
-              }); */
-
-              this.serviceDevStart(this.argument)
-
-
+              await this.serviceDevStart(this.argument);
+              // check turn on nofi
+              if (turnNoti) {
+                this.notiCompile();
+              }
             }).on('error', (err) => {
               console.log("\n[101m Faltal [0m", err);
             })
@@ -67,55 +59,6 @@ class Beech {
       }
     });
   }
-
-  /* getStart(turnNoti, argument, cb) {
-    try {
-      clear();
-      logUpdate("[36mCompiling...[0m");
-      // filter for check dabatase only true
-      filterDbIsTrue(this._config_.database_config, (err, dbConnectIsTrueOnly) => {
-        if (err) {
-          logUpdate("Config file crash.", err);
-          return;
-        }
-        // leave data to disconnect database
-        let leaveDataForDisconnect = dbConnectIsTrueOnly.slice(0);
-        // check db connect truthy length ?
-        if (dbConnectIsTrueOnly.length > 0) {
-          // Test connect process
-          testConnectInProcess(dbConnectIsTrueOnly, dbConnectIsTrueOnly.length, (err, result, dbs) => {
-            if (err) {
-              logUpdate("[101m Failed [0m Database connect failed.", err);
-              return;
-            }
-            if (result) {
-              // Disconnect database
-              disConnectTestDB(leaveDataForDisconnect, dbs, (err, disResult) => {
-                if (err) {
-                  logUpdate("[101m Failed [0m Testing Database connect failed.", err);
-                  return;
-                }
-                if (disResult) {
-                  // Start service
-                  this.serviceDevStart(argument);
-                  // check turn on nofi
-                  if (turnNoti) {
-                    this.notiCompile();
-                  }
-                } else {
-                  cb(err, null);
-                }
-              });
-            }
-          });
-        } else {
-          this.serviceDevStart(argument);
-        }
-      });
-    } catch (error) {
-      cb(error, null);
-    }
-  } */
 
   serviceDevStart(argument) {
     logUpdate("[36mCompiling...[0m");

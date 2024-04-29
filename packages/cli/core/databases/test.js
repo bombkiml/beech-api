@@ -158,7 +158,7 @@ function initSequelize(val, cb) {
       logit(emoji.get('heavy_check_mark') + `  [91m[${val.dialect}] [0m[36m${val.name}[0m`, true);
       cb(false, sq);
     }).catch(err => {
-      console.log(`[103m[90m Warning [0m[0m Connection name \`${val.name}\``, err);
+      console.log(`[103m[90m Warning [0m[0m Connection name \`[93m${val.name}[0m\``, err);
     });
   } catch (error) {
     cb(error, null);

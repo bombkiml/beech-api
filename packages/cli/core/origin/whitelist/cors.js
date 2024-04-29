@@ -37,7 +37,7 @@ function sign(req, res, whitelist, originSensitive, cb) {
     const origin = req.headers.origin;
     let doYouSignSomeOrigin = false;
     //var host = req.get("host");
-    console.log("request origin from>>>", origin);
+    console.log("Request from origin:", origin || "localhost");
 
     if (whitelist.length > 0) {
       whitelist.forEach((val, k) => {
