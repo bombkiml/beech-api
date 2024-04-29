@@ -188,7 +188,7 @@ class Generator {
           this.generateKeyConfigFile()
             .then(resGenKey => resolve(resGenKey))
             .catch(err => reject(err));
-        } else if (this.option.match(/hash:.*/)) {
+        } else if (this.option && this.option.slice(0, 5) == 'hash:') {
           if(this.option.length > 5) {
             const { HashIt, Z } = require(__dirname + "/../helpers/math");
             Z((err, ak) => {
@@ -202,7 +202,7 @@ class Generator {
               }
             });
           } else {
-            resolve("\n[103m[90m Info. [0m[0m No text hash.");
+            resolve("\n[103m[90m Info. [0m[0m No text to hash.");
           }
         } else if (this.option == "add-on") {
           if (this.argument == "init") {

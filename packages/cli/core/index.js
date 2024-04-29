@@ -17,6 +17,12 @@ globalVariable.init();
 global._config_ = require(appRoot + "/app.config");
 const mySqlDbConnect = require("./databases/mysql");
 const SequelizeDbConnect = require("./databases/sequelize");
+// database test
+const {
+  testConnectInProcess,
+  filterDbIsTrue,
+  disConnectTestDB,
+} = require("./databases/test");
 // create global sequelize object
 const { QueryTypes, DataTypes, Op } = require("sequelize");
 global.QueryTypes = QueryTypes;
@@ -25,17 +31,6 @@ global.Op = Op;
 // allow whitelist cors
 _app_.use(cors({ origin: true, credentials: true }));
 const { whitelist, sign } = require("./origin/index");
-whitelist((lists, originSensitive) => {
-  _app_.use((req, res, next) => {
-    sign(req, res, lists, originSensitive, (err) => {
-      if (!err) {
-        next();
-      } else {
-        throw err;
-      }
-    });
-  });
-});
 // View engine
 _app_.use(bodyParser.json());
 _app_.use(bodyParser.urlencoded({ extended: true }));
@@ -89,17 +84,66 @@ walker.on("end", () => {
 // Initialize the application
 init = async (jsfiles) => {
   try {
-    await (pool_base == "basic"
-      ? new Promise((resolve) => resolve(mySqlDbConnect.connect()))
-      : new Promise((resolve) => resolve(SequelizeDbConnect.connect())));
-    await authPassport.init().then(async (x) => {
+    const testConnectToDB = new Promise((resolve) => {
+      filterDbIsTrue(_config_.database_config, (err, dbTruthy) => {
+        if (err) {
+          throw ("Config file crash.", err);
+        }
+        // leave data to disconnect database
+        let leaveDataForDisconnect = dbTruthy.slice(0);
+        // check db connect truthy length ?
+        if (dbTruthy.length > 0) {
+          testConnectInProcess(dbTruthy, dbTruthy.length, (err, result, dbs) => {
+            if (err) {
+              throw ("[101m Failed [0m Database connect failed.", err);
+            }
+            if (result) {
+              // Disconnect database
+              disConnectTestDB(leaveDataForDisconnect, dbs, (err, disResult) => {
+                if (err) {
+                  throw ("[101m Failed [0m Testing Database connect failed.", err);
+                }
+                if (disResult) {
+                  // Disconnect and Next to real
+                  resolve(true);
+                } else {
+                  throw err;
+                }
+              });
+            }
+          });
+        } else {
+          // Not ON connect, Next to real
+          resolve(true);
+        }
+      });
+    });
+    Promise.all([testConnectToDB]).then(async (x) => {
       if (x[0]) {
-        throw x[0];
-      } else {
-        await new Promise((resolve) => resolve(fileWalk.fileWalk(jsfiles)));
-        await new Promise((resolve) => {
-          httpExpress.expressStart().then((expss) => {
-            resolve(expss);
+        await (pool_base == "basic"
+          ? new Promise((resolve) => resolve(mySqlDbConnect.connect()))
+          : new Promise((resolve) => resolve(SequelizeDbConnect.connect())));
+        await whitelist(async (lists, originSensitive) => {
+          await _app_.use((req, res, next) => {
+            sign(req, res, lists, originSensitive, (err) => {
+              if (!err) {
+                next();
+              } else {
+                throw err;
+              }
+            });
+          });
+          await authPassport.init().then(async (x) => {
+            if (x[0]) {
+              throw x[0];
+            } else {
+              await new Promise((resolve) => resolve(fileWalk.fileWalk(jsfiles)));
+              await new Promise((resolve) => {
+                httpExpress.expressStart().then((expss) => {
+                  resolve(expss);
+                });
+              });
+            }
           });
         });
       }
