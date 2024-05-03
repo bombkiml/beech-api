@@ -2,7 +2,6 @@
 exports.init = () => {
   
   // Initiate with Basic request currently support GET, POST, PUT, PATCH and DELETE
-  // Create Endpoint, Learn more: https://github.com/bombkiml/beech-api?tab=readme-ov-file#endpoints
 
   endpoint.get("{{endpoint}}", Credentials, (req, res) => {
     // @return
@@ -34,6 +33,6 @@ exports.init = () => {
     });
   });
 
-  // More request...
+  // Create new Endpoint, Learn more: https://github.com/bombkiml/beech-api?tab=readme-ov-file#part-of-generate-file
 
 };

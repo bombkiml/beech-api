@@ -204,13 +204,13 @@ class Generator {
           } else {
             resolve("\n[103m[90m Info. [0m[0m No text to hash.");
           }
-        } else if (this.option == "add-on") {
+        } else if (this.option == "skd") {
           if (this.argument == "init") {
             this.makeAddOnInit()
               .then(make => resolve(make))
               .catch(err => reject(err));
           } else {
-            resolve("\n[103m[90m Warning [0m[0m Using `add-on init` for initiate add-on.");
+            resolve("\n[103m[90m Warning [0m[0m Using `skd init` for initiate Job Scheduler.");
           }
         } else {
           // help for see avaliable command
@@ -273,28 +273,8 @@ class Generator {
             });
           });
 
-          // STEP 1 : format Model for base use [Users, Xxx, ...]
+          // STEP 1 : Format Require model file
           const promise1 = new Promise((resolve) => {
-            if(rq) {
-              if(rq[1]) {
-                let finalUseModel = [];
-                rq[1].map((data, key) => {
-                  let lastModel = data.split("/");
-                  finalUseModel.push(lastModel.pop());
-                  if(rq[1].length == key+1) {
-                    resolve(finalUseModel);
-                  }
-                });
-              } else {
-                resolve([]);
-              }
-            } else {
-              resolve([]);
-            }
-          });
-
-          // STEP 2 : Format Require model file
-          const promise2 = new Promise((resolve) => {
             // prepare state require file if `rq[0]` not exists
             let requireFile = '// You can require something \n';
             // check exists requrie files
@@ -305,9 +285,7 @@ class Generator {
                 rq[0].map((data, key) => {
                   requireFile += data;
                   if(rq[0].length == key+1) {
-                    //setTimeout(() => {
-                      resolve(requireFile);
-                    //}, 2000);
+                    resolve(requireFile);
                   }
                 })
               } else {
@@ -318,13 +296,12 @@ class Generator {
             }
           });
           // promise all generate endpoint with require(s)
-          Promise.all([promise0, promise1, promise2]).then((rqFileRes) => {
+          Promise.all([promise0, promise1]).then((rqFileRes) => {
             /**
              * @return
              * 
              * rqFileRes[0] : Array[0 = global file true, 1 = tmp endpoint file, 2 = pool_base type ]
-             * rqFileRes[1] : Array[Users, ...] array tables
-             * rqFileRes[2] : Text require file
+             * rqFileRes[1] : Text require file
              * 
              */
             // check global file exists.
@@ -342,8 +319,7 @@ class Generator {
                   .then(this.contentReplace.bind(this, fullEndpoints, {
                     'endpoint': routeEndpoints,
                     'endpointName': endpoints,
-                    'rq': rqFileRes[2],
-                    'tables': rqFileRes[1],
+                    'rq': rqFileRes[1],
                   }))
                   // generater test
                   .then(this.makeFolder.bind(this, testPath + subFolder))
@@ -562,16 +538,16 @@ class Generator {
   makeAddOnInit() {
     return new Promise((resolve, reject) => {
       try {
-        let tmpEndpointsPath = __dirname + '/_add-on';
-        let add_on_paste_point = "Add-on.js";
+        let tmpEndpointsPath = __dirname + '/_scheduler';
+        let add_on_paste_point = "Scheduler.js";
         let folder_add_on = "./src/";
         if (!this.fs.existsSync(folder_add_on + add_on_paste_point)) {
           this.makeFolder(folder_add_on)
             .then(this.copy.bind(this, tmpEndpointsPath, folder_add_on + add_on_paste_point))
-            .then(resolve("\n[102m[90m Passed [0m[0m The `add-on` is initialized."))
+            .then(resolve("\n[102m[90m Passed [0m[0m The `Scheduler` is initialized."))
             .catch(err => console.log(err));
         } else {
-          resolve("\n[103m[90m Warning [0m[0m The `add-on` already is initialized.");
+          resolve("\n[103m[90m Warning [0m[0m The `Scheduler` already is initialized.");
         }
       } catch (error) {
         reject(error);
@@ -610,7 +586,6 @@ class Generator {
         let endpointName = textCondition.endpointName;
         let rq = textCondition.rq;
         let modelName = textCondition.modelName;
-        let tables = textCondition.tables;
         // delay for generator
         setTimeout(() => {
           this.fs.readFile(pathFile, 'utf8', (err, data) => {
@@ -622,7 +597,6 @@ class Generator {
               text = text.replace(new RegExp('{{endpointName}}', 'g'), endpointName);
               text = text.replace(new RegExp('{{requireSomething}}', 'g'), rq);
               text = text.replace(new RegExp('{{modelName}}', 'g'), modelName);
-              text = text.replace(new RegExp('{{tables}}', 'g'), tables ? tables : "// You can use Base([Tables, ...])");
               setTimeout(() => {
                 // writing the file
                 this.fs.writeFile(pathFile, text, 'utf8', (err) => {

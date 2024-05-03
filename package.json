@@ -1,6 +1,6 @@
 {
   "name": "beech-api",
-  "version": "3.7.0",
+  "version": "3.8.0",
   "description": "Command line interface for rapid Beech API development",
   "keywords": [
     "api",
@@ -46,6 +46,7 @@
     "module-alias": "^2.2.2",
     "mysql": "^2.18.1",
     "mysql2": "^2.3.3",
+    "node-cmd": "^3.0.0",
     "node-emoji": "^1.11.0",
     "node-notifier": "^10.0.1",
     "passport": "^0.6.0",

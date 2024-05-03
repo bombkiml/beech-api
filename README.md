@@ -96,7 +96,7 @@ The following commands are available:
   $ beech make <model> -M, --model    Create a new Models file.
   $ beech make <helper> --helper      Create a new Helpers file.
   $ beech passport init               Initialize authentication with passport-jwt.
-  $ beech add-on init                 Initialize add-on file.
+  $ beech skd init                    Initialize Job Scheduler file.
   $ beech key:generate, key:gen       Re-Generate application key (Dangerous!).
   $ beech hash:<text>                 Hash text for Access to Database connection.
 ```
@@ -219,26 +219,17 @@ exports.init = () => {
 
 📂 fruits-endpoints.js
 ```js
-  // You can declare Base with Beech Core for initial default endpoint [GET, POST, PATCH, DELETE]
-  const { Base } = require("beech-api"); 👈
-
-  // Model schema & function
+  // Require Model schema, Function & Others
   const { Fruits } = require("@/models/Fruits");
 
   exports.init = () => {
 
-    // initialize Fruits Model
-    Base([Fruits]); 👈 // It's like magic creating endpoints for you (CRUD) ✨
-
-    // Now you can request /fruits with methods GET, POST, PATCH and DELETE
-    // (C) POST:   /fruits       with { body }
-    // (R) GET:    /fruits       /:limit?/:offset?
-    // (U) PATCH:  /fruits/:id   with { body }
-    // (D) DELETE: /fruits/:id
-
     // Other GET method
-    endpoint.get('/example-fruits', (req, res) => {
-      ...
+    endpoint.get('/example-fruits', async (req, res) => {
+      // example call Fruits model for get data
+      res.json({
+        results: await Fruits.findAll();
+      });
     });
 
     ...
@@ -312,6 +303,16 @@ const Fruits = Schema(sql.default_db).define("fruits", {
   createdAt: DataTypes.DATE,
   updatedAt: DataTypes.DATE,
 });
+
+// Now you can request /fruits with methods GET, POST, PATCH and DELETE
+// (C) POST:   /fruits       with body    { body }
+// (R) GET:    /fruits       with params  /:limit?/:offset?
+// (U) PATCH:  /fruits/:id   with body    { body }
+// (D) DELETE: /fruits/:id   none
+Users.options = {
+  // Allowment default generate endpoint (CRUD)
+  defaultEndpoint: true, // boolean DEFAULT: true  👈 // It's like magic creating endpoints for you (CRUD) ✨
+};
 
 // Example Finder by id (ORM), Learn more: https://sequelize.org/docs/v6/core-concepts/model-querying-finders/
 function exampleFindOneFruitsById(id) {

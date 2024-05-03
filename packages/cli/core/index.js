@@ -29,8 +29,19 @@ global.QueryTypes = QueryTypes;
 global.DataTypes = DataTypes;
 global.Op = Op;
 // allow whitelist cors
-_app_.use(cors({ origin: true, credentials: true }));
 const { whitelist, sign } = require("./origin/index");
+_app_.use(cors({ origin: true, credentials: true }));
+_app_.use((req, res, next) => {
+  whitelist(async (lists, originSensitive) => {
+    sign(req, res, lists, originSensitive, (err) => {
+      if (!err) {
+        next();
+      } else {
+        throw err;
+      }
+    });
+  });
+});
 // View engine
 _app_.use(bodyParser.json());
 _app_.use(bodyParser.urlencoded({ extended: true }));
@@ -68,6 +79,8 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser((user, done) => {
   done(null, user);
 });
+// Endpoint magic
+const { Base } = require("../../lib/index");
 // Read folder in ./src/endpoints/*
 const walk = require("walk");
 let jsfiles = [];
@@ -123,21 +136,12 @@ init = async (jsfiles) => {
         await (pool_base == "basic"
           ? new Promise((resolve) => resolve(mySqlDbConnect.connect()))
           : new Promise((resolve) => resolve(SequelizeDbConnect.connect())));
-        await whitelist(async (lists, originSensitive) => {
-          await _app_.use((req, res, next) => {
-            sign(req, res, lists, originSensitive, (err) => {
-              if (!err) {
-                next();
-              } else {
-                throw err;
-              }
-            });
-          });
           await authPassport.init().then(async (x) => {
             if (x[0]) {
               throw x[0];
             } else {
               await new Promise((resolve) => resolve(fileWalk.fileWalk(jsfiles)));
+              await new Promise((resolve) => resolve(Base()));
               await new Promise((resolve) => {
                 httpExpress.expressStart().then((expss) => {
                   resolve(expss);
@@ -145,7 +149,6 @@ init = async (jsfiles) => {
               });
             }
           });
-        });
       }
     });
   } catch (error) {

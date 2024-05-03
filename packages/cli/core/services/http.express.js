@@ -14,7 +14,11 @@ module.exports = {
           await console.log('- [91mLocal[0m:   [36mhttp://' + _config_.main_config.app_host + ':' + ExpressServer.address().port + '[0m');
           await console.log('- [91mNetwork[0m: [36m' + _config_.main_config.client_host + '[0m');
           await new Promise((resolve) => resolve(this.authentication()));
-          await new Promise((resolve) => resolve(this.addOn()));
+          await new Promise((resolve) => {
+            if(this.scheduler()) {
+              resolve(true);
+            }
+          });
           await new Promise((resolve) => resolve(this.badRequest()));
           await resolve(ExpressServer);
         });
@@ -51,23 +55,23 @@ module.exports = {
       }
     });
   },
-  addOn() {
+  scheduler() {
     return new Promise((resolve, reject) => {
       try {
-        // check add-on file exists ?
-        if (_config_.addOn) {
-          if (fs.existsSync(appRoot + "/src/Add-on.js")) {
-            console.log("- [91mAdd-On[0m:  [93mON[0m");
-            let add_on = require(appRoot + "/src/Add-on.js");
-            if(add_on.init()) {
+        // check Scheduler file exists ?
+        if (_config_.scheduler) {
+          if (fs.existsSync(appRoot + "/src/Scheduler.js")) {
+            console.log("- [91mJob Skd[0m: [93mON[0m");
+            let skd = require(appRoot + "/src/Scheduler.js");
+            if(skd.init()) {
               resolve(true);
             }
           } else {
-            console.log("- [91mAdd-On[0m:  [90mOFF[0m");
+            console.log("- [91mJob Skd[0m: [90mOFF[0m");
             resolve(true);
           }
         } else {
-          console.log("- [91mAdd-On[0m:  [90mOFF[0m");
+          console.log("- [91mJob Skd[0m: [90mOFF[0m");
           resolve(true);
         }
       } catch (error) {

@@ -1,98 +1,290 @@
-const Base = (Pj = []) => {
-  Pj.map((Project) => {
-    let endpointName = Object.values(Project)[4];
-    endpoint.get(`/${endpointName}/:limit?/:offset?`, Credentials, async (req, res) => {
-      const results = await Project.findAll({ offset: (parseInt(req.params.offset) || 0), limit: (parseInt(req.params.limit) || 100) });
-      await res.json({
-        code: 200,
-        status: "SUCCESS",
-        results,
-        length: results.length,
+const walk = require("walk");
+const appRoot = require("app-root-path");
+
+function walkModel(cb) {
+  try {
+    let jsfiles = [];
+    let walker = walk.walk(appRoot + "/src/models", { followLinks: false });
+    // Walk file on push
+    walker.on("file", (root, stat, next) => {
+      jsfiles.push(root + "/" + stat.name);
+      next();
+    });
+    // Walking
+    walker.on("end", () => {
+      let preProject = [];
+      if(jsfiles.length) {
+        jsfiles.forEach((file, k) => {
+          let schemaPath = "@/models" + file.split("models")[1].replace(/\\/g, "/");
+          let endpoint = file
+            .split("models")[1]
+            .replace(/\\/g, "/")
+            .replace(/_/g, "-")
+            .toLowerCase()
+            .slice(0, -3);
+          preProject.push([schemaPath, endpoint]);
+          if (jsfiles.length == k + 1) {
+            cb(null, preProject);
+          }
+        });
+      } else {
+        // model not found.
+        cb(null, preProject);
+      }
+    });
+  } catch (error) {
+    cb(error, null);
+  }
+}
+
+function filterProject(Projects, reqUrl, req, res, cb) {
+  try {
+    let pj = Projects.shift();
+    let regx = new RegExp(pj[1] + "?[^\/].?[0-9].*$", 'g');
+    let regxMatch = reqUrl.match(regx);
+    let regxMatchLength = (regxMatch) ? regxMatch.length: 0;
+    if (pj[1] == reqUrl) {
+      return checkOffset(Object.values(require(pj[0]))[0], req, res, (thenChecked) => {
+        if(thenChecked) {
+          return cb(null, Object.values(require(pj[0]))[0]);
+        }
       });
-    });
-    endpoint.post(`/${endpointName}`, Credentials, (req, res) => {
-      Project.create(req.body)
-        .then((created) => {
-          // @return
-          res.status(201).json({
-            code: 201,
-            status: "CREATE_SUCCESS",
-            createdId: created.id,
-          });
-        })
-        .catch((err) => {
-          // @return
-          res.status(501).json({
-            code: 501,
-            status: "CREATE_FAILED",
-            error: err,
-          });
-        });
-    });
-    endpoint.patch(`/${endpointName}/:id`, Credentials, (req, res) => {
-      Project.update(req.body, {
-        where: {
-          id: req.params.id,
-        },
-      })
-        .then((updated) => {
-          // @return
-          res.status(200).json({
-            code: 200,
-            status: "UPDATE_SUCCESS",
-            result: {
-              updateId: req.params.id,
-              affectedRows: updated[0],
-            },
-          });
-        })
-        .catch((err) => {
-          // @return
-          res.status(501).json({
-            code: 501,
-            status: "UPDATE_FAILED",
-            error: err,
-          });
-        });
-    });
-    endpoint.delete(`/${endpointName}/:id`, Credentials, (req, res) => {
-      Project.destroy({
-        where: {
-          id: req.params.id,
-        },
-      })
-        .then((deleted) => {
-          if(deleted) {
-            // @return
-            res.status(200).json({
-              code: 200,
-              status: "DELETE_SUCCESS",
-              result: {
-                deleteId: req.params.id,
-                affectedRows: deleted,
-              },
+    } else if(regxMatchLength) {
+      return checkOffset(Object.values(require(pj[0]))[0], req, res, (thenChecked) => {
+        if(thenChecked) {
+          return cb(null, Object.values(require(pj[0]))[0]);
+        }
+      });
+    }
+    // Finally recursive filterProject function
+    if (Projects.length > 0) {
+      filterProject(Projects, reqUrl, req, res, cb);
+    } else {
+      // not match
+      return notfound(res);
+    }
+  } catch (error) {
+    cb(error, null);
+  }
+}
+
+function checkOffset(Project, req, res, cb) {
+  if(!Project || ((req.params.offset) ? (parseInt(req.params.offset, 10)) ? false : true : false)) {
+    return notfound(res);
+  } else {
+    cb(true);
+  }
+}
+
+function notfound(res) {
+  return res.status(404).json({
+    code: 404,
+    status: "404_NOT_FOUND",
+    message: "The Endpoint not found!.",
+  });
+}
+
+function Base() {
+  return new Promise((resolve, reject) => {
+    try {
+      walkModel((err, Projects) => {
+        if (err) {
+          reject(err);
+        } else {
+          if(Projects.length) {
+            // GET method
+            endpoint.get("/:hash/:limit?/:offset?", Credentials, async (req, res, next) => {
+              let leaveMeAlone = await Projects.slice(0);
+              await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                if (!err) {
+                  if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
+                    try {
+                      const results = await Project.findAll({
+                        offset: parseInt(req.params.offset) || 0,
+                        limit: parseInt(req.params.limit) || 100,
+                      });
+                      // @ return
+                      await res.json({
+                        code: 200,
+                        status: "SUCCESS",
+                        results,
+                        length: results.length,
+                      });
+                    } catch (error) {
+                      // @return
+                      res.status(500).json({
+                        code: 500,
+                        error: error.toString(),
+                      });
+                    }
+                  } else {
+                    next();
+                  }
+                } else {
+                  // @return
+                  return res.status(500).json({
+                    code: 500,
+                    err: err.toString(),
+                  });
+                }
+              });
             });
-          } else {
-            res.status(406).json({
-              code: 406,
-              status: "NOT_ACCEPTABLE",
-              result: {
-                deleteId: req.params.id,
-                affectedRows: deleted,
-              },
+            // POST method
+            endpoint.post("/:hash", Credentials, async (req, res, next) => {
+              let leaveMeAlone = await Projects.slice(0);
+              await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                if (!err) {
+                  if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
+                    try {
+                      await Project.create(req.body).then((created) => {
+                        // @return
+                        res.status(201).json({
+                          code: 201,
+                          status: "CREATE_SUCCESS",
+                          createdId: (created.id) ? created.id : created[Project.primaryKeyAttributes[0]],
+                        });
+                      }).catch((err) => {
+                        // @return
+                        res.status(501).json({
+                          code: 501,
+                          status: "CREATE_FAILED",
+                          error: err,
+                        });
+                      });
+                    } catch (error) {
+                      // @return
+                      res.status(500).json({
+                        code: 500,
+                        error: error.toString(),
+                      });
+                    }
+                  } else {
+                    next();
+                  }
+                } else {
+                  return res.status(500).json({
+                    code: 500,
+                    err: err.toString(),
+                  });
+                }
+              });
+            });
+            // PATCH method
+            endpoint.patch("/:hash/:id", Credentials, async (req, res, next) => {
+              let leaveMeAlone = await Projects.slice(0);
+              await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                if (!err) {
+                  if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
+                    try {
+                      let updatePk = await {
+                        [Project.primaryKeyAttributes[0]]: req.params.id
+                      };
+                      await Project.update(req.body, {
+                        where: updatePk,
+                      }).then((updated) => {
+                        // @return
+                        res.status(200).json({
+                          code: 200,
+                          status: "UPDATE_SUCCESS",
+                          result: {
+                            updateId: req.params.id,
+                            affectedRows: updated[0],
+                          },
+                        });
+                      }).catch((err) => {
+                        // @return
+                        res.status(501).json({
+                          code: 501,
+                          status: "UPDATE_FAILED",
+                          error: err,
+                        });
+                      });
+                    } catch (error) {
+                      // @return
+                      res.status(500).json({
+                        code: 500,
+                        error: error.toString(),
+                      });
+                    }
+                  } else {
+                    next();
+                  }
+                } else {
+                  return res.status(500).json({
+                    code: 500,
+                    err: err.toString(),
+                  });
+                }
+              });
+            });
+            // DELETE method
+            endpoint.delete("/:hash/:id", Credentials, async (req, res, next) => {
+              let leaveMeAlone = await Projects.slice(0);
+              await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                if (!err) {
+                  if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
+                    try {
+                      let deletePk = await {
+                        [Project.primaryKeyAttributes[0]]: req.params.id
+                      };
+                      await Project.destroy({
+                        where: deletePk,
+                      }).then((deleted) => {
+                        if (deleted) {
+                          // @return
+                          res.status(200).json({
+                            code: 200,
+                            status: "DELETE_SUCCESS",
+                            result: {
+                              deleteId: req.params.id,
+                              affectedRows: deleted,
+                            },
+                          });
+                        } else {
+                          res.status(406).json({
+                            code: 406,
+                            status: "NOT_ACCEPTABLE",
+                            result: {
+                              deleteId: req.params.id,
+                              affectedRows: deleted,
+                            },
+                          });
+                        }
+                      }).catch((err) => {
+                        // @return
+                        res.status(501).json({
+                          code: 501,
+                          status: "DELETE_FAILED",
+                          error: err,
+                        });
+                      });
+                    } catch (error) {
+                      // @return
+                      res.status(500).json({
+                        code: 500,
+                        error: error.toString(),
+                      });
+                    }
+                  } else {
+                    next();
+                  }
+                } else {
+                  return res.status(500).json({
+                    code: 500,
+                    err: err.toString(),
+                  });
+                }
+              });
             });
           }
-        })
-        .catch((err) => {
-          // @return
-          res.status(501).json({
-            code: 501,
-            status: "DELETE_FAILED",
-            error: err,
-          });
-        });
-    });
+        }
+        // resolve it.
+        resolve(true);
+      });
+    } catch (error) {
+      reject(error);
+    }
   });
-};
+}
 
 module.exports = { Base };
