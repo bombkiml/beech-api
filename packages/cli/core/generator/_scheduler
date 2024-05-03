@@ -4,7 +4,7 @@
 exports.init = () => {
 
   /**
-   * TO DO something.
+   * TODO something.
    *
    */
 

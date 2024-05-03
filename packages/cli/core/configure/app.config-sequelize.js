@@ -15,8 +15,8 @@ module.exports = {
     app_key: [ "2cc118cd91b52ff99e3c005ddced76fb" ]
   },
 
-  // Add-on it's work when enabled. You can enable add-on by run CMD `$ beech add-on init`.
-  addOn: true,
+  // Job Scheduler it's work when enabled. You can enable scheduler by run CMD `$ beech skd init`.
+  scheduler: true,
 
   /**
    * The Database configuration (mutiple connection) currenty support for MySQL, SQLite, MariaDB, PostgreSQL and Microsoft SQL Server

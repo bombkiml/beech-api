@@ -37,8 +37,8 @@ function sign(req, res, whitelist, originSensitive, cb) {
     const origin = req.headers.origin;
     let doYouSignSomeOrigin = false;
     //var host = req.get("host");
-    console.log("Request from origin:", origin || "localhost");
-
+    console.log("Request from origin:", origin || "http://localhost");
+    // check whitelist length ?
     if (whitelist.length > 0) {
       whitelist.forEach((val, k) => {
         if (origin) {
@@ -53,21 +53,19 @@ function sign(req, res, whitelist, originSensitive, cb) {
         }
         if (whitelist.length == k + 1) {
           if (!doYouSignSomeOrigin) {
-            res.setHeader(
-              "Access-Control-Allow-Origin",
-              "http://localhost:" + _config_.main_config.app_port
-            );
+            setLocalHeader(res);
           }
         }
       });
     } else {
-      res.setHeader("Access-Control-Allow-Origin", origin);
+      if(origin) {
+        res.setHeader("Access-Control-Allow-Origin", origin); // add origin when not sign origin: []|["*"]
+      } else {
+        setLocalHeader(res);
+      }
     }
     // Request methods you wish to allow
-    res.setHeader(
-      "Access-Control-Allow-Methods",
-      "GET, POST, OPTIONS, PUT, PATCH, DELETE"
-    );
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
     // Request headers you wish to allow
     res.setHeader(
       "Access-Control-Allow-Headers",
@@ -86,6 +84,11 @@ function sign(req, res, whitelist, originSensitive, cb) {
   } catch (error) {
     cb(error);
   }
+}
+
+function setLocalHeader(res) {
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:" + _config_.main_config.app_port);
+  res.setHeader("Access-Control-Allow-Origin", "http://127.0.0.1:" + _config_.main_config.app_port);
 }
 
 module.exports = { whitelist, sign };

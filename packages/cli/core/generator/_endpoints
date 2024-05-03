@@ -1,9 +1,5 @@
-const { Base } = require("beech-api");
 {{requireSomething}}
 exports.init = () => {
-  // Initialize Base endpoint
-  Base([{{tables}}]); // It's like magic creating endpoints for you (CRUD)
-
   // Example GET request
   endpoint.get("/example-{{endpoint}}", Credentials, (req, res) => {
     // @response
@@ -13,7 +9,6 @@ exports.init = () => {
     });
   });
   
-  // Your more request...
-  // Create more Endpoints, Learn more: https://github.com/bombkiml/beech-api?tab=readme-ov-file#endpoint
+  // Create new Endpoints, Learn more: https://github.com/bombkiml/beech-api?tab=readme-ov-file#part-of-generate-file
 
 };

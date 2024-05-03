@@ -63,7 +63,7 @@ class Beech {
                   type: "checkbox",
                   name: "freature",
                   message: "[93mCheck the features needed for your project:[0m",
-                  choices: [ "Add-Ons", "Basic Helper", "Passport / JWT / Official Strategy Google, Facebook" ],
+                  choices: [ "Job Scheduler", "Basic Helper", "Passport / JWT / Official Strategy Google, Facebook" ],
                 } ]).then(resFreat => {
                   logUpdate(": Initialize...");
                   setTimeout(() => {
@@ -201,9 +201,9 @@ class Beech {
         let freatureLength = freatureArr.length;
         if (freatureLength) {
           freatureArr.map((f, key) => {
-            if (f.split(' ')[ 0 ] == "Add-Ons") {
-              (process.env.NODE_ENV == "development") ? this.cmd.get('cd ' + argument + ' && node cli/bin/beech-app.js add-on init') : this.cmd.get('cd ' + argument + ' && beech add-on init');
-              console.log("[" + (key + 1) + "/" + freatureLength + "] Installing Add-Ons");
+            if (f.split(' ')[ 0 ] == "Job") {
+              (process.env.NODE_ENV == "development") ? this.cmd.get('cd ' + argument + ' && node cli/bin/beech-app.js skd init') : this.cmd.get('cd ' + argument + ' && beech skd init');
+              console.log("[" + (key + 1) + "/" + freatureLength + "] Installing Job Scheduler");
             }
             if (f.split(' ')[ 0 ] == "Basic") {
               this.makeFolder(helperPath).then(this.copy.bind(this, tmpBasicHelperFile, pasteBasicHelperFile))

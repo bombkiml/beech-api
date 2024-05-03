@@ -14,6 +14,6 @@ The following commands are available:
   $ beech make <model> -M, --model    Create a new Models file.
   $ beech make <helper> --helper      Create a new Helpers file.
   $ beech passport init               Initialize authentication with passport-jwt.
-  $ beech add-on init                 Initialize add-on file.
+  $ beech skd init                    Initialize Job Scheduler file.
   $ beech key:generate, key:gen       Re-Generate application key (Dangerous!).
   $ beech hash:<text>                 Hash text for Access to Database connection.
