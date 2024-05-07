@@ -101,7 +101,7 @@ class Beech {
           let processUpdate = null;
           let lineStdout = "";
           if (this.argument == '-g' || this.argument == '--global') {
-            isGlobalNpm = "npm install beech-api -g";
+            isGlobalNpm = "npm install beech-api -g --force";
             isGlobalYarn = "yarn global add beech-api";
           }
           // prompt select

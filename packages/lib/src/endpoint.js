@@ -84,6 +84,26 @@ function notfound(res) {
   });
 }
 
+function errMessege(err, res) {
+  let errTurnOffDbDefine = JSON.stringify(err.toString()).match(/'define'/);
+  let errTurnOffDbOption = JSON.stringify(err.toString()).match(/'options'/);
+  if(errTurnOffDbDefine || errTurnOffDbOption) {
+    // @return
+    return res.status(500).json({
+      code: 500,
+      status: "ERR_INTERNAL_SERVER",
+      messege: "Database connection name is CLOSED.",
+    });
+  } else {
+    // @return
+    return res.status(500).json({
+      code: 500,
+      status: "ERR_INTERNAL_SERVER",
+      messege: err.toString(),
+    });
+  }
+}
+
 function Base() {
   return new Promise((resolve, reject) => {
     try {
@@ -112,20 +132,14 @@ function Base() {
                       });
                     } catch (error) {
                       // @return
-                      res.status(500).json({
-                        code: 500,
-                        error: error.toString(),
-                      });
+                      return errMessege(err, res);
                     }
                   } else {
                     next();
                   }
                 } else {
                   // @return
-                  return res.status(500).json({
-                    code: 500,
-                    error: err.toString(),
-                  });
+                  return errMessege(err, res);
                 }
               });
             });
@@ -153,19 +167,14 @@ function Base() {
                       });
                     } catch (error) {
                       // @return
-                      res.status(500).json({
-                        code: 500,
-                        error: error.toString(),
-                      });
+                      return errMessege(err, res);
                     }
                   } else {
                     next();
                   }
                 } else {
-                  return res.status(500).json({
-                    code: 500,
-                    error: err.toString(),
-                  });
+                  // @return
+                  return errMessege(err, res);
                 }
               });
             });
@@ -201,19 +210,14 @@ function Base() {
                       });
                     } catch (error) {
                       // @return
-                      res.status(500).json({
-                        code: 500,
-                        error: error.toString(),
-                      });
+                      return errMessege(err, res);
                     }
                   } else {
                     next();
                   }
                 } else {
-                  return res.status(500).json({
-                    code: 500,
-                    error: err.toString(),
-                  });
+                  // @return
+                  return errMessege(err, res);
                 }
               });
             });
@@ -260,19 +264,14 @@ function Base() {
                       });
                     } catch (error) {
                       // @return
-                      res.status(500).json({
-                        code: 500,
-                        error: error.toString(),
-                      });
+                      return errMessege(err, res);
                     }
                   } else {
                     next();
                   }
                 } else {
-                  return res.status(500).json({
-                    code: 500,
-                    error: err.toString(),
-                  });
+                  // @return
+                  return errMessege(err, res);
                 }
               });
             });

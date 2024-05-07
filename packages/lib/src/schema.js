@@ -30,11 +30,12 @@ function Schema(Sequelize) {
           Sequelize,
         });
       } catch (error) {
-        let errTurnOffDb = JSON.stringify(error.toString()).match(/'define'/);
-        if(errTurnOffDb) {
-          throw console.log(`\n[101m Failed [0m Database connection name is CLOSED. Checking ON/OFF inside app.conifg.js file.\n`, error);
+        let errTurnOffDbDefine = JSON.stringify(error.toString()).match(/'define'/);
+        let errTurnOffDbOption = JSON.stringify(error.toString()).match(/'options'/);
+        if(errTurnOffDbDefine || errTurnOffDbOption) {
+          console.log(`\n[101m Failed [0m Database connection name is CLOSED.\n`, error);
         } else {
-          throw console.log("\n[101m Failed [0m", error);
+          console.log("\n[101m Failed [0m", error);
         }
       }
     },
