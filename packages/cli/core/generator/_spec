@@ -1,4 +1,4 @@
-const endpoint = baseUrl.concat('{{endpoint}}');
+const endpoint = baseUrl.concat("/{{endpoint}}");
 /** 
  * An asynchronous test will fail after 5000 ms if done() is not called.
  * This timeout can be changed by setting TIMEOUT_INTERVAL or by passing 
@@ -6,13 +6,13 @@ const endpoint = baseUrl.concat('{{endpoint}}');
  * 
  */
 
-describe('Test endpoint : ' + endpoint, () => {
-  it('Truthy!', () => {
-    expect('{{endpoint}}').toBeTruthy();
+describe("Test endpoint : " + endpoint, () => {
+  it("Truthy!", () => {
+    expect("{{endpoint}}").toBeTruthy();
   });
 
-  it('Say hello!', () => {
-    expect('Hello {{endpointName}}').toEqual('Hello {{endpointName}}');
+  it("Say hello!", () => {
+    expect("Hello {{endpointName}}").toEqual("Hello {{endpointName}}");
   });
 
   it("Respond with basic GET status code 200", (done) => {
