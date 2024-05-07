@@ -1,11 +1,12 @@
 {{requireSomething}}
 exports.init = () => {
-  // Example GET request
-  endpoint.get("/example-{{endpoint}}", Credentials, (req, res) => {
+  // GET request
+  endpoint.get("/{{endpoint}}", Credentials, (req, res) => {
     // @response
     res.json({
       code: 200,
-      message: "Got a GET example request.",
+      status: "SUCCESS",
+      message: "GET /{{endpoint}} request.",
     });
   });
   

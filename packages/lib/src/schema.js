@@ -1,33 +1,43 @@
 function Schema(Sequelize) {
   return {
     define: (table, schemaProps = {}) => {
-      let Project = Sequelize.define(table, schemaProps);
-      return Object.assign(Project, {
-        query: (
-          rawSql,
-          props = {
-            model: Project,
-            mapToModel: false,
-          }
-        ) => {
-          return new Promise((resolve) => {
-            if (props.mapToModel) {
-              let data = Sequelize.query(rawSql, props);
-              let results = [];
-              mapDataToModel(data, props.model, results, (err, r) => {
-                if (err) {
-                  resolve([]);
-                } else {
-                  resolve(r);
-                }
-              });
-            } else {
-              resolve(Sequelize.query(rawSql, props));
+      try {
+        let Project = Sequelize.define(table, schemaProps);
+        return Object.assign(Project, {
+          query: (
+            rawSql,
+            props = {
+              model: Project,
+              mapToModel: false,
             }
-          });
-        },
-        Sequelize,
-      });
+          ) => {
+            return new Promise((resolve) => {
+              if (props.mapToModel) {
+                let data = Sequelize.query(rawSql, props);
+                let results = [];
+                mapDataToModel(data, props.model, results, (err, r) => {
+                  if (err) {
+                    resolve([]);
+                  } else {
+                    resolve(r);
+                  }
+                });
+              } else {
+                resolve(Sequelize.query(rawSql, props));
+              }
+            });
+          },
+          Sequelize,
+        });
+      } catch (error) {
+        let errTurnOffDbDefine = JSON.stringify(error.toString()).match(/'define'/);
+        let errTurnOffDbOption = JSON.stringify(error.toString()).match(/'options'/);
+        if(errTurnOffDbDefine || errTurnOffDbOption) {
+          console.log(`\n[101m Failed [0m Database connection name is CLOSED.\n`, error);
+        } else {
+          console.log("\n[101m Failed [0m", error);
+        }
+      }
     },
   };
 }

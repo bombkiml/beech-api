@@ -7,7 +7,8 @@ exports.init = () => {
     // @return
     res.json({
       code: 200,
-      message: "Got a GET request.",
+      status: "SUCCESS",
+      message: "GET /{{endpoint}} request.",
     });
   });
 
@@ -17,6 +18,8 @@ exports.init = () => {
     // @return
     res.json({
       code: 200,
+      message: "POST request at /{{endpoint}}",
+      status: "SUCCESS",
       result: {
         id,
         name,
@@ -29,7 +32,8 @@ exports.init = () => {
     // @return
     res.json({
       code: 200,
-      message: "Got a PUT request at {{endpoint}}/" + id,
+      status: "SUCCESS",
+      message: "PUT request at /{{endpoint}}/" + id,
     });
   });
 

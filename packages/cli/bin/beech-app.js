@@ -96,12 +96,12 @@ class Beech {
           }
         } else if (this.option == "update") {
           // upgrade the beech-api package
+          let isGlobalNpm = "npm install beech-api";
           let isGlobalYarn = "yarn add beech-api";
-          let isGlobalNpm = "npm update beech-api";
           let processUpdate = null;
           let lineStdout = "";
           if (this.argument == '-g' || this.argument == '--global') {
-            isGlobalNpm = "npm update beech-api -g";
+            isGlobalNpm = "npm update beech-api -g --force";
             isGlobalYarn = "yarn global add beech-api";
           }
           // prompt select

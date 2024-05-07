@@ -173,7 +173,8 @@ exports.init = () => {
     // @response
     res.json({
       code: 200,
-      message: "Got a GET request.",
+      status: "SUCCESS",
+      message: "GET /fruits request.",
     });
   });
 
@@ -183,6 +184,8 @@ exports.init = () => {
     // @response
     res.json({
       code: 200,
+      status: "SUCCESS",
+      message: "POST request at /fruits",
       result: {
         id: req.body.id,
         name: req.body.name,
@@ -196,7 +199,8 @@ exports.init = () => {
     // @response
     res.json({
       code: 200,
-      message: "Got a PUT request /fruits/" + req.params.id,
+      status: "SUCCESS",
+      message: "PUT request at /fruits/" + req.params.id,
     });
   });
 
@@ -206,7 +210,8 @@ exports.init = () => {
     // @response
     res.json({
       code: 200,
-      message: "Got a DELETE request /fruits/" + req.params.id,
+      status: "SUCCESS",
+      message: "DELETE request at /fruits/" + req.params.id,
     });
   });
 
@@ -224,10 +229,12 @@ exports.init = () => {
 
   exports.init = () => {
 
-    // Other GET method
-    endpoint.get('/example-fruits', async (req, res) => {
+    // GET method
+    endpoint.get('/fruits', async (req, res) => {
       // example call Fruits model for get data
       res.json({
+        code: 200,
+        status: "SUCCESS",
         results: await Fruits.findAll();
       });
     });
@@ -310,7 +317,7 @@ const Fruits = Schema(sql.default_db).define("fruits", {
 // (U) PATCH:  /fruits/:id   with body    { body }
 // (D) DELETE: /fruits/:id   none
 Users.options = {
-  // Allowment default generate endpoint (CRUD)
+  // Allowment magic generate default endpoint (CRUD)
   defaultEndpoint: true, // boolean DEFAULT: true  👈 // It's like magic creating endpoints for you (CRUD) ✨
 };
 
@@ -387,7 +394,7 @@ After passport initialized the `passport.config.js` it's appeared
 📂 passport.config.js
 ```js
 module.exports = {
-  // allow using passport-jwt
+  // Allowment using passport-jwt
   jwt_allow: true,
 
   // custom authenticaiton endpoint name, default `/authentication`
@@ -414,7 +421,7 @@ module.exports = {
     fields: []
   },
 
-  // allow using request with app_key (Every request needed app_key headers)
+  // Allowment using request with app_key (Every request needed app_key headers)
   app_key_allow: false
 
   ...
@@ -536,7 +543,7 @@ strategy: {
 
   google: {
 
-    // Allow using google strategy
+    // Allowment using google strategy
     allow: true,
 
     // Authen profile store fields available: `google_id`, `name`, `email`, `photos`, `locate`
@@ -595,7 +602,7 @@ strategy: {
 
   facebook: {
 
-    // Allow using facebook strategy
+    // Allowment using facebook strategy
     allow: true,
 
     // Authen profile store fields available: `facebook_id`, `name`, `email`, `photos`, `locate`
@@ -795,11 +802,11 @@ Example endpoints testing :
 
 📂 fruits-endpoints.spec.js
 ```js
-const endpoint = baseUrl.concat("/fruits/fruits");
+const endpoint = baseUrl.concat("/fruits");
 
 describe("Test endpoint : " + endpoint, () => {
   it("Truthy!", () => {
-    expect("/fruits/fruits").toBeTruthy();
+    expect("/fruits").toBeTruthy();
   });
 
   it("Respond with basic GET status code 200", (done) => {
