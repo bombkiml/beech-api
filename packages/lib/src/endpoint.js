@@ -84,7 +84,7 @@ function notfound(res) {
   });
 }
 
-function errMessege(err, res) {
+function errMessage(err, res) {
   let errTurnOffDbDefine = JSON.stringify(err.toString()).match(/'define'/);
   let errTurnOffDbOption = JSON.stringify(err.toString()).match(/'options'/);
   if(errTurnOffDbDefine || errTurnOffDbOption) {
@@ -92,14 +92,14 @@ function errMessege(err, res) {
     return res.status(500).json({
       code: 500,
       status: "ERR_INTERNAL_SERVER",
-      messege: "Database connection name is CLOSED.",
+      message: "Database connection name is CLOSED.",
     });
   } else {
     // @return
     return res.status(500).json({
       code: 500,
       status: "ERR_INTERNAL_SERVER",
-      messege: err.toString(),
+      message: err.toString(),
     });
   }
 }
@@ -132,14 +132,14 @@ function Base() {
                       });
                     } catch (error) {
                       // @return
-                      return errMessege(err, res);
+                      return errMessage(error, res);
                     }
                   } else {
                     next();
                   }
                 } else {
                   // @return
-                  return errMessege(err, res);
+                  return errMessage(err, res);
                 }
               });
             });
@@ -167,14 +167,14 @@ function Base() {
                       });
                     } catch (error) {
                       // @return
-                      return errMessege(err, res);
+                      return errMessage(error, res);
                     }
                   } else {
                     next();
                   }
                 } else {
                   // @return
-                  return errMessege(err, res);
+                  return errMessage(err, res);
                 }
               });
             });
@@ -210,14 +210,14 @@ function Base() {
                       });
                     } catch (error) {
                       // @return
-                      return errMessege(err, res);
+                      return errMessage(error, res);
                     }
                   } else {
                     next();
                   }
                 } else {
                   // @return
-                  return errMessege(err, res);
+                  return errMessage(err, res);
                 }
               });
             });
@@ -264,14 +264,14 @@ function Base() {
                       });
                     } catch (error) {
                       // @return
-                      return errMessege(err, res);
+                      return errMessage(error, res);
                     }
                   } else {
                     next();
                   }
                 } else {
                   // @return
-                  return errMessege(err, res);
+                  return errMessage(err, res);
                 }
               });
             });

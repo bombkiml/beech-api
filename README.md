@@ -142,7 +142,7 @@ database_config: [
     port: "3306",
     is_connect: true, // boolean, Turn ON/OFF to connect
   },
-  
+
   ...
 
 ],
@@ -162,6 +162,8 @@ So, you might create new endpoints with constant `endpoint` object variable in `
 ```sh
 $ beech make endpointName
 ```
+You might using [special] `-R, --require` for choose Model(s) used for that endpoint.
+
 **Example ***(Basic)***** : Fruits endpoints. 
 
 📂 fruits-endpoints.js
@@ -247,7 +249,7 @@ exports.init = () => {
 
 ### # Generate Models ###
 
-The `models` keep the files of function(s) for retriving, inserting, updating and deleting with SQL data. for understanding you might make model name same your table name in `src/models` folder.
+The `models` keep the files of function(s) data managemnets for Retriving, Creating, Updating and Destroying (CRUD). for understanding you might make model name same your table name inside `src/models` folder.
 
 ```sh
 $ beech make modelName --model
@@ -272,7 +274,7 @@ module.exports = {
   // Example basic function get data from MySQL table
   getFruits() {
 
-    // call example mysql `mysql.default_db` connection name
+    // calling Pool connection name by `mysql.default_db`
     mysql.default_db.query("SELECT * FROM fruits", (err, results) => {
 
       if (err) { throw err }
@@ -296,7 +298,7 @@ const { Schema } = require("beech-api");
 // Define table Schema with `Schema(sql.default_db)` connection name
 const Fruits = Schema(sql.default_db).define("fruits", {
   fruit_id: {
-    field: "id", // Ref: field `id` in fruits table
+    field: "id", // Rename PK field to fruit_id Ref: `id` field in fruits table
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true
