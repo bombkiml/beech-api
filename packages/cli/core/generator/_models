@@ -7,9 +7,9 @@ const {{modelNameUppercase}} = Schema(sql.{{dbSelected}}).define("{{modelName}}"
     autoIncrement: true,
     primaryKey: true,
   },
-  examField1: DataTypes.STRING, // Asign more DataTypes, Learn more: https://sequelize.org/docs/v6/core-concepts/model-basics/#data-types
-  examField2: DataTypes.DATE,
-  examField3: {
+  examField1: DataTypes.STRING,
+  examField3: DataTypes.DATE,
+  examField4: {
     type: DataTypes.STRING,
     allowNull: false,
     // set(value) {
@@ -18,6 +18,7 @@ const {{modelNameUppercase}} = Schema(sql.{{dbSelected}}).define("{{modelName}}"
   },
   createdAt: DataTypes.DATE,
   updatedAt: DataTypes.DATE,
+  // Asign more DataTypes, Learn more: https://sequelize.org/docs/v6/core-concepts/model-basics/#data-types
 });
 
 // Example basic function Get one data by id

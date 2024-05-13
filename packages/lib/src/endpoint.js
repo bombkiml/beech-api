@@ -69,10 +69,22 @@ function filterProject(Projects, reqUrl, req, res, cb) {
 }
 
 function checkOffset(Project, req, res, cb) {
-  if(!Project || ((req.params.offset) ? (parseInt(req.params.offset, 10)) ? false : true : false)) {
+  if (!Project) {
     return notfound(res);
+  }
+  // check offset is Ingeter as well as Zero number
+  let offset = req.params.offset || undefined;
+  let regxMatch = (offset !== undefined) ? offset.match(/^[0-9]+$/) : undefined;
+  if (regxMatch) {
+    if(regxMatch.length) {
+      cb(true);
+    }
   } else {
-    cb(true);
+    if(offset === undefined) {
+      cb(true);
+    } else {
+      return notfound(res);
+    }
   }
 }
 
@@ -112,8 +124,66 @@ function Base() {
           reject(err);
         } else {
           if(Projects.length) {
-            // GET method
-            endpoint.get("/:hash/:limit?/:offset?", Credentials, async (req, res, next) => {
+            // GET method with ALL data, default: limit rows 100
+            endpoint.get("/:hash", Credentials, async (req, res, next) => {
+              let leaveMeAlone = await Projects.slice(0);
+              await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                if (!err) {
+                  if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
+                    try {
+                      const results = await Project.findAll({
+                        offset: 0,
+                        limit: (Project.options.limitRows) ? Project.options.limitRows : 100,
+                      });
+                      // @ return
+                      await res.json({
+                        code: 200,
+                        status: "SUCCESS",
+                        results,
+                        length: results.length,
+                      });
+                    } catch (error) {
+                      // @return
+                      return errMessage(error, res);
+                    }
+                  } else {
+                    next();
+                  }
+                } else {
+                  // @return
+                  return errMessage(err, res);
+                }
+              });
+            });
+            // GET method with id
+            endpoint.get("/:hash/:id", Credentials, async (req, res, next) => {
+              let leaveMeAlone = await Projects.slice(0);
+              await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                if (!err) {
+                  if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
+                    try {
+                      const results = await Project.findByPk(req.params.id);
+                      // @ return
+                      await res.json({
+                        code: 200,
+                        status: "SUCCESS",
+                        results,
+                      });
+                    } catch (error) {
+                      // @return
+                      return errMessage(error, res);
+                    }
+                  } else {
+                    next();
+                  }
+                } else {
+                  // @return
+                  return errMessage(err, res);
+                }
+              });
+            });
+            // GET method with :limit and :offset
+            endpoint.get("/:hash/:limit/:offset", Credentials, async (req, res, next) => {
               let leaveMeAlone = await Projects.slice(0);
               await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
                 if (!err) {

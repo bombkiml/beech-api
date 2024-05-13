@@ -310,9 +310,7 @@ class Generator {
             if(rqFileRes[0][0]) {
               logUpdate(": Initialize...");
               // check for remove / slash from route endpoint
-              if(rqFileRes[0][2] == 'sequelize') {
-                routeEndpoints = routeEndpoints.replace(/\\|\//g,'');
-              }
+              routeEndpoints = routeEndpoints.replace(/\\|\//g,'');
               // timeout generate endpoint and replace content
               setTimeout(() => {
                 // generater endpoint

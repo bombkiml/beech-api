@@ -313,14 +313,10 @@ const Fruits = Schema(sql.default_db).define("fruits", {
   updatedAt: DataTypes.DATE,
 });
 
-// Now you can request /fruits with methods GET, POST, PATCH and DELETE
-// (C) POST:   /fruits       with body    { body }
-// (R) GET:    /fruits       with params  /:limit?/:offset?
-// (U) PATCH:  /fruits/:id   with body    { body }
-// (D) DELETE: /fruits/:id   none
 Users.options = {
   // Allowment magic generate default endpoint (CRUD)
-  defaultEndpoint: true, // boolean DEFAULT: true  👈 // It's like magic creating endpoints for you (CRUD) ✨
+  defaultEndpoint: true, // boolean DEFAULT: true  👈 // It's like magic creating The endpoints for you (CRUD) ✨
+  limitRows: 100, // Limit rows default
 };
 
 // Example Finder by id (ORM), Learn more: https://sequelize.org/docs/v6/core-concepts/model-querying-finders/
@@ -352,6 +348,19 @@ module.exports = {
   ...
 };
 ```
+#### That's cool! It's like magic creating The endpoints for you (CRUD) ✨
+
+Now! you can request to `/fruits` with methods GET, POST, PATCH and DELETE like this.
+
+| Efficacy |  Method  |   Endpoint   |    Body    |   Query String   |
+|:---------|:---------|:-------------|:-----------|:----------------:|
+|  Create  |  POST    | /fruits      |    { }     |        No        |
+|  Read    |  GET     | /fruits      |    No      |        No        |
+|  Read    |  GET     | /fruits      |    No      |       /:id       |
+|  Read    |  GET     | /fruits      |    No      | /:limit/:offset  |
+|  Update  |  PATCH   | /fruits/:id  |    { }     |        No        |
+|  Delete  |  DELETE  | /fruits/:id  |    No      |        No        |
+|
 
 
 ### # Generate Helpers ###
