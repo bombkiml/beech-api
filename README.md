@@ -352,14 +352,14 @@ module.exports = {
 
 Now! you can request to `/fruits` with methods GET, POST, PATCH and DELETE like this.
 
-| Efficacy |  Method  |   Endpoint   |    Body    |   Query String   |
-|:---------|:---------|:-------------|:-----------|:----------------:|
-|  Create  |  POST    | /fruits      |    { }     |        No        |
-|  Read    |  GET     | /fruits      |    No      |        No        |
-|  Read    |  GET     | /fruits      |    No      |       /:id       |
-|  Read    |  GET     | /fruits      |    No      | /:limit/:offset  |
-|  Update  |  PATCH   | /fruits/:id  |    { }     |        No        |
-|  Delete  |  DELETE  | /fruits/:id  |    No      |        No        |
+| Efficacy |  Method  |        Endpoint        |    Body    |
+|:---------|:---------|:-----------------------|:-----------|
+|  Create  |  POST    | /fruits                |     { }    |
+|  Read    |  GET     | /fruits                |     No     |
+|  Read    |  GET     | /fruits/:id            |     No     |
+|  Read    |  GET     | /fruits/:limit/:offset |     No     |
+|  Update  |  PATCH   | /fruits/:id            |     { }    |
+|  Delete  |  DELETE  | /fruits/:id            |     No     |
 |
 
 
