@@ -133,15 +133,13 @@ init = async (jsfiles) => {
     });
     Promise.all([testConnectToDB]).then(async (x) => {
       if (x[0]) {
-        await (pool_base == "basic"
-          ? new Promise((resolve) => resolve(mySqlDbConnect.connect()))
-          : new Promise((resolve) => resolve(SequelizeDbConnect.connect())));
+        await (pool_base == "basic" ? new Promise((resolve) => resolve(mySqlDbConnect.connect())) : new Promise((resolve) => resolve(SequelizeDbConnect.connect())));
           await authPassport.init().then(async (x) => {
             if (x[0]) {
               throw x[0];
             } else {
               await new Promise((resolve) => resolve(fileWalk.fileWalk(jsfiles)));
-              await new Promise((resolve) => resolve(Base()));
+              await (pool_base == "basic" ? new Promise((resolve) => resolve()) : new Promise((resolve) => resolve(Base())));
               await new Promise((resolve) => {
                 httpExpress.expressStart().then((expss) => {
                   resolve(expss);

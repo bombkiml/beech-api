@@ -46,6 +46,9 @@ module.exports = {
                   });
                 }
               });
+            } else if (passport_config.app_key_allow) {
+              global.Credentials = auth.credentialsGuard;
+              resolve([true, false, null]);
             } else {
               global.Credentials = [];
               resolve([true, false, null]);

@@ -142,7 +142,7 @@ database_config: [
     port: "3306",
     is_connect: true, // boolean, Turn ON/OFF to connect
   },
-  
+
   ...
 
 ],
@@ -162,6 +162,8 @@ So, you might create new endpoints with constant `endpoint` object variable in `
 ```sh
 $ beech make endpointName
 ```
+You might using [special] `-R, --require` for choose Model(s) used for that endpoint.
+
 **Example ***(Basic)***** : Fruits endpoints. 
 
 📂 fruits-endpoints.js
@@ -247,7 +249,7 @@ exports.init = () => {
 
 ### # Generate Models ###
 
-The `models` keep the files of function(s) for retriving, inserting, updating and deleting with SQL data. for understanding you might make model name same your table name in `src/models` folder.
+The `models` keep the files of function(s) data managemnets for Retriving, Creating, Updating and Destroying (CRUD). for understanding you might make model name same your table name inside `src/models` folder.
 
 ```sh
 $ beech make modelName --model
@@ -272,7 +274,7 @@ module.exports = {
   // Example basic function get data from MySQL table
   getFruits() {
 
-    // call example mysql `mysql.default_db` connection name
+    // calling Pool connection name by `mysql.default_db`
     mysql.default_db.query("SELECT * FROM fruits", (err, results) => {
 
       if (err) { throw err }
@@ -296,7 +298,7 @@ const { Schema } = require("beech-api");
 // Define table Schema with `Schema(sql.default_db)` connection name
 const Fruits = Schema(sql.default_db).define("fruits", {
   fruit_id: {
-    field: "id", // Ref: field `id` in fruits table
+    field: "id", // Rename PK field to fruit_id Ref: `id` field in fruits table
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true
@@ -311,14 +313,10 @@ const Fruits = Schema(sql.default_db).define("fruits", {
   updatedAt: DataTypes.DATE,
 });
 
-// Now you can request /fruits with methods GET, POST, PATCH and DELETE
-// (C) POST:   /fruits       with body    { body }
-// (R) GET:    /fruits       with params  /:limit?/:offset?
-// (U) PATCH:  /fruits/:id   with body    { body }
-// (D) DELETE: /fruits/:id   none
 Users.options = {
   // Allowment magic generate default endpoint (CRUD)
-  defaultEndpoint: true, // boolean DEFAULT: true  👈 // It's like magic creating endpoints for you (CRUD) ✨
+  defaultEndpoint: true, // boolean DEFAULT: true  👈 // It's like magic creating The endpoints for you (CRUD) ✨
+  limitRows: 100, // Limit rows default
 };
 
 // Example Finder by id (ORM), Learn more: https://sequelize.org/docs/v6/core-concepts/model-querying-finders/
@@ -350,6 +348,19 @@ module.exports = {
   ...
 };
 ```
+#### That's cool! It's like magic creating The endpoints for you (CRUD) ✨
+
+Now! you can request to `/fruits` with methods GET, POST, PATCH and DELETE like this.
+
+| Efficacy |  Method  |        Endpoint        |    Body    |
+|:---------|:---------|:-----------------------|:-----------|
+|  Create  |  POST    | /fruits                |     { }    |
+|  Read    |  GET     | /fruits                |     No     |
+|  Read    |  GET     | /fruits/:id            |     No     |
+|  Read    |  GET     | /fruits/:limit/:offset |     No     |
+|  Update  |  PATCH   | /fruits/:id            |     { }    |
+|  Delete  |  DELETE  | /fruits/:id            |     No     |
+|
 
 
 ### # Generate Helpers ###

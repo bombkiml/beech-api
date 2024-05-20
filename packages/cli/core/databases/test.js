@@ -29,7 +29,7 @@ function testConnectInProcess (database_config, dbConnTotal, cb) {
     if (val) {
       initSequelize(val, async (err, sq) => {
         if (err) {
-          console.error("[101m Failed [0m Can't to create a Sequelize instance:[36m", val.name, "[0m\n", err);
+          console.error("[101m Failed [0m Can't connect to connection name:[36m", val.name, "[0m\n", err);
           cb(err, null, null);
         }
         // Test connection
@@ -92,7 +92,7 @@ function initSequelize(val, cb) {
       // check hash ?
       if(val.username && val.password) {
         if(val.username.length < 55 || val.password < 55) {
-          return cb("Error: No Hash access for connect to database.\n", null);
+          return cb("[91mERROR:[0m No Hash access for connect to database.\n", null);
         }
         let accessDb = [];
         [val.username, val.password].map((e, k) => {

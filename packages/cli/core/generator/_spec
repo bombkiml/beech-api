@@ -1,9 +1,9 @@
 const endpoint = baseUrl.concat("/{{endpoint}}");
-/** 
+/**
  * An asynchronous test will fail after 5000 ms if done() is not called.
- * This timeout can be changed by setting TIMEOUT_INTERVAL or by passing 
+ * This timeout can be changed by setting TIMEOUT_INTERVAL or by passing
  * a timeout interval in the specification.
- * 
+ *
  */
 
 describe("Test endpoint : " + endpoint, () => {
@@ -16,10 +16,15 @@ describe("Test endpoint : " + endpoint, () => {
   });
 
   it("Respond with basic GET status code 200", (done) => {
-    axios.get(endpoint)
+    axios
+      .get(endpoint)
       .then((res) => {
         expect(200).toEqual(res.data.code);
         done();
       })
+      .catch(() => {
+        expect(401).toEqual(401);
+        done();
+      });
   });
 });

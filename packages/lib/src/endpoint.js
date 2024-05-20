@@ -1,5 +1,6 @@
 const walk = require("walk");
 const appRoot = require("app-root-path");
+const fs = require("fs");
 
 function walkModel(cb) {
   try {
@@ -69,10 +70,22 @@ function filterProject(Projects, reqUrl, req, res, cb) {
 }
 
 function checkOffset(Project, req, res, cb) {
-  if(!Project || ((req.params.offset) ? (parseInt(req.params.offset, 10)) ? false : true : false)) {
+  if (!Project) {
     return notfound(res);
+  }
+  // check offset is Ingeter as well as Zero number
+  let offset = req.params.offset || undefined;
+  let regxMatch = (offset !== undefined) ? offset.match(/^[0-9]+$/) : undefined;
+  if (regxMatch) {
+    if(regxMatch.length) {
+      cb(true);
+    }
   } else {
-    cb(true);
+    if(offset === undefined) {
+      cb(true);
+    } else {
+      return notfound(res);
+    }
   }
 }
 
@@ -84,7 +97,7 @@ function notfound(res) {
   });
 }
 
-function errMessege(err, res) {
+function errMessage(err, res) {
   let errTurnOffDbDefine = JSON.stringify(err.toString()).match(/'define'/);
   let errTurnOffDbOption = JSON.stringify(err.toString()).match(/'options'/);
   if(errTurnOffDbDefine || errTurnOffDbOption) {
@@ -92,14 +105,14 @@ function errMessege(err, res) {
     return res.status(500).json({
       code: 500,
       status: "ERR_INTERNAL_SERVER",
-      messege: "Database connection name is CLOSED.",
+      message: "Database connection name is CLOSED.",
     });
   } else {
     // @return
     return res.status(500).json({
       code: 500,
       status: "ERR_INTERNAL_SERVER",
-      messege: err.toString(),
+      message: err.toString(),
     });
   }
 }
@@ -111,174 +124,255 @@ function Base() {
         if (err) {
           reject(err);
         } else {
-          if(Projects.length) {
-            // GET method
-            endpoint.get("/:hash/:limit?/:offset?", Credentials, async (req, res, next) => {
-              let leaveMeAlone = await Projects.slice(0);
-              await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
-                if (!err) {
-                  if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
-                    try {
-                      const results = await Project.findAll({
-                        offset: parseInt(req.params.offset) || 0,
-                        limit: parseInt(req.params.limit) || 100,
-                      });
-                      // @ return
-                      await res.json({
-                        code: 200,
-                        status: "SUCCESS",
-                        results,
-                        length: results.length,
-                      });
-                    } catch (error) {
-                      // @return
-                      return errMessege(err, res);
-                    }
-                  } else {
-                    next();
-                  }
-                } else {
-                  // @return
-                  return errMessege(err, res);
-                }
-              });
-            });
-            // POST method
-            endpoint.post("/:hash", Credentials, async (req, res, next) => {
-              let leaveMeAlone = await Projects.slice(0);
-              await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
-                if (!err) {
-                  if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
-                    try {
-                      await Project.create(req.body).then((created) => {
-                        // @return
-                        res.status(201).json({
-                          code: 201,
-                          status: "CREATE_SUCCESS",
-                          createdId: (created.id) ? created.id : created[Project.primaryKeyAttributes[0]],
+          const checkPassport = new Promise((resolve) => {
+            const passport_config_file = appRoot + "\\passport.config.js";
+            let passport_config_auth = undefined;
+            if (fs.existsSync(passport_config_file)) {
+              const _passport_config_ = require(passport_config_file);
+              resolve(_passport_config_.auth_endpoint || "/authentication");
+            } else {
+              // passport config not found
+              resolve(passport_config_auth);
+            }
+          });
+          // passport conifg promise
+          checkPassport.then((authEndpoint) => {
+            if(Projects.length) {
+              // GET method with ALL data, default: limit rows 100
+              endpoint.get("/:hash", Credentials, async (req, res, next) => {
+                let leaveMeAlone = await Projects.slice(0);
+                await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                  if (!err) {
+                    if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
+                      try {
+                        const results = await Project.findAll({
+                          offset: 0,
+                          limit: (Project.options.limitRows) ? Project.options.limitRows : 100,
                         });
-                      }).catch((err) => {
-                        // @return
-                        res.status(501).json({
-                          code: 501,
-                          status: "CREATE_FAILED",
-                          error: err,
-                        });
-                      });
-                    } catch (error) {
-                      // @return
-                      return errMessege(err, res);
-                    }
-                  } else {
-                    next();
-                  }
-                } else {
-                  // @return
-                  return errMessege(err, res);
-                }
-              });
-            });
-            // PATCH method
-            endpoint.patch("/:hash/:id", Credentials, async (req, res, next) => {
-              let leaveMeAlone = await Projects.slice(0);
-              await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
-                if (!err) {
-                  if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
-                    try {
-                      let updatePk = await {
-                        [Project.primaryKeyAttributes[0]]: req.params.id
-                      };
-                      await Project.update(req.body, {
-                        where: updatePk,
-                      }).then((updated) => {
-                        // @return
-                        res.status(200).json({
+                        // @ return
+                        await res.json({
                           code: 200,
-                          status: "UPDATE_SUCCESS",
-                          result: {
-                            updateId: req.params.id,
-                            affectedRows: updated[0],
-                          },
+                          status: "SUCCESS",
+                          results,
+                          length: results.length,
                         });
-                      }).catch((err) => {
+                      } catch (error) {
                         // @return
-                        res.status(501).json({
-                          code: 501,
-                          status: "UPDATE_FAILED",
-                          error: err,
-                        });
-                      });
-                    } catch (error) {
-                      // @return
-                      return errMessege(err, res);
+                        return errMessage(error, res);
+                      }
+                    } else {
+                      next();
                     }
                   } else {
-                    next();
+                    // @return
+                    return errMessage(err, res);
                   }
-                } else {
-                  // @return
-                  return errMessege(err, res);
-                }
+                });
               });
-            });
-            // DELETE method
-            endpoint.delete("/:hash/:id", Credentials, async (req, res, next) => {
-              let leaveMeAlone = await Projects.slice(0);
-              await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
-                if (!err) {
-                  if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
-                    try {
-                      let deletePk = await {
-                        [Project.primaryKeyAttributes[0]]: req.params.id
-                      };
-                      await Project.destroy({
-                        where: deletePk,
-                      }).then((deleted) => {
-                        if (deleted) {
+              // GET method with id
+              endpoint.get("/:hash/:id", Credentials, async (req, res, next) => {
+                let leaveMeAlone = await Projects.slice(0);
+                await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                  if (!err) {
+                    if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
+                      try {
+                        const results = await Project.findByPk(req.params.id);
+                        // @ return
+                        await res.json({
+                          code: 200,
+                          status: "SUCCESS",
+                          results,
+                        });
+                      } catch (error) {
+                        // @return
+                        return errMessage(error, res);
+                      }
+                    } else {
+                      next();
+                    }
+                  } else {
+                    // @return
+                    return errMessage(err, res);
+                  }
+                });
+              });
+              // GET method with :limit and :offset
+              endpoint.get("/:hash/:limit/:offset", Credentials, async (req, res, next) => {
+                let leaveMeAlone = await Projects.slice(0);
+                await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                  if (!err) {
+                    if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
+                      try {
+                        const results = await Project.findAll({
+                          offset: parseInt(req.params.offset) || 0,
+                          limit: parseInt(req.params.limit) || 100,
+                        });
+                        // @ return
+                        await res.json({
+                          code: 200,
+                          status: "SUCCESS",
+                          results,
+                          length: results.length,
+                        });
+                      } catch (error) {
+                        // @return
+                        return errMessage(error, res);
+                      }
+                    } else {
+                      next();
+                    }
+                  } else {
+                    // @return
+                    return errMessage(err, res);
+                  }
+                });
+              });
+              // POST method
+              endpoint.post("/:hash", async (req, res, next) => {
+                // Check auth request match send next
+                if(authEndpoint !== undefined) {
+                  if(req.params.hash == authEndpoint.replace(/^\/|\/$/g, "")) {
+                    return next();
+                  }
+                }
+                // When lost IF
+                let leaveMeAlone = await Projects.slice(0);
+                await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                  if (!err) {
+                    if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
+                      try {
+                        await Project.create(req.body).then((created) => {
+                          // @return
+                          res.status(201).json({
+                            code: 201,
+                            status: "CREATE_SUCCESS",
+                            createdId: (created.id) ? created.id : created[Project.primaryKeyAttributes[0]],
+                          });
+                        }).catch((err) => {
+                          // @return
+                          res.status(501).json({
+                            code: 501,
+                            status: "CREATE_FAILED",
+                            error: err,
+                          });
+                        });
+                      } catch (error) {
+                        // @return
+                        return errMessage(error, res);
+                      }
+                    } else {
+                      next();
+                    }
+                  } else {
+                    // @return
+                    return errMessage(err, res);
+                  }
+                });
+              });
+              // PATCH method
+              endpoint.patch("/:hash/:id", Credentials, async (req, res, next) => {
+                let leaveMeAlone = await Projects.slice(0);
+                await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                  if (!err) {
+                    if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
+                      try {
+                        let updatePk = await {
+                          [Project.primaryKeyAttributes[0]]: req.params.id
+                        };
+                        await Project.update(req.body, {
+                          where: updatePk,
+                        }).then((updated) => {
                           // @return
                           res.status(200).json({
                             code: 200,
-                            status: "DELETE_SUCCESS",
+                            status: "UPDATE_SUCCESS",
                             result: {
-                              deleteId: req.params.id,
-                              affectedRows: deleted,
+                              updateId: req.params.id,
+                              affectedRows: updated[0],
                             },
                           });
-                        } else {
-                          res.status(406).json({
-                            code: 406,
-                            status: "NOT_ACCEPTABLE",
-                            result: {
-                              deleteId: req.params.id,
-                              affectedRows: deleted,
-                            },
+                        }).catch((err) => {
+                          // @return
+                          res.status(501).json({
+                            code: 501,
+                            status: "UPDATE_FAILED",
+                            error: err,
                           });
-                        }
-                      }).catch((err) => {
-                        // @return
-                        res.status(501).json({
-                          code: 501,
-                          status: "DELETE_FAILED",
-                          error: err,
                         });
-                      });
-                    } catch (error) {
-                      // @return
-                      return errMessege(err, res);
+                      } catch (error) {
+                        // @return
+                        return errMessage(error, res);
+                      }
+                    } else {
+                      next();
                     }
                   } else {
-                    next();
+                    // @return
+                    return errMessage(err, res);
                   }
-                } else {
-                  // @return
-                  return errMessege(err, res);
-                }
+                });
               });
-            });
-          }
+              // DELETE method
+              endpoint.delete("/:hash/:id", Credentials, async (req, res, next) => {
+                let leaveMeAlone = await Projects.slice(0);
+                await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                  if (!err) {
+                    if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
+                      try {
+                        let deletePk = await {
+                          [Project.primaryKeyAttributes[0]]: req.params.id
+                        };
+                        await Project.destroy({
+                          where: deletePk,
+                        }).then((deleted) => {
+                          if (deleted) {
+                            // @return
+                            res.status(200).json({
+                              code: 200,
+                              status: "DELETE_SUCCESS",
+                              result: {
+                                deleteId: req.params.id,
+                                affectedRows: deleted,
+                              },
+                            });
+                          } else {
+                            res.status(406).json({
+                              code: 406,
+                              status: "NOT_ACCEPTABLE",
+                              result: {
+                                deleteId: req.params.id,
+                                affectedRows: deleted,
+                              },
+                            });
+                          }
+                        }).catch((err) => {
+                          // @return
+                          res.status(501).json({
+                            code: 501,
+                            status: "DELETE_FAILED",
+                            error: err,
+                          });
+                        });
+                      } catch (error) {
+                        // @return
+                        return errMessage(error, res);
+                      }
+                    } else {
+                      next();
+                    }
+                  } else {
+                    // @return
+                    return errMessage(err, res);
+                  }
+                });
+              });
+            }
+            // resolve it.
+            resolve(true);
+          }).catch((err) => {
+            reject(err);
+          });
         }
-        // resolve it.
-        resolve(true);
       });
     } catch (error) {
       reject(error);

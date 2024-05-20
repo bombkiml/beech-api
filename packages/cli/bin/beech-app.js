@@ -101,7 +101,7 @@ class Beech {
           let processUpdate = null;
           let lineStdout = "";
           if (this.argument == '-g' || this.argument == '--global') {
-            isGlobalNpm = "npm update beech-api -g --force";
+            isGlobalNpm = "npm install beech-api -g --force";
             isGlobalYarn = "yarn global add beech-api";
           }
           // prompt select
@@ -116,7 +116,9 @@ class Beech {
             setTimeout(() => {
               if(selectedPackage.package == "NPM") {
                 processUpdate = this.cmd.get(isGlobalNpm, (err) => {
-                  if (err) { throw err }
+                  if (err) {
+                    logUpdate("\n[101m OperationalError [0m The operation was rejected by your operating system. \n[91mEPERM:[0m operation not permitted CMD: '[93mnpm install beech-api -g --force[0m'");
+                  }
                 });
                 // npm install line shoutout
                 processUpdate.stdout.on('data', (npmData) => {

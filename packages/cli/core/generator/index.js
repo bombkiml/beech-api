@@ -114,8 +114,9 @@ class Generator {
                                   let modelFolder = "";
                                   modelName = modelName.pop();
                                   modelName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
+                                  let newModel = modelName.split("_").map(e => e.charAt(0).toUpperCase() + e.slice(1)).join("");
                                   modelFolder = data.substring(0, data.lastIndexOf('/') + 1).replace(/\\/g, "/");
-                                  rqr += `const ${modelName} = require(\"@/models/${modelFolder + modelName}\");\n`;
+                                  rqr += `const ${newModel} = require(\"@/models/${modelFolder + modelName}\");\n`;
                                   if(myRequire.length == key+1) {
                                     resolve([[rqr], myRequire]);
                                   }
@@ -133,8 +134,9 @@ class Generator {
                                   let modelFolder = "";
                                   modelName = modelName.pop();
                                   modelName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
+                                  let newModel = modelName.split("_").map(e => e.charAt(0).toUpperCase() + e.slice(1)).join("");
                                   modelFolder = data.substring(0, data.lastIndexOf('/') + 1).replace(/\\/g, "/");
-                                  rqr += `const { ${modelName}, exampleFindOne${modelName}ById } = require(\"@/models/${modelFolder + modelName}\");\n`;
+                                  rqr += `const { ${newModel} } = require(\"@/models/${modelFolder + modelName}\");\n`;
                                   if(myRequire.length == key+1) {
                                     resolve([[rqr], myRequire]);
                                   }
@@ -308,9 +310,7 @@ class Generator {
             if(rqFileRes[0][0]) {
               logUpdate(": Initialize...");
               // check for remove / slash from route endpoint
-              if(rqFileRes[0][2] == 'sequelize') {
-                routeEndpoints = routeEndpoints.replace(/\\|\//g,'');
-              }
+              routeEndpoints = routeEndpoints.replace(/\\|\//g,'');
               // timeout generate endpoint and replace content
               setTimeout(() => {
                 // generater endpoint
@@ -438,6 +438,7 @@ class Generator {
         arg = arg.split('/');
         let models = arg.pop();
         models = models.charAt(0).toUpperCase() + models.slice(1);
+        let newModel = models.split("_").map(e => e.charAt(0).toUpperCase() + e.slice(1)).join("");
         let subFolder = arg.join('/');
         // models
         let fullModels = modelPath + subFolder.concat('/') + models.concat('.js');
@@ -448,7 +449,7 @@ class Generator {
           this.makeFolder(modelPath + subFolder)
             .then(this.copy.bind(this, tmpModelsPath, fullModels))
             .then(this.modelContentReplace.bind(this, fullModels, {
-              'modelNameUppercase': models,
+              'modelNameUppercase': newModel,
               'modelName': models.toLowerCase(),
               'dbSelected': dbSelected,
             }))

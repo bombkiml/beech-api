@@ -1,18 +1,18 @@
 {{requireSomething}}
 exports.init = () => {
-  
+
   // Initiate with Basic request currently support GET, POST, PUT, PATCH and DELETE
 
-  endpoint.get("{{endpoint}}", Credentials, (req, res) => {
+  endpoint.get("/{{endpoint}}", Credentials, (req, res) => {
     // @return
     res.json({
       code: 200,
       status: "SUCCESS",
-      message: "GET /{{endpoint}} request.",
+      message: "GET request at /{{endpoint}}",
     });
   });
 
-  endpoint.post("{{endpoint}}", Credentials, (req, res) => {
+  endpoint.post("/{{endpoint}}", Credentials, (req, res) => {
     let id = req.body.id;
     let name = req.body.name;
     // @return
@@ -27,7 +27,7 @@ exports.init = () => {
     });
   });
 
-  endpoint.put("{{endpoint}}/:id", Credentials, (req, res) => {
+  endpoint.put("/{{endpoint}}/:id", Credentials, (req, res) => {
     let id = req.params.id;
     // @return
     res.json({

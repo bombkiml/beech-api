@@ -6,7 +6,7 @@ exports.init = () => {
     res.json({
       code: 200,
       status: "SUCCESS",
-      message: "GET /{{endpoint}} request.",
+      message: "GET request at /{{endpoint}}",
     });
   });
   
