@@ -117,7 +117,7 @@ class Beech {
               if(selectedPackage.package == "NPM") {
                 processUpdate = this.cmd.get(isGlobalNpm, (err) => {
                   if (err) {
-                    logUpdate("\n[101m OperationalError [0m The operation was rejected by your operating system. \n[91mEPERM:[0m operation not permitted CMD: [93m'npm install beech-api -g --force'[0m");
+                    logUpdate("\n[101m OperationalError [0m The operation was rejected by your operating system. \n[91mEPERM:[0m operation not permitted CMD: '[93mnpm install beech-api -g --force[0m'");
                   }
                 });
                 // npm install line shoutout

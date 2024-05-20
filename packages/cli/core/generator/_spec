@@ -1,9 +1,9 @@
 const endpoint = baseUrl.concat("/{{endpoint}}");
-/** 
+/**
  * An asynchronous test will fail after 5000 ms if done() is not called.
- * This timeout can be changed by setting TIMEOUT_INTERVAL or by passing 
+ * This timeout can be changed by setting TIMEOUT_INTERVAL or by passing
  * a timeout interval in the specification.
- * 
+ *
  */
 
 describe("Test endpoint : " + endpoint, () => {
