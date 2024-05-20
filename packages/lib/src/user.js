@@ -155,7 +155,7 @@ async function Update(someFields, id, cb) {
               cb(error, null);
             } else {
               cb(null, {
-                updateId: parseInt(id),
+                updateId: (result.changedRows) ? parseInt(id) : null,
                 affectedRows: result.changedRows
               });
             }
@@ -173,8 +173,8 @@ async function Update(someFields, id, cb) {
             type: QueryTypes.UPDATE
           }).then((result) => {
             return cb(null, {
-              updateId: parseInt(id),
-              affectedRows: result[1]
+              updateId: (result[1]) ? parseInt(id) : null,
+              affectedRows: result[1],
             });
           }).catch((err) => {
             return cb(err.errors[0], null);

@@ -432,7 +432,7 @@ module.exports = {
     fields: []
   },
 
-  // Allowment using request with app_key (Every request needed app_key headers)
+  // Allowment using request with app_key entity (Every request must be using the app_key entity in headers)
   app_key_allow: false
 
   ...
@@ -453,7 +453,7 @@ When you config passport with ```users``` table already. You will got Auth endpo
 ```js
 POST:  "/authentication"               // Request token
 POST:  "/authentication/create"        // Create new Auth data
-PATCH: "/authentication/update/:id"    // Update old Auth data
+PATCH: "/authentication/update/:id"    // Update old Auth data (needed id)
 ```
 
 Example :
