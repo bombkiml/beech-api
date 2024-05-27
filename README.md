@@ -33,6 +33,10 @@ $ npm install beech-api --global
 $ yarn global add beech-api
 ```
 
+Installation demo:
+
+![Alt Text](https://i.ibb.co/hySFxy3/install-beech720-1.gif)
+
 After installation, you will have access to the `beech-app` binary in your command line.
 You can check you have the right version with this command:
 
@@ -116,11 +120,11 @@ In case Access to Database must to Hash the `username` and `password` with Beech
 ```sh
 // Hash database username
 $ beech hash:root
-Output: m42BVxQ6Q4kLdRX7xS_Hm7WbQiNqShJDvw9SfuLCgI431oafWBtQJoJDnoCL
+Output: m42BVxQ6Q4kLdRX7xS_Hm7WbQiNqShJDvw9SLCgI431oafWBtQJoJDnoCL
 
 // Hash database password
 $ beech hash:password
-Output: FjgcgJPylkV7EeQJjea_EeifPwaHVO9onD3T4ATk3YYAyvprdrQejtMGu3dcDS0ejA
+Output: FjgcgJPylkV7EeQJjea_EeifPwaHVO9onD3ATk3YYAyvjtMGu3dcDS0ejA
 
 ```
 Example:
@@ -136,8 +140,8 @@ database_config: [
     dialect: "mysql",
     name: "mysql_my_store_db",
     host: "localhost",
-    username: "m42BVxQ6Q4kLdRX7xS_Hm7WbQiNqShJDvw9SfuLCgI431oafWBtQJoJDnoCL",
-    password: "FjgcgJPylkV7EeQJjea_EeifPwaHVO9onD3T4ATk3YYAyvprdrQejtMGu3dcDS0ejA",
+    username: "m42BVxQ6Q4kLdRX7xS_Hm7WbQiNqShJDvw9SLCgI431oafWBtQJoJDnoCL",
+    password: "FjgcgJPylkV7EeQJjea_EeifPwaHVO9onD3ATk3YYAyvjtMGu3dcDS0ejA",
     database: "my_store_db",
     port: "3306",
     is_connect: true, // boolean, Turn ON/OFF to connect
