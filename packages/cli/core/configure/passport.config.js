@@ -23,7 +23,7 @@ module.exports = {
     fields: []
   },
 
-  // Allowment using with app_key request (Every request must be using the app_key with headers)
+  // Allowment using request with app_key entity (Every request must be using the app_key entity in headers)
   app_key_allow: true,
 
   // Official strategy

@@ -15,7 +15,9 @@ function filterDbIsTrue(dbConfig, cb) {
         if(dbIsTrue.length) {
           console.log('\n[102m[90m Pre-Flight [0m [0mTesting Database connection:');
         }
-        cb(null, dbIsTrue);
+        setTimeout(() => {
+          cb(null, dbIsTrue);
+        }, 300);
       }
     });
   } catch (error) {
