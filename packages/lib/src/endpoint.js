@@ -41,7 +41,7 @@ function walkModel(cb) {
 function filterProject(Projects, reqUrl, req, res, cb) {
   try {
     let pj = Projects.shift();
-    let regx = new RegExp(pj[1] + "?[^\/].?[0-9].*$", 'g');
+    let regx = new RegExp(pj[1] + "?[^\/].?[a-zA-Z0-9].*$", 'g');
     let regxMatch = reqUrl.match(regx);
     let regxMatchLength = (regxMatch) ? regxMatch.length: 0;
     if (pj[1] == reqUrl) {
