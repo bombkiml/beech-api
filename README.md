@@ -35,6 +35,7 @@ $ yarn global add beech-api
 
 Installation demo:
 
+[Demo](https://i.ibb.co/hySFxy3/install-beech720-1.gif)
 ![Alt Text](https://i.ibb.co/hySFxy3/install-beech720-1.gif)
 
 After installation, you will have access to the `beech-app` binary in your command line.
@@ -168,30 +169,30 @@ $ beech make endpointName
 ```
 You might using [special] `-R, --require` for choose Model(s) used for that endpoint.
 
-**Example ***(Basic)***** : Fruits endpoints. 
+**Example ***(Basic)***** : Fruit endpoints. 
 
-📂 fruits-endpoints.js
+📂 fruit-endpoints.js
 ```js
 exports.init = () => {
 
   // GET method
-  endpoint.get("/fruits", Credentials, (req, res) => {
+  endpoint.get("/fruit", Credentials, (req, res) => {
     // @response
     res.json({
       code: 200,
       status: "SUCCESS",
-      message: "GET /fruits request.",
+      message: "GET /fruit request.",
     });
   });
 
 
   // POST method
-  endpoint.post("/fruits", Credentials, (req, res) => {
+  endpoint.post("/fruit", Credentials, (req, res) => {
     // @response
     res.json({
       code: 200,
       status: "SUCCESS",
-      message: "POST request at /fruits",
+      message: "POST request at /fruit",
       result: {
         id: req.body.id,
         name: req.body.name,
@@ -201,23 +202,23 @@ exports.init = () => {
 
 
   // PUT method
-  endpoint.put("/fruits/:id", Credentials, (req, res) => {
+  endpoint.put("/fruit/:id", Credentials, (req, res) => {
     // @response
     res.json({
       code: 200,
       status: "SUCCESS",
-      message: "PUT request at /fruits/" + req.params.id,
+      message: "PUT request at /fruit/" + req.params.id,
     });
   });
 
 
   // DELETE method
-  endpoint.delete("/fruits/:id", Credentials, (req, res) => {
+  endpoint.delete("/fruit/:id", Credentials, (req, res) => {
     // @response
     res.json({
       code: 200,
       status: "SUCCESS",
-      message: "DELETE request at /fruits/" + req.params.id,
+      message: "DELETE request at /fruit/" + req.params.id,
     });
   });
 
@@ -226,22 +227,22 @@ exports.init = () => {
 }
 ```
 
-**Example ***(Sequelize)***** : Fruits endpoints. 
+**Example ***(Sequelize)***** : Fruit endpoints. 
 
-📂 fruits-endpoints.js
+📂 fruit-endpoints.js
 ```js
   // Require Model schema, Function & Others
-  const { Fruits } = require("@/models/Fruits");
+  const { Fruit } = require("@/models/Fruit");
 
   exports.init = () => {
 
     // GET method
-    endpoint.get('/fruits', async (req, res) => {
-      // example call Fruits model for get data
+    endpoint.get('/fruit', async (req, res) => {
+      // example call Fruit model for get data
       res.json({
         code: 200,
         status: "SUCCESS",
-        results: await Fruits.findAll();
+        results: await Fruit.findAll();
       });
     });
 
@@ -259,9 +260,9 @@ The `models` keep the files of function(s) data managemnets for Retriving, Creat
 $ beech make modelName --model
 ```
 
-**Example ***(Basic)***** : Fruits model.
+**Example ***(Basic)***** : Fruit model.
 
-📂 Fruits.js
+📂 Fruit.js
 ```js
 module.exports = {
 
@@ -276,10 +277,10 @@ module.exports = {
   },
 
   // Example basic function get data from MySQL table
-  getFruits() {
+  getFruit() {
 
     // calling Pool connection name by `mysql.default_db`
-    mysql.default_db.query("SELECT * FROM fruits", (err, results) => {
+    mysql.default_db.query("SELECT * FROM fruit", (err, results) => {
 
       if (err) { throw err }
       return results;
@@ -291,25 +292,25 @@ module.exports = {
 };
 ```
 
-**Example ***(Sequelize)***** : Fruits model.
+**Example ***(Sequelize)***** : Fruit model.
 
   You can asign more DataTypes, Learn more : [Sequelize docs](https://sequelize.org/docs/v6/core-concepts/model-basics/#data-types)
 
-📂Fruits.js
+📂Fruit.js
 ```js
 const { Schema } = require("beech-api");
 
 // Define table Schema with `Schema(sql.default_db)` connection name
-const Fruits = Schema(sql.default_db).define("fruits", {
+const Fruit = Schema(sql.default_db).define("fruit", {
   fruit_id: {
-    field: "id", // Rename PK field to fruit_id Ref: `id` field in fruits table
+    field: "id", // Rename PK field to fruit_id Ref: `id` field in fruit table
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true
   },
-  fruitsName: DataTypes.STRING,
-  fruitsQty: DataTypes.INTEGER,
-  fruitsPrice: {
+  fruitName: DataTypes.STRING,
+  fruitQty: DataTypes.INTEGER,
+  fruitPrice: {
     type: DataTypes.INTEGER,
     allowNull: false, // Allow null feilds
   },
@@ -324,19 +325,19 @@ Users.options = {
 };
 
 // Example Finder by id (ORM), Learn more: https://sequelize.org/docs/v6/core-concepts/model-querying-finders/
-function exampleFindOneFruitsById(id) {
-  return Fruits.findOne({ where: { id: id } });
+function exampleFindOneFruitById(id) {
+  return Fruit.findOne({ where: { id: id } });
 }
 
 // Example Raw Query, Learn more: https://sequelize.org/docs/v6/core-concepts/raw-queries/
-function exampleGetAllFruits(id) {
-  return Fruits.query("SELECT * FROM fruits");
+function exampleGetAllFruit(id) {
+  return Fruit.query("SELECT * FROM fruit");
 }
 
 // Example Raw Query with Model Instances. This allows you to easily map a query to a predefined model
-function exampleGetAllFruitsWithModelInstance(id) {
-  return Fruits.query("SELECT * FROM fruits", {
-    model: Fruits, // When JOIN table needed register that table [Fruits, ...]
+function exampleGetAllFruitWithModelInstance(id) {
+  return Fruit.query("SELECT * FROM fruit", {
+    model: Fruit, // When JOIN table needed register that table [Fruit, ...]
     mapToModel: true // pass true here if you have any mapped fields
   });
 }
@@ -345,25 +346,25 @@ function exampleGetAllFruitsWithModelInstance(id) {
 
 // Export Schema, Function, ...
 module.exports = {
-  Fruits,
-  exampleFindFruitsById,
-  exampleGetAllFruits,
-  exampleGetAllFruitsWithModelInstance,
+  Fruit,
+  exampleFindFruitById,
+  exampleGetAllFruit,
+  exampleGetAllFruitWithModelInstance,
   ...
 };
 ```
 #### That's cool! It's like magic creating The endpoints for you (CRUD) ✨
 
-Now! you can request to `/fruits` with methods GET, POST, PATCH and DELETE like this.
+Now! you can request to `/fruit` with methods GET, POST, PATCH and DELETE like this.
 
 | Efficacy |  Method  |        Endpoint        |    Body    |
 |:---------|:---------|:-----------------------|:-----------|
-|  Create  |  POST    | /fruits                |     { }    |
-|  Read    |  GET     | /fruits                |     No     |
-|  Read    |  GET     | /fruits/:id            |     No     |
-|  Read    |  GET     | /fruits/:limit/:offset |     No     |
-|  Update  |  PATCH   | /fruits/:id            |     { }    |
-|  Delete  |  DELETE  | /fruits/:id            |     No     |
+|  Create  |  POST    | /fruit                |     { }    |
+|  Read    |  GET     | /fruit                |     No     |
+|  Read    |  GET     | /fruit/:id            |     No     |
+|  Read    |  GET     | /fruit/:limit/:offset |     No     |
+|  Update  |  PATCH   | /fruit/:id            |     { }    |
+|  Delete  |  DELETE  | /fruit/:id            |     No     |
 |
 
 
@@ -815,13 +816,13 @@ So, When you make the new endpoints it's automatic create test file end with `.s
 
 Example endpoints testing :
 
-📂 fruits-endpoints.spec.js
+📂 fruit-endpoints.spec.js
 ```js
-const endpoint = baseUrl.concat("/fruits");
+const endpoint = baseUrl.concat("/fruit");
 
 describe("Test endpoint : " + endpoint, () => {
   it("Truthy!", () => {
-    expect("/fruits").toBeTruthy();
+    expect("/fruit").toBeTruthy();
   });
 
   it("Respond with basic GET status code 200", (done) => {

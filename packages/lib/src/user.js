@@ -71,14 +71,14 @@ async function Store(fields, cb) {
       }
       if(key == passwordField) {
         haveUsernameAndPassword += 1;
+        // asign pwd hash
+        fields[passwordField] = md5(fields[passwordField] + secret);
       }
       keys.push(key);
       values.push(fields[key]);
       escaped.push('?');
     });
     if(haveUsernameAndPassword > 1) {
-      // asign password hash
-      fields[passwordField] = md5(fields[passwordField] + secret);
       // check base pool
       if (pool_base == "basic") {
         // pool base is MySQL
