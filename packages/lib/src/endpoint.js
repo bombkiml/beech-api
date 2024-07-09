@@ -75,11 +75,12 @@ function checkOffset(Project, req, res, cb) {
   }
   // check offset is Ingeter as well as Zero number
   let offset = req.params.offset || undefined;
-  let regxMatch = (offset !== undefined) ? offset.match(/^[0-9]+$/) : undefined;
-  if (regxMatch) {
-    if(regxMatch.length) {
-      cb(true);
-    }
+  let limit = req.params.limit || undefined;
+  let offsetRegxMatch = (offset !== undefined) ? offset.match(/^[0-9]+$/) : undefined;
+  let limitRegxMatch = (limit !== undefined) ? limit.match(/^[0-9]+$/) : undefined;
+  console.log(offsetRegxMatch, limitRegxMatch);
+  if (offsetRegxMatch && limitRegxMatch) {
+    cb(true);
   } else {
     if(offset === undefined) {
       cb(true);
@@ -171,6 +172,11 @@ function Base() {
               });
               // GET method with id
               endpoint.get("/:hash/:id", Credentials, async (req, res, next) => {
+                // allow official stetragy
+                if(req.params.id == "google" || req.params.id == "facebook") {
+                  return next();
+                }
+                // filter GET project
                 let leaveMeAlone = await Projects.slice(0);
                 await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
                   if (!err) {
@@ -198,6 +204,11 @@ function Base() {
               });
               // GET method with :limit and :offset
               endpoint.get("/:hash/:limit/:offset", Credentials, async (req, res, next) => {
+                // allow official stetragy
+                if(req.params.limit == "facebook" || req.params.offset == "collback") {
+                  return next();
+                }
+                // filter GET limit,offset project
                 let leaveMeAlone = await Projects.slice(0);
                 await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
                   if (!err) {
@@ -205,7 +216,7 @@ function Base() {
                       try {
                         const results = await Project.findAll({
                           offset: parseInt(req.params.offset) || 0,
-                          limit: parseInt(req.params.limit) || 100,
+                          limit: (parseInt(req.params.limit) === 0) ? 0 : parseInt(req.params.limit),
                         });
                         // @ return
                         await res.json({

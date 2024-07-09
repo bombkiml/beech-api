@@ -1,6 +1,21 @@
 const passport = require("passport");
+const appRoot = require("app-root-path");
+const fs = require("fs");
+const passport_config_file = appRoot + "\\passport.config.js";
+var passport_config;
+if (fs.existsSync(passport_config_file)) {
+  passport_config = require(passport_config_file);
+}
+
 module.exports = {
   credentials: (req, res, next) => {
+    if (passport_config.jwt_allow) {
+      const auth_endpoint = (passport_config.auth_endpoint) ? (passport_config.auth_endpoint[ 0 ] === "/" ? passport_config.auth_endpoint : "/" + passport_config.auth_endpoint) : "/authentication";
+      if(auth_endpoint.split("/")[1] == req.params.hash) {
+        return next();
+      }
+    }
+
     return passport.authenticate("jwt", {
       session: false,
     }, (err, user, info) => {
