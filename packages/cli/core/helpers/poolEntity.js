@@ -28,4 +28,32 @@ function findPassportPk(pool_base, pool, passportTable, passportConfigField, cb)
   }
 }
 
-module.exports = { findPassportPk }
+function checkAuthFields(pool_base, pool, passportTable, passportConfigField, cb) {
+  try {
+    if(passportConfigField.length) {
+      if(pool_base == "basic") {
+        // pool base is Basic
+        pool.query("SELECT "+ passportConfigField.join(",") +" FROM " + passportTable + " LIMIT 1", (err, result) => {
+          if(err) {
+            cb(`Authentication table: '${passportTable}' ${err}`, null);
+          } else {
+            cb(null, [result]);
+          }
+        });
+      } else if (pool_base == "sequelize") {
+        // pool base is Sequelize
+        pool.query("SELECT "+ passportConfigField.join(",") +" FROM " + passportTable + " LIMIT 1", { type: QueryTypes.SELECT }).then((result) => {
+          cb(null, [result]);
+        }).catch((err) => {
+          cb(`Authentication table: '${passportTable}' ${err}`, null);
+        });
+      } else {
+        cb("The Base pool error. UNKNOWN pool_base = '"+ pool_base +"'", null);
+      }
+    }
+  } catch (error) {
+    cb(error, null);
+  }
+}
+
+module.exports = { findPassportPk, checkAuthFields }

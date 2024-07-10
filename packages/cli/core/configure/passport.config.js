@@ -19,6 +19,8 @@ module.exports = {
     // The fields for authenticate, default fields: (`username` and `password`)
     username_field: "",
     password_field: "",
+    // Other fields add for authenticate, exmaple ["pin", "email", "2fa"]
+    guard_field: [],
     // JWT playload data
     fields: []
   },

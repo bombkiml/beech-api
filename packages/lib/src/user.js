@@ -17,7 +17,7 @@ async function FindOne(fields, fieldCondArr, cb) {
       } else {
         // Generate condition
         await Object.keys(fieldCondArr).forEach(key => {
-          cond += ' AND ' + key + '=' + fieldCondArr[key]
+          cond += ` AND ${key} = '${fieldCondArr[key]}'`;
         });
         // check base pool
         if (pool_base == "basic") {
@@ -39,7 +39,7 @@ async function FindOne(fields, fieldCondArr, cb) {
             });
             return cb(null, result);
           } catch (error) {
-            return cb(error.errors[0], null);
+            return cb((error.errors) ? error.errors[0] : error, null);
           }
         } else {
           return cb({ error: "The Base pool error. UNKNOWN pool_base = '"+ pool_base +"'" }, null);

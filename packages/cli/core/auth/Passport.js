@@ -3,7 +3,7 @@ const fs = require("fs");
 const passport_config_file = appRoot + "\\passport.config.js";
 const md5 = require("md5");
 const secret = require("../../../lib/src/salt").salt;
-const { findPassportPk } = require("../helpers/poolEntity");
+const { findPassportPk, checkAuthFields } = require("../helpers/poolEntity");
 const { Rand } = require("../helpers/math");
 const { QueryTypes } = require("sequelize");
 
@@ -75,72 +75,30 @@ module.exports = {
             var passportPasswordField = passport_config.model.password_field || "password";
             var passportTable = passport_config.model.table || "users";
             var pool = eval("sql." + passport_config.model.name);
-            // find passport primary key
-            findPassportPk(pool_base, pool, passportTable, passport_config.model.fields, (err, passportFields) => {
+            checkAuthFields(pool_base, pool, passportTable, passport_config.model.fields, (err, msg) => {
               if(err) {
-                resolve([err, true, true, true]);
+                console.error("\n[101m Error [0m", err);
+                return;
               } else {
-                // Passport initial with token (encoder)
-                passport.use(new LocalStrategy({
-                  usernameField: passportUsernameField,
-                  passwordField: passportPasswordField
-                }, async (username, password, done) => {
-                  if (pool) {
-                    if (pool_base == "basic") {
-                      // pool base is MySQL
-                      pool.query("SELECT " + passportFields + " FROM ?? WHERE ?? = ? AND ?? = ?", [
-                        passportTable,
-                        passportUsernameField,
-                        username,
-                        passportPasswordField,
-                        md5(password + secret)
-                      ], (err, result) => {
-                        if (err) {
-                          return done(err, null);
-                        } else {
-                          return done(null, JSON.parse(JSON.stringify(result[ 0 ] || null)));
-                        }
-                      });
-                    } else if (pool_base == "sequelize") {
-                      // pool base is Sequelize
-                      try {
-                        let result = await pool.query("SELECT " + passportFields + " FROM " + passportTable + " WHERE " + passportUsernameField + " = :username AND " + passportPasswordField + " = :password", {
-                          replacements: {
-                            fields: passportFields,
-                            username: username,
-                            password: md5(password + secret)
-                          },
-                          type: QueryTypes.SELECT
-                        });
-                        return done(null, JSON.parse(JSON.stringify(result[ 0 ] || null)));
-                      } catch (error) {
-                        return done(error, null);
-                      }
-                    } else {
-                      return done({ error: "The Base pool error. UNKNOWN pool_base = '"+ pool_base +"'" }, null);
-                    }
+                // find passport primary key
+                findPassportPk(pool_base, pool, passportTable, passport_config.model.fields, (err, passportFields) => {
+                  if(err) {
+                    resolve([err, true, true, true]);
                   } else {
-                    return done(null, null, true);
-                  }
-                }));
-  
-                // Passport jwt payload (decoder)
-                passport.use(new JWTStrategy({
-                  jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
-                  secretOrKey: passport_config.secret
-                }, async (jwtPayload, done) => {
-                  let pool = eval("sql." + passport_config.model.name);
-                  if (pool) {
-                    if (pool_base == "basic") {
-                      pool.query("SHOW KEYS FROM " + passportTable + " WHERE Key_name = 'PRIMARY'", (err, pk) => {
-                        if(err) {
-                          return done(err, null);
-                        } else {
-                          let fieldPk = pk[0].Column_name;
+                    // Passport initial with token (encoder)
+                    passport.use(new LocalStrategy({
+                      usernameField: passportUsernameField,
+                      passwordField: passportPasswordField
+                    }, async (username, password, done) => {
+                      if (pool) {
+                        if (pool_base == "basic") {
                           // pool base is MySQL
-                          pool.query("SELECT " + passportFields + " FROM ?? WHERE " + fieldPk + " = ?", [
+                          pool.query("SELECT " + passportFields + " FROM ?? WHERE ?? = ? AND ?? = ?", [
                             passportTable,
-                            jwtPayload[fieldPk]
+                            passportUsernameField,
+                            username,
+                            passportPasswordField,
+                            md5(password + secret)
                           ], (err, result) => {
                             if (err) {
                               return done(err, null);
@@ -148,99 +106,148 @@ module.exports = {
                               return done(null, JSON.parse(JSON.stringify(result[ 0 ] || null)));
                             }
                           });
+                        } else if (pool_base == "sequelize") {
+                          // pool base is Sequelize
+                          try {
+                            let result = await pool.query("SELECT " + passportFields + " FROM " + passportTable + " WHERE " + passportUsernameField + " = :username AND " + passportPasswordField + " = :password", {
+                              replacements: {
+                                fields: passportFields,
+                                username: username,
+                                password: md5(password + secret)
+                              },
+                              type: QueryTypes.SELECT
+                            });
+                            return done(null, JSON.parse(JSON.stringify(result[ 0 ] || null)));
+                          } catch (error) {
+                            return done(error, null);
+                          }
+                        } else {
+                          return done({ error: "The Base pool error. UNKNOWN pool_base = '"+ pool_base +"'" }, null);
+                        }
+                      } else {
+                        return done(null, null, true);
+                      }
+                    }));
+      
+                    // Passport jwt payload (decoder)
+                    passport.use(new JWTStrategy({
+                      jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+                      secretOrKey: passport_config.secret
+                    }, async (jwtPayload, done) => {
+                      let pool = eval("sql." + passport_config.model.name);
+                      if (pool) {
+                        if (pool_base == "basic") {
+                          pool.query("SHOW KEYS FROM " + passportTable + " WHERE Key_name = 'PRIMARY'", (err, pk) => {
+                            if(err) {
+                              return done(err, null);
+                            } else {
+                              let fieldPk = pk[0].Column_name;
+                              // pool base is MySQL
+                              pool.query("SELECT " + passportFields + " FROM ?? WHERE " + fieldPk + " = ?", [
+                                passportTable,
+                                jwtPayload[fieldPk]
+                              ], (err, result) => {
+                                if (err) {
+                                  return done(err, null);
+                                } else {
+                                  return done(null, JSON.parse(JSON.stringify(result[ 0 ] || null)));
+                                }
+                              });
+                            }
+                          });
+                        } else if (pool_base == "sequelize") {
+                          // pool base is Sequelize
+                          try {
+                            pool.query("SHOW KEYS FROM " + passportTable + " WHERE Key_name = 'PRIMARY'", { type: QueryTypes.SELECT }).then((pk) => {
+                              let fieldPk = pk[0].Column_name;
+                              pool.query("SELECT " + passportFields + " FROM " + passportTable + " WHERE " + fieldPk + " = :pk", {
+                                replacements: {
+                                  pk: + jwtPayload[fieldPk]
+                                },
+                                type: QueryTypes.SELECT,
+                              }).then((result) => {
+                                return done(null, JSON.parse(JSON.stringify(result[ 0 ] || null)));
+                              }).catch((err) => {
+                                return done(err, null);
+                              });
+                            }).catch((err) => {
+                              return done(err, null);
+                            });
+                          } catch (error) {
+                            return done(error, null);
+                          }
+                        } else {
+                          return done({ error: "The Base pool error. UNKNOWN pool_base = '"+ pool_base +"'" }, null);
+                        }
+                      } else {
+                        return done(null, null, true);
+                      }
+                    }));
+      
+                    // Declare head authentication enpoint for all strategy
+                    let auth_endpoint = (passport_config.auth_endpoint) ? (passport_config.auth_endpoint[ 0 ] === "/" ? passport_config.auth_endpoint : "/" + passport_config.auth_endpoint) : "/authentication";
+      
+                    /**
+                     * Passport Google Strategy
+                     * 
+                     */
+                    let google_callbackURL = (passport_config.strategy.google.callbackURL) ? (passport_config.strategy.google.callbackURL[ 0 ] === "/" ? passport_config.strategy.google.callbackURL : "/" + passport_config.strategy.google.callbackURL) : "/google/callback";
+                    passport.use(new GoogleStrategy({
+                      clientID: passport_config.strategy.google.client_id,
+                      clientSecret: passport_config.strategy.google.client_secret,
+                      callbackURL: auth_endpoint + google_callbackURL
+                    }, (accessToken, refreshToken, profile, done) => {
+                      // find google user
+                      let googleIdField = (passport_config.strategy.google.local_profile_fields.google_id) ? passport_config.strategy.google.local_profile_fields.google_id : "google_id";
+                      this.findOrCreate(passport_config, "google", passportFields, passportTable, accessToken, refreshToken, profile, googleIdField, (err, res, dbFailed) => {
+                        if (err) {
+                          return done(err);
+                        } else {
+                          return done(err, res, dbFailed);
                         }
                       });
-                    } else if (pool_base == "sequelize") {
-                      // pool base is Sequelize
-                      try {
-                        pool.query("SHOW KEYS FROM " + passportTable + " WHERE Key_name = 'PRIMARY'", { type: QueryTypes.SELECT }).then((pk) => {
-                          let fieldPk = pk[0].Column_name;
-                          pool.query("SELECT " + passportFields + " FROM " + passportTable + " WHERE " + fieldPk + " = :pk", {
-                            replacements: {
-                              pk: + jwtPayload[fieldPk]
-                            },
-                            type: QueryTypes.SELECT,
-                          }).then((result) => {
-                            return done(null, JSON.parse(JSON.stringify(result[ 0 ] || null)));
-                          }).catch((err) => {
-                            return done(err, null);
-                          });
-                        }).catch((err) => {
-                          return done(err, null);
-                        });
-                      } catch (error) {
-                        return done(error, null);
-                      }
-                    } else {
-                      return done({ error: "The Base pool error. UNKNOWN pool_base = '"+ pool_base +"'" }, null);
-                    }
-                  } else {
-                    return done(null, null, true);
-                  }
-                }));
-  
-                // Declare head authentication enpoint for all strategy
-                let auth_endpoint = (passport_config.auth_endpoint) ? (passport_config.auth_endpoint[ 0 ] === "/" ? passport_config.auth_endpoint : "/" + passport_config.auth_endpoint) : "/authentication";
-  
-                /**
-                 * Passport Google Strategy
-                 * 
-                 */
-                let google_callbackURL = (passport_config.strategy.google.callbackURL) ? (passport_config.strategy.google.callbackURL[ 0 ] === "/" ? passport_config.strategy.google.callbackURL : "/" + passport_config.strategy.google.callbackURL) : "/google/callback";
-                passport.use(new GoogleStrategy({
-                  clientID: passport_config.strategy.google.client_id,
-                  clientSecret: passport_config.strategy.google.client_secret,
-                  callbackURL: auth_endpoint + google_callbackURL
-                }, (accessToken, refreshToken, profile, done) => {
-                  // find google user
-                  let googleIdField = (passport_config.strategy.google.local_profile_fields.google_id) ? passport_config.strategy.google.local_profile_fields.google_id : "google_id";
-                  this.findOrCreate(passport_config, "google", passportFields, passportTable, accessToken, refreshToken, profile, googleIdField, (err, res, dbFailed) => {
-                    if (err) {
-                      return done(err);
-                    } else {
-                      return done(err, res, dbFailed);
-                    }
-                  });
-                }));
-  
-                /**
-                 * Passport Facebook Strategy
-                 * 
-                 */
-                let facebook_callbackURL = (passport_config.strategy.facebook.callbackURL) ? (passport_config.strategy.facebook.callbackURL[ 0 ] === "/" ? passport_config.strategy.facebook.callbackURL : "/" + passport_config.strategy.facebook.callbackURL) : "/facebook/callback";
-                // merge fields permisions
-                let allow_permisions_fields = [ ...new Set([ ...[ 'id', 'displayName', 'name', 'photos', 'email', 'location' ], ...(passport_config.strategy.facebook.profileFieldsAllow || []) ]) ];
-                passport.use(new FacebookStrategy({
-                  clientID: passport_config.strategy.facebook.app_id,
-                  clientSecret: passport_config.strategy.facebook.app_secret,
-                  callbackURL: auth_endpoint + facebook_callbackURL,
-                  profileFields: allow_permisions_fields
-                }, (accessToken, refreshToken, profile, done) => {
-                  // Check if the email permission is granted
-                  /**
-                   * Update : Permissions Reference for Meta Technologies APIs.
-                   * Starting on or after October 27, 2023, if your app requests permission to use an endpoint to access an app user’s data
-                   * Learn more : https://developers.facebook.com/docs/permissions
-                   * 
-                   * From now! Disabled check if email permission granted
-                   */
-                  //if (!profile.emails || profile.emails.length === 0) {
-                  //  return done(new Error('Email permission not granted.'));
-                  //}
-                  // find facebook user
-                  let faecbookIdField = (passport_config.strategy.facebook.local_profile_fields.facebook_id) ? passport_config.strategy.facebook.local_profile_fields.facebook_id : "facebook_id";
-                  this.findOrCreate(passport_config, "facebook", passportFields, passportTable, accessToken, refreshToken, profile, faecbookIdField, (err, res, dbFailed) => {
-                    if (err) {
-                      return done(err);
-                    } else {
-                      return done(err, res, dbFailed);
-                    }
-                  });
-                }));
-                // Everything is Perfectly
-                resolve([null, true, true, true]);
-              } // end if check err findPassportPk
-            }); // end findPassportPk
+                    }));
+      
+                    /**
+                     * Passport Facebook Strategy
+                     * 
+                     */
+                    let facebook_callbackURL = (passport_config.strategy.facebook.callbackURL) ? (passport_config.strategy.facebook.callbackURL[ 0 ] === "/" ? passport_config.strategy.facebook.callbackURL : "/" + passport_config.strategy.facebook.callbackURL) : "/facebook/callback";
+                    // merge fields permisions
+                    let allow_permisions_fields = [ ...new Set([ ...[ 'id', 'displayName', 'name', 'photos', 'email', 'location' ], ...(passport_config.strategy.facebook.profileFieldsAllow || []) ]) ];
+                    passport.use(new FacebookStrategy({
+                      clientID: passport_config.strategy.facebook.app_id,
+                      clientSecret: passport_config.strategy.facebook.app_secret,
+                      callbackURL: auth_endpoint + facebook_callbackURL,
+                      profileFields: allow_permisions_fields
+                    }, (accessToken, refreshToken, profile, done) => {
+                      // Check if the email permission is granted
+                      /**
+                       * Update : Permissions Reference for Meta Technologies APIs.
+                       * Starting on or after October 27, 2023, if your app requests permission to use an endpoint to access an app user’s data
+                       * Learn more : https://developers.facebook.com/docs/permissions
+                       * 
+                       * From now! Disabled check if email permission granted
+                       */
+                      //if (!profile.emails || profile.emails.length === 0) {
+                      //  return done(new Error('Email permission not granted.'));
+                      //}
+                      // find facebook user
+                      let faecbookIdField = (passport_config.strategy.facebook.local_profile_fields.facebook_id) ? passport_config.strategy.facebook.local_profile_fields.facebook_id : "facebook_id";
+                      this.findOrCreate(passport_config, "facebook", passportFields, passportTable, accessToken, refreshToken, profile, faecbookIdField, (err, res, dbFailed) => {
+                        if (err) {
+                          return done(err);
+                        } else {
+                          return done(err, res, dbFailed);
+                        }
+                      });
+                    }));
+                    // Everything is Perfectly
+                    resolve([null, true, true, true]);
+                  } // end if check err findPassportPk
+                }); // end findPassportPk
+              } // end checkAuthFields
+            });
           } else if(final[0][0] && final[0][1] && final[0][2] === false) {
             // Database connection mapped is Closed.
             resolve([`Database connection name \`${passport_config.model.name}\` is CLOSED. Checking ON/OFF inside app.conifg.js file.`, true, true, false]);

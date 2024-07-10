@@ -1,2 +1,2 @@
-const { Schema, Store, Update } = require("./packages/lib/index");
-module.exports = { Schema, Store, Update };
+const { Schema, Guard, Store, Update } = require("./packages/lib/index");
+module.exports = { Schema, Guard, Store, Update };

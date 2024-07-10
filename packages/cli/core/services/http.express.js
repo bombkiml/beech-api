@@ -3,6 +3,7 @@ const package = require(appRoot + '/package.json');
 const fs = require("fs");
 const passport_config_file = "/passport.config.js";
 const auth = require("../auth/Credentials");
+const { TwoFactor } = require("../helpers/2fa");
 
 module.exports = {
   expressStart() {
@@ -158,12 +159,32 @@ module.exports = {
                         if (passport_config.app_key_allow) {
                           if (req.headers.app_key) {
                             if (_config_.main_config.app_key == req.headers.app_key) {
-                              res.status(200).json({
-                                code: 200,
-                                status: "AUTHORIZED",
-                                user,
-                                accessToken
-                              });
+                              if(passport_config.model.guard_field.length) {
+                                TwoFactor(user, req.body, passport_config.model.guard_field, (err, twoFaUserRes) => {
+                                  if(err) {
+                                    res.status(twoFaUserRes.code).json(twoFaUserRes);
+                                    return;
+                                  } else {
+                                    if(twoFaUserRes.length) {
+                                      res.status(200).json({
+                                        code: 200,
+                                        status: "AUTHORIZED",
+                                        user: twoFaUserRes,
+                                        accessToken
+                                      });
+                                    } else {
+                                      res.status(401).json({ code: 401, message: "Unauthorized." });
+                                    }
+                                  }
+                                });
+                              } else {
+                                res.status(200).json({
+                                  code: 200,
+                                  status: "AUTHORIZED",
+                                  user,
+                                  accessToken
+                                });
+                              }
                             } else {
                               res.status(401).json({ code: 401, message: "Unauthorized with wrong key." });
                             }
