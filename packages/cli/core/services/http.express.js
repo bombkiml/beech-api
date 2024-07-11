@@ -186,10 +186,10 @@ module.exports = {
                                 });
                               }
                             } else {
-                              res.status(401).json({ code: 401, message: "Unauthorized with wrong key." });
+                              res.status(401).json({ code: 401, status: "UNAUTHORIZED", message: "Unauthorized with wrong key." });
                             }
                           } else {
-                            res.status(422).json({ code: 422, message: "Unprocessable Entity." });
+                            res.status(422).json({ code: 422, status: "UNPROCESSABLE", message: "Unprocessable Entity." });
                           }
                         } else {
                           res.status(200).json({
@@ -200,9 +200,9 @@ module.exports = {
                           });
                         }
                       } else if (opt) {
-                        res.status(422).json({ code: 422, message: "Unprocessable Entity." });
+                        res.status(422).json({ code: 422, status: "UNPROCESSABLE", message: "Unprocessable Entity." });
                       } else {
-                        res.status(401).json({ code: 401, message: "Unauthorized." });
+                        res.status(401).json({ code: 401, status: "UNAUTHORIZED", message: "Unauthorized." });
                       }
                     })(req, res, next);
                   });
@@ -214,10 +214,10 @@ module.exports = {
                           if (_config_.main_config.app_key == req.headers.app_key) {
                             resolve(true);
                           } else {
-                            res.status(401).json({ code: 401, message: "Unauthorized with wrong key." });
+                            res.status(401).json({ code: 401, status: "UNAUTHORIZED", message: "Unauthorized with wrong key." });
                           }
                         } else {
-                          res.status(422).json({ code: 422, message: "Unprocessable Entity." });
+                          res.status(422).json({ code: 422, status: "UNPROCESSABLE", message: "Unprocessable Entity." });
                         }
                       } else {
                         resolve(true);
@@ -251,10 +251,10 @@ module.exports = {
                           if (_config_.main_config.app_key == req.headers.app_key) {
                             resolve(true);
                           } else {
-                            res.status(401).json({ code: 401, message: "Unauthorized with wrong key." });
+                            res.status(401).json({ code: 401, status: "UNAUTHORIZED", message: "Unauthorized with wrong key." });
                           }
                         } else {
-                          res.status(422).json({ code: 422, message: "Unprocessable Entity." });
+                          res.status(422).json({ code: 422, status: "UNPROCESSABLE", message: "Unprocessable Entity." });
                         }
                       } else {
                         resolve(true);
