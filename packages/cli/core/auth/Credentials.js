@@ -66,7 +66,10 @@ module.exports = {
           return res.status(401).json({
             code: 401,
             status: "UNAUTHORIZED_USER",
-            message: info,
+            message: info || {
+              name: "TokenError",
+              message: "Unauthorized token."
+            },
           });
         }
         // Check application key allow

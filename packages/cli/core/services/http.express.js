@@ -169,11 +169,11 @@ module.exports = {
                                       res.status(200).json({
                                         code: 200,
                                         status: "AUTHORIZED",
-                                        user: twoFaUserRes,
+                                        user: twoFaUserRes[0],
                                         accessToken
                                       });
                                     } else {
-                                      res.status(401).json({ code: 401, message: "Unauthorized." });
+                                      res.status(401).json({ code: 401, status: "UNAUTHORIZED", message: "Unauthorized guard." });
                                     }
                                   }
                                 });
@@ -202,7 +202,7 @@ module.exports = {
                       } else if (opt) {
                         res.status(422).json({ code: 422, status: "UNPROCESSABLE", message: "Unprocessable Entity." });
                       } else {
-                        res.status(401).json({ code: 401, status: "UNAUTHORIZED", message: "Unauthorized." });
+                        res.status(401).json({ code: 401, status: "UNAUTHORIZED", message: "Unauthorized user." });
                       }
                     })(req, res, next);
                   });
