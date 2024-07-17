@@ -109,7 +109,11 @@ async function Store(fields, cb) {
             affectedRows: result[1]
           });
         } catch (error) {
-          return cb(error, null);
+          if(error.sql) {
+            return cb(error, null);
+          } else {
+            return cb(String(error), null);
+          }
         }
       } else {
         return cb({ error: "The Base pool error. UNKNOWN pool_base = '"+ pool_base +"'" }, null);
@@ -178,12 +182,20 @@ async function Update(someFields, id, cb) {
               affectedRows: result[1],
             });
           }).catch((err) => {
-            delete err.sql;
-            return cb(err, null);
+            if(err.sql) {
+              delete err.sql;
+              return cb(err, null);
+            } else {
+              return cb(String(err), null);
+            }
           });
         }).catch((err) => {
-          delete err.sql;
-          return cb(err, null);
+          if(err.sql) {
+            delete err.sql;
+            return cb(err, null);
+          } else {
+            return cb(String(err), null);
+          }
         });
       } catch (error) {
         return cb(error, null);

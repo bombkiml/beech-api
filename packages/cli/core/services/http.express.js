@@ -225,18 +225,14 @@ module.exports = {
                     });
                     // store data
                     Promise.all([promise])
-                      .then((secret) => {
-                        if(secret) {
-                          User.Store(req.body, (err, result) => {
-                            if (err) {
-                              res.status(501).json({ code: 501, status: "CREATE_FAILED", error: err });
-                            } else {
-                              res.status(201).json({ code: 201, status: "CREATE_SUCCESS", result });
-                            }
-                          });
-                        } else {
-                          res.status(501).json({ code: 501, status: "NOT_IMPLIMENTED" });
-                        }
+                      .then(() => {
+                        User.Store(req.body, (err, result) => {
+                          if (err) {
+                            res.status(501).json({ code: 501, status: "CREATE_FAILED", error: err });
+                          } else {
+                            res.status(201).json({ code: 201, status: "CREATE_SUCCESS", result });
+                          }
+                        });
                       })
                       .catch(err => {
                         res.status(501).json({ code: 501, status: "NOT_IMPLIMENTED", error: err
@@ -262,19 +258,15 @@ module.exports = {
                     });
                     // update data
                     Promise.all([promise])
-                      .then((secret) => {
-                        if(secret) {
-                          // require some fields with body params
-                          User.Update(req.body, req.params.id, (err, result) => {
-                            if (err) {
-                              res.status(501).json({ code: 501, status: "UPDATE_FAILED", error: err });
-                            } else {
-                              res.status(200).json({ code: 200, status: "UPDATE_SUCCESS", result });
-                            }
-                          });
-                        } else {
-                          res.status(501).json({ code: 501, status: "NOT_IMPLIMENTED" });
-                        }
+                      .then(() => {
+                        // require some fields with body params
+                        User.Update(req.body, req.params.id, (err, result) => {
+                          if (err) {
+                            res.status(501).json({ code: 501, status: "UPDATE_FAILED", error: err });
+                          } else {
+                            res.status(200).json({ code: 200, status: "UPDATE_SUCCESS", result });
+                          }
+                        });
                       })
                       .catch(err => {
                         res.status(501).json({ code: 501, status: "NOT_IMPLIMENTED", error: err
