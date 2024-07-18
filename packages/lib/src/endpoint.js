@@ -126,7 +126,7 @@ function Base() {
           reject(err);
         } else {
           const checkPassport = new Promise((resolve) => {
-            const passport_config_file = appRoot + "\\passport.config.js";
+            const passport_config_file = appRoot + "/passport.config.js";
             let passport_config_auth = undefined;
             if (fs.existsSync(passport_config_file)) {
               const _passport_config_ = require(passport_config_file);

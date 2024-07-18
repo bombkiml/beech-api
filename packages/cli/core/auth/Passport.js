@@ -1,6 +1,6 @@
 const appRoot = require("app-root-path");
 const fs = require("fs");
-const passport_config_file = appRoot + "\\passport.config.js";
+const passport_config_file = appRoot + "/passport.config.js";
 const md5 = require("md5");
 const secret = require("../../../lib/src/salt").salt;
 const { findPassportPk, checkAuthFields } = require("../helpers/poolEntity");
