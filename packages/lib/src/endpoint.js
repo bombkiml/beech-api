@@ -1,6 +1,7 @@
 const walk = require("walk");
 const appRoot = require("app-root-path");
 const fs = require("fs");
+const publicPath = require(appRoot + "/beech.config.js").defineConfig.base;
 
 function walkModel(cb) {
   try {
@@ -78,7 +79,6 @@ function checkOffset(Project, req, res, cb) {
   let limit = req.params.limit || undefined;
   let offsetRegxMatch = (offset !== undefined) ? offset.match(/^[0-9]+$/) : undefined;
   let limitRegxMatch = (limit !== undefined) ? limit.match(/^[0-9]+$/) : undefined;
-  console.log(offsetRegxMatch, limitRegxMatch);
   if (offsetRegxMatch && limitRegxMatch) {
     cb(true);
   } else {
@@ -142,7 +142,7 @@ function Base() {
               // GET method with ALL data, default: limit rows 100
               endpoint.get("/:hash", Credentials, async (req, res, next) => {
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(publicPath, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
@@ -178,7 +178,7 @@ function Base() {
                 }
                 // filter GET project
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(publicPath, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
@@ -210,7 +210,7 @@ function Base() {
                 }
                 // filter GET limit,offset project
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(publicPath, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
@@ -248,7 +248,7 @@ function Base() {
                 }
                 // When lost IF
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(publicPath, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
@@ -283,7 +283,7 @@ function Base() {
               // PATCH method
               endpoint.patch("/:hash/:id", Credentials, async (req, res, next) => {
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(publicPath, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
@@ -326,7 +326,7 @@ function Base() {
               // DELETE method
               endpoint.delete("/:hash/:id", Credentials, async (req, res, next) => {
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(publicPath, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {

@@ -2,6 +2,7 @@ const appRoot = require("app-root-path");
 const package = require(appRoot + '/package.json');
 const fs = require("fs");
 const passport_config_file = "/passport.config.js";
+const beech_config_file = "/beech.config.js";
 const auth = require("../auth/Credentials");
 const { TwoFactor } = require("../helpers/2fa");
 
@@ -85,6 +86,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       try {
         var passport_config = null;
+        var publicPath = require(appRoot + beech_config_file).defineConfig.base;
         var jwt = null;
         var passport = null;
         var User = null;
@@ -140,8 +142,9 @@ module.exports = {
             checkPassport.then(passportChecked => {
               if(passportChecked) {
                 if (passport_config_file_exists && jwt_allow && jwt_db_allow) {
-                  // declare authentication endpoint name
-                  const auth_endpoint = (passport_config.auth_endpoint) ? (passport_config.auth_endpoint[ 0 ] === "/" ? passport_config.auth_endpoint : "/" + passport_config.auth_endpoint) : "/authentication";
+                  // declare authentication endpoint name with publicPath
+                  let auth_endpoint = (passport_config.auth_endpoint) ? (passport_config.auth_endpoint[ 0 ] === "/" ? passport_config.auth_endpoint : "/" + passport_config.auth_endpoint) : "/authentication";
+                  auth_endpoint = publicPath + auth_endpoint.substr(1);
                   // authentication endpoints
                   _app_.post(auth_endpoint, (req, res, next) => {
                     passport.authenticate('local', { session: false }, (err, user, opt) => {

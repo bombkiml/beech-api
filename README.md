@@ -672,6 +672,7 @@ The origin array to the callback can be any value allowed for the origin option 
 ```js
 module.exports = {
   defineConfig: {
+    base: "/", // Base public path when served in development or production.
     server: {
       origin: ["http://example.com", "http://my-webapp:8080", "https://cat.io"],
       originSensitive: false, // Sensitive with contrasts wording
