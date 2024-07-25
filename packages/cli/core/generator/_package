@@ -5,6 +5,10 @@
   "license": "MIT",
   "main": "index.js",
   "scripts": {
+    "prod": "set NODE_ENV=production && npm start",
+    "production": "set NODE_ENV=production && npm start",
+    "dev": "set NODE_ENV=development && npm start",
+    "development": "set NODE_ENV=development && npm start",
     "start": "beech-service serve",
     "test": "node ./node_modules/jest/bin/jest __tests__ -o --watch --config"
   },
