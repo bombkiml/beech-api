@@ -672,6 +672,10 @@ The origin array to the callback can be any value allowed for the origin option 
 ```js
 module.exports = {
   defineConfig: {
+    // Base public path when served in development or production.
+    base: process.env.NODE_ENV === "production"
+          ? "/my-api/" // For Production
+          : "/", // For Development
     server: {
       origin: ["http://example.com", "http://my-webapp:8080", "https://cat.io"],
       originSensitive: false, // Sensitive with contrasts wording
@@ -863,7 +867,7 @@ Docker builds images automatically by reading the instructions from a Dockerfile
 FROM node:14.19-alpine
 ENV NODE_ENV=production
 WORKDIR /usr/src/api
-COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
+COPY ["package.json", "package-lock.json*", "./"]
 RUN npm install --production --silent && mv node_modules .
 COPY . .
 EXPOSE 9000

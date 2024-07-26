@@ -1,7 +1,7 @@
 const passport = require("passport");
 const appRoot = require("app-root-path");
 const fs = require("fs");
-const passport_config_file = appRoot + "\\passport.config.js";
+const passport_config_file = appRoot + "/passport.config.js";
 var passport_config;
 if (fs.existsSync(passport_config_file)) {
   passport_config = require(passport_config_file);
@@ -66,7 +66,10 @@ module.exports = {
           return res.status(401).json({
             code: 401,
             status: "UNAUTHORIZED_USER",
-            message: info,
+            message: info || {
+              name: "TokenError",
+              message: "Unauthorized token."
+            },
           });
         }
         // Check application key allow

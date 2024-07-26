@@ -1,6 +1,6 @@
 const appRoot = require("app-root-path");
 const fs = require("fs");
-const passport_config_file = appRoot + "\\passport.config.js";
+const passport_config_file = appRoot + "/passport.config.js";
 const md5 = require("md5");
 const secret = require("../../../lib/src/salt").salt;
 const { findPassportPk, checkAuthFields } = require("../helpers/poolEntity");
@@ -186,7 +186,8 @@ module.exports = {
       
                     // Declare head authentication enpoint for all strategy
                     let auth_endpoint = (passport_config.auth_endpoint) ? (passport_config.auth_endpoint[ 0 ] === "/" ? passport_config.auth_endpoint : "/" + passport_config.auth_endpoint) : "/authentication";
-      
+                    auth_endpoint = _publicPath_ + auth_endpoint.substr(1);
+
                     /**
                      * Passport Google Strategy
                      * 

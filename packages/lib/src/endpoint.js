@@ -78,7 +78,6 @@ function checkOffset(Project, req, res, cb) {
   let limit = req.params.limit || undefined;
   let offsetRegxMatch = (offset !== undefined) ? offset.match(/^[0-9]+$/) : undefined;
   let limitRegxMatch = (limit !== undefined) ? limit.match(/^[0-9]+$/) : undefined;
-  console.log(offsetRegxMatch, limitRegxMatch);
   if (offsetRegxMatch && limitRegxMatch) {
     cb(true);
   } else {
@@ -126,7 +125,7 @@ function Base() {
           reject(err);
         } else {
           const checkPassport = new Promise((resolve) => {
-            const passport_config_file = appRoot + "\\passport.config.js";
+            const passport_config_file = appRoot + "/passport.config.js";
             let passport_config_auth = undefined;
             if (fs.existsSync(passport_config_file)) {
               const _passport_config_ = require(passport_config_file);
@@ -142,7 +141,7 @@ function Base() {
               // GET method with ALL data, default: limit rows 100
               endpoint.get("/:hash", Credentials, async (req, res, next) => {
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
@@ -178,7 +177,7 @@ function Base() {
                 }
                 // filter GET project
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
@@ -210,7 +209,7 @@ function Base() {
                 }
                 // filter GET limit,offset project
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
@@ -248,7 +247,7 @@ function Base() {
                 }
                 // When lost IF
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
@@ -283,7 +282,7 @@ function Base() {
               // PATCH method
               endpoint.patch("/:hash/:id", Credentials, async (req, res, next) => {
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
@@ -326,7 +325,7 @@ function Base() {
               // DELETE method
               endpoint.delete("/:hash/:id", Credentials, async (req, res, next) => {
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl, req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {

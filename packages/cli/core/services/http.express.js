@@ -33,7 +33,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       try {
         // base get request
-        _app_.get('/', (req, res) => {
+        endpoint.get('/', (req, res) => {
           res.status(200).json({
             code: 200,
             status: "SUCCESS",
@@ -41,7 +41,7 @@ module.exports = {
           });
         });
         // request 404 not found
-        _app_.use((req, res, next) => {
+        endpoint.use((req, res, next) => {
           res.status(404).json({
             code: 404,
             status: "404_NOT_FOUND",
@@ -140,10 +140,11 @@ module.exports = {
             checkPassport.then(passportChecked => {
               if(passportChecked) {
                 if (passport_config_file_exists && jwt_allow && jwt_db_allow) {
-                  // declare authentication endpoint name
-                  const auth_endpoint = (passport_config.auth_endpoint) ? (passport_config.auth_endpoint[ 0 ] === "/" ? passport_config.auth_endpoint : "/" + passport_config.auth_endpoint) : "/authentication";
+                  // declare authentication endpoint name with publicPath
+                  let auth_endpoint = (passport_config.auth_endpoint) ? (passport_config.auth_endpoint[ 0 ] === "/" ? passport_config.auth_endpoint : "/" + passport_config.auth_endpoint) : "/authentication";
+                  //auth_endpoint = _publicPath_ + auth_endpoint.substr(1);
                   // authentication endpoints
-                  _app_.post(auth_endpoint, (req, res, next) => {
+                  endpoint.post(auth_endpoint, (req, res, next) => {
                     passport.authenticate('local', { session: false }, (err, user, opt) => {
                       if (err) {
                         res.status(502).json({
@@ -169,11 +170,11 @@ module.exports = {
                                       res.status(200).json({
                                         code: 200,
                                         status: "AUTHORIZED",
-                                        user: twoFaUserRes,
+                                        user: twoFaUserRes[0],
                                         accessToken
                                       });
                                     } else {
-                                      res.status(401).json({ code: 401, message: "Unauthorized." });
+                                      res.status(401).json({ code: 401, status: "UNAUTHORIZED", message: "Unauthorized guard." });
                                     }
                                   }
                                 });
@@ -202,12 +203,12 @@ module.exports = {
                       } else if (opt) {
                         res.status(422).json({ code: 422, status: "UNPROCESSABLE", message: "Unprocessable Entity." });
                       } else {
-                        res.status(401).json({ code: 401, status: "UNAUTHORIZED", message: "Unauthorized." });
+                        res.status(401).json({ code: 401, status: "UNAUTHORIZED", message: "Unauthorized user." });
                       }
                     })(req, res, next);
                   });
                   // create auth data endpoints
-                  _app_.post(auth_endpoint + '/create', (req, res) => {
+                  endpoint.post(auth_endpoint + '/create', (req, res) => {
                     const promise = new Promise((resolve) => {
                       if (passport_config.app_key_allow) {
                         if (req.headers.app_key) {
@@ -225,18 +226,14 @@ module.exports = {
                     });
                     // store data
                     Promise.all([promise])
-                      .then((secret) => {
-                        if(secret) {
-                          User.Store(req.body, (err, result) => {
-                            if (err) {
-                              res.status(501).json({ code: 501, status: "CREATE_FAILED", error: err });
-                            } else {
-                              res.status(201).json({ code: 201, status: "CREATE_SUCCESS", result });
-                            }
-                          });
-                        } else {
-                          res.status(501).json({ code: 501, status: "NOT_IMPLIMENTED" });
-                        }
+                      .then(() => {
+                        User.Store(req.body, (err, result) => {
+                          if (err) {
+                            res.status(501).json({ code: 501, status: "CREATE_FAILED", error: err });
+                          } else {
+                            res.status(201).json({ code: 201, status: "CREATE_SUCCESS", result });
+                          }
+                        });
                       })
                       .catch(err => {
                         res.status(501).json({ code: 501, status: "NOT_IMPLIMENTED", error: err
@@ -244,7 +241,7 @@ module.exports = {
                     });
                   });
                   // patch auth data endpoints
-                  _app_.patch(auth_endpoint + '/update/:id', auth.credentials, (req, res) => {
+                  endpoint.patch(auth_endpoint + '/update/:id', auth.credentials, (req, res) => {
                     const promise = new Promise((resolve) => {
                       if (passport_config.app_key_allow) {
                         if (req.headers.app_key) {
@@ -262,19 +259,15 @@ module.exports = {
                     });
                     // update data
                     Promise.all([promise])
-                      .then((secret) => {
-                        if(secret) {
-                          // require some fields with body params
-                          User.Update(req.body, req.params.id, (err, result) => {
-                            if (err) {
-                              res.status(501).json({ code: 501, status: "UPDATE_FAILED", error: err });
-                            } else {
-                              res.status(200).json({ code: 200, status: "UPDATE_SUCCESS", result });
-                            }
-                          });
-                        } else {
-                          res.status(501).json({ code: 501, status: "NOT_IMPLIMENTED" });
-                        }
+                      .then(() => {
+                        // require some fields with body params
+                        User.Update(req.body, req.params.id, (err, result) => {
+                          if (err) {
+                            res.status(501).json({ code: 501, status: "UPDATE_FAILED", error: err });
+                          } else {
+                            res.status(200).json({ code: 200, status: "UPDATE_SUCCESS", result });
+                          }
+                        });
                       })
                       .catch(err => {
                         res.status(501).json({ code: 501, status: "NOT_IMPLIMENTED", error: err
@@ -286,7 +279,7 @@ module.exports = {
                    *  
                    */
                   if (passport_config.strategy.google.allow) {
-                    _app_.get(auth_endpoint + '/google', passport.authenticate('google', {
+                    endpoint.get(auth_endpoint + '/google', passport.authenticate('google', {
                       scope: [
                         'https://www.googleapis.com/auth/userinfo.email',
                         'https://www.googleapis.com/auth/plus.login'
@@ -294,7 +287,7 @@ module.exports = {
                     }));
                     // google auth callback
                     const googleCallback = (passport_config.strategy.google.callbackURL) ? (passport_config.strategy.google.callbackURL[ 0 ] === "/" ? passport_config.strategy.google.callbackURL : "/" + passport_config.strategy.google.callbackURL) : "/google/callback";
-                    _app_.get(auth_endpoint + googleCallback, passport.authenticate('google', { failureRedirect: passport_config.strategy.google.failureRedirect, failureMessage: true }), (req, res) => {
+                    endpoint.get(auth_endpoint + googleCallback, passport.authenticate('google', { failureRedirect: passport_config.strategy.google.failureRedirect, failureMessage: true }), (req, res) => {
                       if (typeof req.user.user !== 'undefined') {
                         // declare user for sign JWT
                         let user = JSON.parse(JSON.stringify(req.user.user));
@@ -343,10 +336,10 @@ module.exports = {
                    * 
                    */
                   if (passport_config.strategy.facebook.allow) {
-                    _app_.get(auth_endpoint + '/facebook', passport.authenticate('facebook', { scope: [ 'email', 'public_profile' ] }));
+                    endpoint.get(auth_endpoint + '/facebook', passport.authenticate('facebook', { scope: [ 'email', 'public_profile' ] }));
                     // facebook callback
                     const facebookCallback = (passport_config.strategy.facebook.callbackURL) ? (passport_config.strategy.facebook.callbackURL[ 0 ] === "/" ? passport_config.strategy.facebook.callbackURL : "/" + passport_config.strategy.facebook.callbackURL) : "/facebook/callback";
-                    _app_.get(auth_endpoint + facebookCallback, passport.authenticate('facebook', { failureRedirect: passport_config.strategy.facebook.failureRedirect, failureMessage: true }), (req, res) => {
+                    endpoint.get(auth_endpoint + facebookCallback, passport.authenticate('facebook', { failureRedirect: passport_config.strategy.facebook.failureRedirect, failureMessage: true }), (req, res) => {
                       if (typeof req.user.user !== 'undefined') {
                         // declare user for sign JWT
                         let user = JSON.parse(JSON.stringify(req.user.user));

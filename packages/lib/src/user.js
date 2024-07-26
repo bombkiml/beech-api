@@ -39,7 +39,8 @@ async function FindOne(fields, fieldCondArr, cb) {
             });
             return cb(null, result);
           } catch (error) {
-            return cb((error.errors) ? error.errors[0] : error, null);
+            delete error.sql;
+            return cb(error, null);
           }
         } else {
           return cb({ error: "The Base pool error. UNKNOWN pool_base = '"+ pool_base +"'" }, null);
@@ -108,7 +109,11 @@ async function Store(fields, cb) {
             affectedRows: result[1]
           });
         } catch (error) {
-          return cb(error.errors[0], null);
+          if(error.sql) {
+            return cb(error, null);
+          } else {
+            return cb(String(error), null);
+          }
         }
       } else {
         return cb({ error: "The Base pool error. UNKNOWN pool_base = '"+ pool_base +"'" }, null);
@@ -177,13 +182,23 @@ async function Update(someFields, id, cb) {
               affectedRows: result[1],
             });
           }).catch((err) => {
-            return cb(err.errors[0], null);
+            if(err.sql) {
+              delete err.sql;
+              return cb(err, null);
+            } else {
+              return cb(String(err), null);
+            }
           });
         }).catch((err) => {
-          return cb(err, null);
+          if(err.sql) {
+            delete err.sql;
+            return cb(err, null);
+          } else {
+            return cb(String(err), null);
+          }
         });
       } catch (error) {
-        return cb(error.errors[0], null);
+        return cb(error, null);
       }
     } else {
       return cb({ error: "The Base pool error. UNKNOWN pool_base = '"+ pool_base +"'" }, null);
