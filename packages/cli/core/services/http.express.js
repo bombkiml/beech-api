@@ -2,7 +2,6 @@ const appRoot = require("app-root-path");
 const package = require(appRoot + '/package.json');
 const fs = require("fs");
 const passport_config_file = "/passport.config.js";
-const beech_config_file = "/beech.config.js";
 const auth = require("../auth/Credentials");
 const { TwoFactor } = require("../helpers/2fa");
 
@@ -34,7 +33,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       try {
         // base get request
-        _app_.get('/', (req, res) => {
+        endpoint.get('/', (req, res) => {
           res.status(200).json({
             code: 200,
             status: "SUCCESS",
@@ -42,7 +41,7 @@ module.exports = {
           });
         });
         // request 404 not found
-        _app_.use((req, res, next) => {
+        endpoint.use((req, res, next) => {
           res.status(404).json({
             code: 404,
             status: "404_NOT_FOUND",
@@ -86,7 +85,6 @@ module.exports = {
     return new Promise((resolve, reject) => {
       try {
         var passport_config = null;
-        var publicPath = require(appRoot + beech_config_file).defineConfig.base;
         var jwt = null;
         var passport = null;
         var User = null;
@@ -144,9 +142,9 @@ module.exports = {
                 if (passport_config_file_exists && jwt_allow && jwt_db_allow) {
                   // declare authentication endpoint name with publicPath
                   let auth_endpoint = (passport_config.auth_endpoint) ? (passport_config.auth_endpoint[ 0 ] === "/" ? passport_config.auth_endpoint : "/" + passport_config.auth_endpoint) : "/authentication";
-                  auth_endpoint = publicPath + auth_endpoint.substr(1);
+                  //auth_endpoint = _publicPath_ + auth_endpoint.substr(1);
                   // authentication endpoints
-                  _app_.post(auth_endpoint, (req, res, next) => {
+                  endpoint.post(auth_endpoint, (req, res, next) => {
                     passport.authenticate('local', { session: false }, (err, user, opt) => {
                       if (err) {
                         res.status(502).json({
@@ -210,7 +208,7 @@ module.exports = {
                     })(req, res, next);
                   });
                   // create auth data endpoints
-                  _app_.post(auth_endpoint + '/create', (req, res) => {
+                  endpoint.post(auth_endpoint + '/create', (req, res) => {
                     const promise = new Promise((resolve) => {
                       if (passport_config.app_key_allow) {
                         if (req.headers.app_key) {
@@ -243,7 +241,7 @@ module.exports = {
                     });
                   });
                   // patch auth data endpoints
-                  _app_.patch(auth_endpoint + '/update/:id', auth.credentials, (req, res) => {
+                  endpoint.patch(auth_endpoint + '/update/:id', auth.credentials, (req, res) => {
                     const promise = new Promise((resolve) => {
                       if (passport_config.app_key_allow) {
                         if (req.headers.app_key) {
@@ -281,7 +279,7 @@ module.exports = {
                    *  
                    */
                   if (passport_config.strategy.google.allow) {
-                    _app_.get(auth_endpoint + '/google', passport.authenticate('google', {
+                    endpoint.get(auth_endpoint + '/google', passport.authenticate('google', {
                       scope: [
                         'https://www.googleapis.com/auth/userinfo.email',
                         'https://www.googleapis.com/auth/plus.login'
@@ -289,7 +287,7 @@ module.exports = {
                     }));
                     // google auth callback
                     const googleCallback = (passport_config.strategy.google.callbackURL) ? (passport_config.strategy.google.callbackURL[ 0 ] === "/" ? passport_config.strategy.google.callbackURL : "/" + passport_config.strategy.google.callbackURL) : "/google/callback";
-                    _app_.get(auth_endpoint + googleCallback, passport.authenticate('google', { failureRedirect: passport_config.strategy.google.failureRedirect, failureMessage: true }), (req, res) => {
+                    endpoint.get(auth_endpoint + googleCallback, passport.authenticate('google', { failureRedirect: passport_config.strategy.google.failureRedirect, failureMessage: true }), (req, res) => {
                       if (typeof req.user.user !== 'undefined') {
                         // declare user for sign JWT
                         let user = JSON.parse(JSON.stringify(req.user.user));
@@ -338,10 +336,10 @@ module.exports = {
                    * 
                    */
                   if (passport_config.strategy.facebook.allow) {
-                    _app_.get(auth_endpoint + '/facebook', passport.authenticate('facebook', { scope: [ 'email', 'public_profile' ] }));
+                    endpoint.get(auth_endpoint + '/facebook', passport.authenticate('facebook', { scope: [ 'email', 'public_profile' ] }));
                     // facebook callback
                     const facebookCallback = (passport_config.strategy.facebook.callbackURL) ? (passport_config.strategy.facebook.callbackURL[ 0 ] === "/" ? passport_config.strategy.facebook.callbackURL : "/" + passport_config.strategy.facebook.callbackURL) : "/facebook/callback";
-                    _app_.get(auth_endpoint + facebookCallback, passport.authenticate('facebook', { failureRedirect: passport_config.strategy.facebook.failureRedirect, failureMessage: true }), (req, res) => {
+                    endpoint.get(auth_endpoint + facebookCallback, passport.authenticate('facebook', { failureRedirect: passport_config.strategy.facebook.failureRedirect, failureMessage: true }), (req, res) => {
                       if (typeof req.user.user !== 'undefined') {
                         // declare user for sign JWT
                         let user = JSON.parse(JSON.stringify(req.user.user));

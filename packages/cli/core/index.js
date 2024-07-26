@@ -15,7 +15,7 @@ const globalVariable = require(appRoot + "/global.config.js");
 globalVariable.init();
 // Local environments
 global._config_ = require(appRoot + "/app.config");
-const publicPath = require(appRoot + "/beech.config.js").defineConfig.base;
+global._publicPath_ = require(appRoot + "/beech.config.js").defineConfig.base;
 const mySqlDbConnect = require("./databases/mysql");
 const SequelizeDbConnect = require("./databases/sequelize");
 // database test
@@ -156,4 +156,4 @@ init = async (jsfiles) => {
   }
 };
 // use router
-_app_.use(publicPath, endpoint);
+_app_.use(_publicPath_, endpoint);

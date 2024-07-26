@@ -1,7 +1,6 @@
 const walk = require("walk");
 const appRoot = require("app-root-path");
 const fs = require("fs");
-const publicPath = require(appRoot + "/beech.config.js").defineConfig.base;
 
 function walkModel(cb) {
   try {
@@ -142,7 +141,7 @@ function Base() {
               // GET method with ALL data, default: limit rows 100
               endpoint.get("/:hash", Credentials, async (req, res, next) => {
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl.replace(publicPath, '/'), req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
@@ -178,7 +177,7 @@ function Base() {
                 }
                 // filter GET project
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl.replace(publicPath, '/'), req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
@@ -210,7 +209,7 @@ function Base() {
                 }
                 // filter GET limit,offset project
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl.replace(publicPath, '/'), req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
@@ -248,7 +247,7 @@ function Base() {
                 }
                 // When lost IF
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl.replace(publicPath, '/'), req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
@@ -283,7 +282,7 @@ function Base() {
               // PATCH method
               endpoint.patch("/:hash/:id", Credentials, async (req, res, next) => {
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl.replace(publicPath, '/'), req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
@@ -326,7 +325,7 @@ function Base() {
               // DELETE method
               endpoint.delete("/:hash/:id", Credentials, async (req, res, next) => {
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl.replace(publicPath, '/'), req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
