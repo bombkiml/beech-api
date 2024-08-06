@@ -1,4 +1,3 @@
-const appRoot = require("app-root-path");
 const md5 = require("md5");
 const secret = require("./salt").salt;
 const { findPassportPk } = require("../../cli/core/helpers/poolEntity");

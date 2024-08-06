@@ -1,5 +1,4 @@
 const passport = require("passport");
-const appRoot = require("app-root-path");
 const fs = require("fs");
 const passport_config_file = appRoot + "/passport.config.js";
 var passport_config;

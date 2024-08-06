@@ -1,4 +1,4 @@
-const appRoot = require("app-root-path");
+global.appRoot = require("app-root-path");
 const { performance } = require("perf_hooks");
 const moduleAlias = require("module-alias");
 moduleAlias.addAlias("@", appRoot + "/src");
@@ -6,6 +6,8 @@ const _express_ = require("express");
 global._app_ = _express_();
 const cors = require("cors");
 global.endpoint = _express_.Router();
+const { Limiter } = require("./middleware/index");
+endpoint.use(Limiter);
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const methodOverride = require("method-override");
@@ -30,7 +32,7 @@ global.QueryTypes = QueryTypes;
 global.DataTypes = DataTypes;
 global.Op = Op;
 // allow whitelist cors
-const { whitelist, sign } = require("./origin/index");
+const { whitelist, sign } = require("./middleware/index");
 _app_.use(cors({ origin: true, credentials: true }));
 _app_.use((req, res, next) => {
   whitelist(async (lists, originSensitive) => {

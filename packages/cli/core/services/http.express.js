@@ -1,9 +1,10 @@
-const appRoot = require("app-root-path");
 const package = require(appRoot + '/package.json');
 const fs = require("fs");
 const passport_config_file = "/passport.config.js";
 const auth = require("../auth/Credentials");
 const { TwoFactor } = require("../helpers/2fa");
+const { avgDeHashIt } = require(__dirname + "/../helpers/math");
+const moment = require("moment");
 
 module.exports = {
   expressStart() {
@@ -142,66 +143,72 @@ module.exports = {
                 if (passport_config_file_exists && jwt_allow && jwt_db_allow) {
                   // declare authentication endpoint name with publicPath
                   let auth_endpoint = (passport_config.auth_endpoint) ? (passport_config.auth_endpoint[ 0 ] === "/" ? passport_config.auth_endpoint : "/" + passport_config.auth_endpoint) : "/authentication";
-                  //auth_endpoint = _publicPath_ + auth_endpoint.substr(1);
                   // authentication endpoints
                   endpoint.post(auth_endpoint, (req, res, next) => {
                     passport.authenticate('local', { session: false }, (err, user, opt) => {
                       if (err) {
-                        res.status(502).json({
-                          code: 502,
-                          status: 'BAD_GATEWAY',
-                          message: err
-                        });
+                        res.status(502).json({ code: 502, status: "BAD_GATEWAY", message: String(err) });
+                        return;
                       }
                       if (user) {
                         const accessToken = jwt.sign(user, passport_config.secret, {
                           expiresIn: passport_config.token_expired
                         });
-                        if (passport_config.app_key_allow) {
-                          if (req.headers.app_key) {
-                            if (_config_.main_config.app_key == req.headers.app_key) {
-                              if(passport_config.model.guard_field.length) {
-                                TwoFactor(user, req.body, passport_config.model.guard_field, (err, twoFaUserRes) => {
-                                  if(err) {
-                                    res.status(twoFaUserRes.code).json(twoFaUserRes);
-                                    return;
+                        if ((passport_config.model.guard.advanced_guard) ? passport_config.model.guard.advanced_guard.allow : false) {
+                          let advanced_guard_entity = req.body[passport_config.model.guard.advanced_guard.entity || "timing"];
+                          if (advanced_guard_entity) {
+                            if(advanced_guard_entity.length > 60) {
+                              //logic check advanced guard
+                              avgDeHashIt(advanced_guard_entity, (err, unixTime) => {
+                                if (err) {
+                                  res.status(502).json({ code: 502, status: "BAD_GATEWAY", message: String(err) });
+                                  return;
+                                }
+                                // prepare date & check it.
+                                let unixTimeNow = moment(new Date()).unix();
+                                let unixTiming = moment(new Date(unixTime * 1000)).add((passport_config.model.guard.advanced_guard.time_expired.minutes || 0), "minutes").add((passport_config.model.guard.advanced_guard.time_expired.seconds || 0), "seconds").unix();
+                                if((String(unixTimeNow).length == String(unixTiming).length) && unixTimeNow < unixTiming) {
+                                  if(passport_config.model.guard.guard_field.length) {
+                                    TwoFactor(user, req.body, passport_config.model.guard.guard_field, (err, twoFaUserRes) => {
+                                      if(err) {
+                                        res.status(twoFaUserRes.code).json(twoFaUserRes);
+                                        return;
+                                      } else {
+                                        if(twoFaUserRes.length) {
+                                          res.status(200).json({
+                                            code: 200,
+                                            status: "AUTHORIZED",
+                                            user: twoFaUserRes[0],
+                                            accessToken
+                                          });
+                                        } else {
+                                          res.status(401).json({ code: 401, status: "UNAUTHORIZED", message: "Unauthorized guard." });
+                                        }
+                                      }
+                                    });
                                   } else {
-                                    if(twoFaUserRes.length) {
-                                      res.status(200).json({
-                                        code: 200,
-                                        status: "AUTHORIZED",
-                                        user: twoFaUserRes[0],
-                                        accessToken
-                                      });
-                                    } else {
-                                      res.status(401).json({ code: 401, status: "UNAUTHORIZED", message: "Unauthorized guard." });
-                                    }
+                                    res.status(200).json({
+                                      code: 200,
+                                      status: "AUTHORIZED",
+                                      user,
+                                      accessToken
+                                    });
                                   }
-                                });
-                              } else {
-                                res.status(200).json({
-                                  code: 200,
-                                  status: "AUTHORIZED",
-                                  user,
-                                  accessToken
-                                });
-                              }
+                                } else {
+                                  res.status(408).json({ code: 408 , status: "REQUEST_TIMEOUT", message: "Request Timeout." });
+                                }
+                              });
                             } else {
-                              res.status(401).json({ code: 401, status: "UNAUTHORIZED", message: "Unauthorized with wrong key." });
+                              res.status(502).json({ code: 502, status: 'BAD_GATEWAY', message: "Bad guard entity." });
                             }
                           } else {
-                            res.status(422).json({ code: 422, status: "UNPROCESSABLE", message: "Unprocessable Entity." });
+                            res.status(422).json({ code: 422, status: "UNPROCESSABLE", message: "Unprocessable Advanced guard Entity." });
                           }
                         } else {
-                          res.status(200).json({
-                            code: 200,
-                            status: "AUTHORIZED",
-                            user,
-                            accessToken
-                          });
+                          res.status(200).json({ code: 200, status: "AUTHORIZED", user, accessToken });
                         }
                       } else if (opt) {
-                        res.status(422).json({ code: 422, status: "UNPROCESSABLE", message: "Unprocessable Entity." });
+                        res.status(422).json({ code: 422, status: "UNPROCESSABLE", message: "Unprocessable jwt options Entity." });
                       } else {
                         res.status(401).json({ code: 401, status: "UNAUTHORIZED", message: "Unauthorized user." });
                       }
@@ -210,7 +217,12 @@ module.exports = {
                   // create auth data endpoints
                   endpoint.post(auth_endpoint + '/create', (req, res) => {
                     const promise = new Promise((resolve) => {
-                      if (passport_config.app_key_allow) {
+                      /**
+                       * 
+                       * Disabled add 0 (zero) in IF condition for closed app_key in headers for create new auth.
+                       * 
+                       */
+                      if (0 && passport_config.app_key_allow) {
                         if (req.headers.app_key) {
                           if (_config_.main_config.app_key == req.headers.app_key) {
                             resolve(true);
@@ -218,7 +230,7 @@ module.exports = {
                             res.status(401).json({ code: 401, status: "UNAUTHORIZED", message: "Unauthorized with wrong key." });
                           }
                         } else {
-                          res.status(422).json({ code: 422, status: "UNPROCESSABLE", message: "Unprocessable Entity." });
+                          res.status(422).json({ code: 422, status: "UNPROCESSABLE", message: "Unprocessable app key Entity." });
                         }
                       } else {
                         resolve(true);
@@ -251,7 +263,7 @@ module.exports = {
                             res.status(401).json({ code: 401, status: "UNAUTHORIZED", message: "Unauthorized with wrong key." });
                           }
                         } else {
-                          res.status(422).json({ code: 422, status: "UNPROCESSABLE", message: "Unprocessable Entity." });
+                          res.status(422).json({ code: 422, status: "UNPROCESSABLE", message: "Unprocessable app key Entity." });
                         }
                       } else {
                         resolve(true);
