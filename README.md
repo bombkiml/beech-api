@@ -26,10 +26,10 @@
 Beech API requires Node.js version 14.19.0 or above. You can manage multiple versions of Node on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows). So, Let's go to install `beech-api`
 
 ```sh
-// NPM
+# NPM
 $ npm install beech-api --global
 
-// Yarn
+# Yarn
 $ yarn global add beech-api
 ```
 
@@ -57,7 +57,7 @@ Run your project:
 $ cd hello-world
 
 $ npm start
-// OR
+# OR
 $ yarn start
 ```
 
@@ -434,7 +434,24 @@ module.exports = {
     password_field: "",
 
     // JWT playload data, You can add it. Example: ["name", "email", ...]
-    fields: []
+    fields: [],
+
+    // Other fields add for authentication.
+    guard: {
+      // Basic guard field, Example: ["pin", "hint", "2fa"]
+      guard_field: [],
+
+      // Advanced guard jwt request (needed some logical from front-end)
+      advanced_guard: {
+        allow: false,
+        entity: "", // default entity `timing`
+        secret: "top_secret",
+        time_expired: {
+          minutes: 1, // should length [0-60]
+          seconds: 0, // should length [0-60]
+        },
+      },
+    },
   },
 
   // Allowment using request with app_key entity (Every request must be using the app_key entity in headers)
@@ -491,6 +508,87 @@ Bearer Authorization: your_token
   name: "update_my_name",
   email: "my_update_email@bomb.com"
 }
+```
+
+### Beech 2FA Factor
+You can easy using 2 Factor authenticate with ```guard_field``` inside ```passport.config.js``` file and add your Guard field ex: ```2fa``` field for Authenticate Conditions.
+
+📂 passport.config.js
+```js
+module.exports = {
+  ...
+
+  guard: {
+    // Other fields add for authenticate, exmaple ["pin", "email", "2fa"]
+    guard_field: ["2fa"], 👈 // your feild guard.
+
+    ...
+  },
+
+  ...
+
+}
+```
+
+#### Beech Advanced Guard (Recommended After 2FA)
+After 2FA login you can add Advance Guard for Protection your Authentication endpoint with Timing. You can allowment timing in object ```advance_guard``` inside ```passport.config.js``` file. So let's go add your Advance Guard Configuration.
+
+📂 passport.config.js
+```js
+module.exports = {
+  ...
+
+  guard: {
+    ...
+
+    // Advanced authentication jwt request (needed some logical from front-end)
+    advanced_guard: {
+      allow: false, 👈 // advanced guard allowment.
+      entity: "", // default entity `timing`
+      secret: "your_advance_guard_secret",
+      time_expired: {
+        minutes: 1, // should length [0-60]
+        seconds: 0, // should length [0-60]
+      },
+    },
+  },
+
+  ...
+
+}
+
+```
+
+<b>After configure</b>, You must add some logic in your front-end like this.
+
+Before add logic, We needed [```beech-auth0```](https://github.com/bombkiml/beech-auth0) and [```moment.js```](https://momentjs.com) Policy.
+
+```sh
+# NPM
+$ npm install --save beech-auth0 moment
+
+# Yarn
+$ yarn add beech-auth0 moment
+```
+Now! you can add some logic.
+```js
+const { Auth0 } = require("beech-auth0");
+const moment = require("moment");
+
+let unix_time = moment().unix();
+
+Auth0(unix_time, 'your_advance_guard_secret', (error, hashTiming) => {
+  
+  // Your XHR request for /authentication
+  POST: "/authentication"
+  {
+    username: "bombkiml",
+    password: "secret",
+    timing: hashTiming, 👈 // Assign advance guard entity with callback hashTiming.
+  }
+
+});
+
 ```
 
 ### Beech auth managements with User ###
@@ -665,7 +763,7 @@ Place a button on the application's login page, prompting the user to sign in wi
 
 ❓ **Note:** The URL "``/authentication``" will be follow by ``auth_endpoint`` when you custom it.
 
-## CORS Origin allowments
+## CORS Origin allowments & Server configure
 The origin array to the callback can be any value allowed for the origin option of the middleware. Certain CORS requests are considered `complex` and require an initial OPTIONS request (called the `pre-flight request`). You can allowed CORS origin inside file `beech.config.js`
 
 📂 beech.config.js
@@ -676,9 +774,18 @@ module.exports = {
     base: process.env.NODE_ENV === "production"
           ? "/my-api/" // For Production
           : "/", // For Development
+
     server: {
+      // Client request allow origin whitelist
       origin: ["http://example.com", "http://my-webapp:8080", "https://cat.io"],
       originSensitive: false, // Sensitive with contrasts wording
+
+      // API Request rate limit
+      rateLimit: {
+        windowMs: 15 * 60 * 10000, // 15 minutes
+        limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
+        // store: ... , // Redis, Memcached, etc. See more: https://www.npmjs.com/package/express-rate-limit#Configuration
+      },
     },
   },
 }

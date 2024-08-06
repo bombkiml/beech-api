@@ -1,4 +1,3 @@
-const appRoot = require("app-root-path");
 const { FindOne } = require("../../../lib/src/user");
 const { findPassportPk } = require("./poolEntity");
 

@@ -1,5 +1,4 @@
 const walk = require("walk");
-const appRoot = require("app-root-path");
 const fs = require("fs");
 
 function walkModel(cb) {

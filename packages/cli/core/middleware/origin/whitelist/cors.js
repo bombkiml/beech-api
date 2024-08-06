@@ -1,5 +1,5 @@
 const fs = require("fs");
-const appRoot = require("app-root-path");
+
 function whitelist(cb) {
   var whitelists = [];
   const getWhitelists = new Promise((resolve) => {
