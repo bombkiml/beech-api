@@ -782,7 +782,7 @@ module.exports = {
 
       // API Request rate limit
       rateLimit: {
-        windowMs: 15 * 60 * 10000, // 15 minutes
+        windowMs: 15 * 60 * 1000, // 15 minutes
         limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
         // store: ... , // Redis, Memcached, etc. See more: https://www.npmjs.com/package/express-rate-limit#Configuration
       },
@@ -792,6 +792,28 @@ module.exports = {
 ```
 
 ❓ **Note:** When you must to allowed all Origin. You can assign `*` or `[]` null value to `origin` variable.
+
+### # Custom Endpoint Specific Rate Limit
+When you need assign specific request Endpoint with Rate Limit, You can managemnet with Beech object ```rateLimit``` for your custom Rate Limit like this.
+
+```js
+const { rateLimit } = require("beech-api").Express;
+
+// Your Specific Rate Limit
+const specificRateLimit1 = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  limit: 20,
+  // more...
+});
+
+// Your Endpoints...
+endpoint.get("/banana", specificRateLimit1, (req, res) => {
+  ...
+});
+
+...
+```
+
 
 
 ## Databases managements

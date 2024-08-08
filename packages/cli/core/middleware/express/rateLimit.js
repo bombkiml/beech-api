@@ -15,4 +15,4 @@ let configure = {
 configure = { ...configure, ..._beech_.defineConfig.server.rateLimit };
 const Limiter = rateLimit(configure);
 
-module.exports = { Limiter };
+module.exports = { Limiter, rateLimit };
