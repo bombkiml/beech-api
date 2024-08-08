@@ -37,6 +37,7 @@
     "express": "4.19.2",
     "express-rate-limit": "^7.4.0",
     "express-session": "^1.17.1",
+    "express-slow-down": "^2.0.3",
     "express-validator": "2.21.0",
     "fs": "0.0.1-security",
     "inquirer": "8.2.4",

@@ -784,7 +784,8 @@ module.exports = {
       rateLimit: {
         windowMs: 15 * 60 * 1000, // 15 minutes
         limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
-        // store: ... , // Redis, Memcached, etc. See more: https://www.npmjs.com/package/express-rate-limit#Configuration
+        // store: ... , // Redis, Memcached, etc.
+        // See more: https://www.npmjs.com/package/express-rate-limit#Configuration
       },
     },
   },
@@ -793,13 +794,13 @@ module.exports = {
 
 ❓ **Note:** When you must to allowed all Origin. You can assign `*` or `[]` null value to `origin` variable.
 
-### # Custom Endpoint Specific Rate Limit
-When you need assign specific request Endpoint with Rate Limit, You can managemnet with Beech object ```rateLimit``` for your custom Rate Limit like this.
+## # Custom Endpoint Specific Rate Limit
+When you need assign specific request Endpoint with [express-rate-limit](https://www.npmjs.com/package/express-rate-limit), You can managemnet with Beech object ```rateLimit``` for your custom Rate Limit like this.
 
 ```js
 const { rateLimit } = require("beech-api").Express;
 
-// Your Specific Rate Limit
+// Specific of your rate limit
 const specificRateLimit1 = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
   limit: 20,
@@ -808,6 +809,39 @@ const specificRateLimit1 = rateLimit({
 
 // Your Endpoints...
 endpoint.get("/banana", specificRateLimit1, (req, res) => {
+  ...
+});
+
+...
+```
+
+## # Custom Endpoint Specific Slow Down
+When you need assign specific request Endpoint with [express-slow-down](https://www.npmjs.com/package/express-slow-down), You can managemnet with Beech object ```slowDown``` for your custom Rate Limit like this.
+
+```js
+const { slowDown } = require("beech-api").Express;
+
+// Specific of your slow down
+const specificSlowDown1 = slowDown({
+  windowMs: 15 * 60 * 1000,      // 15 minutes
+  delayAfter: 5,                 // Allow 5 requests per 15 minutes.
+  delayMs: (hits) => hits * 100, // Add 100 ms of delay to every request after the 5th one.
+  // more...
+  
+  /**
+   * So:
+   *
+   * - requests 1-5 are not delayed.
+   * - request 6 is delayed by 600ms
+   * - request 7 is delayed by 700ms
+   * - request 8 is delayed by 800ms
+   *
+   * and so on. After 15 minutes, the delay is reset to 0.
+   */
+});
+
+// Your Endpoints...
+endpoint.get("/banana", specificSlowDown1, (req, res) => {
   ...
 });
 
