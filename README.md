@@ -763,7 +763,7 @@ Place a button on the application's login page, prompting the user to sign in wi
 
 ❓ **Note:** The URL "``/authentication``" will be follow by ``auth_endpoint`` when you custom it.
 
-## CORS Origin allowments & Server configure
+## CORS Origin & Server Configuration
 The origin array to the callback can be any value allowed for the origin option of the middleware. Certain CORS requests are considered `complex` and require an initial OPTIONS request (called the `pre-flight request`). You can allowed CORS origin inside file `beech.config.js`
 
 📂 beech.config.js
@@ -782,9 +782,15 @@ module.exports = {
 
       // API Request rate limit
       rateLimit: {
-        windowMs: 15 * 60 * 10000, // 15 minutes
+        windowMs: 15 * 60 * 1000, // 15 minutes
         limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
-        // store: ... , // Redis, Memcached, etc. See more: https://www.npmjs.com/package/express-rate-limit#Configuration
+        // store: ... , // Redis, Memcached, etc.
+        // See more: https://www.npmjs.com/package/express-rate-limit#Configuration
+      },
+
+      // API Request slow down
+      slowDown: {
+        expiration: 300, // One Request for Slow down 3 milliseconds each IP requests per `window`
       },
     },
   },
@@ -792,6 +798,81 @@ module.exports = {
 ```
 
 ❓ **Note:** When you must to allowed all Origin. You can assign `*` or `[]` null value to `origin` variable.
+
+## # Custom Endpoint Specific Rate Limit
+When you need assign specific request Endpoint with [express-rate-limit](https://www.npmjs.com/package/express-rate-limit), You can managemnet with Beech object ```rateLimit``` for your custom Rate Limit like this.
+
+```js
+const { rateLimit } = require("beech-api").Express;
+
+// Specific of your rate limit
+const specificRateLimit1 = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  limit: 20,
+  // more...
+});
+
+// Your Endpoints...
+endpoint.get("/banana", specificRateLimit1, (req, res) => {
+  ...
+});
+
+...
+```
+
+## # Custom Endpoint Specific Delay
+When you need assign specific request Endpoint with [express-slow-down](https://www.npmjs.com/package/express-slow-down), You can managemnet with Beech object ```lateDelay``` for your custom Rate Limit like this.
+
+```js
+const { lateDelay } = require("beech-api").Express;
+
+// Specific of your slow down
+const specificDelay1 = lateDelay({
+  windowMs: 15 * 60 * 1000,      // 15 minutes
+  delayAfter: 5,                 // Allow 5 requests per 15 minutes.
+  delayMs: (hits) => hits * 100, // Add 100 ms of delay to every request after the 5th one.
+  // more...
+  
+  /**
+   * So:
+   *
+   * - requests 1-5 are not delayed.
+   * - request 6 is delayed by 600ms
+   * - request 7 is delayed by 700ms
+   * - request 8 is delayed by 800ms
+   *
+   * and so on. After 15 minutes, the delay is reset to 0.
+   */
+});
+
+// Your Endpoints...
+endpoint.get("/banana", specificSlowDown1, (req, res) => {
+  ...
+});
+
+...
+```
+
+## # Custom Endpoint Specific Slow Down
+When you need assign specific request Endpoint with Slow Down use [express-duplicate-request](https://github.com/bombkiml/express-duplicate-request), You can managemnet with Beech object ```slowDown``` for your custom Rate Limit like this.
+
+```js
+const { slowDown } = require("beech-api").Express;
+
+// Specific of your slow down
+const specificSlow1 = slowDown({
+  expiration: 500, // Slow down 5 milliseconds
+  // more...
+});
+
+// Your Endpoints...
+endpoint.get("/banana", specificSlow1, (req, res) => {
+  ...
+});
+
+...
+```
+
 
 
 ## Databases managements
