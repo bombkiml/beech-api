@@ -5,11 +5,11 @@
 [![beech-api release](https://img.shields.io/github/v/release/bombkiml/beech-api)](https://github.com/bombkiml/beech-api/releases/)
 [![PyPI license](https://shields.io/pypi/l/ansicolortags.svg)](https://github.com/bombkiml/beech-api/blob/master/README.md)
 
-## What is Beech API ?
+# What is Beech API ?
 
 `Beech API` is a Node.js framework it's help you with very easy create API project under [Node.js](https://nodejs.org)
 
-## Why Beech API ?
+# Why Beech API ?
 
 `Beech API` is a Very easy for using, very feather framework, easy to installation, easy to implementation, and high security.
 
@@ -17,11 +17,11 @@
 
 ![N|Solid](https://i.ibb.co/CQqYZkK/node-epressjs.jpg)
 
-## Environment
+# Environment
 
 - [`Node.js`](https://nodejs.org) >= 14.19.0+ (recommended)
 
-## Installation
+# Installation
 
 Beech API requires Node.js version 14.19.0 or above. You can manage multiple versions of Node on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows). So, Let's go to install `beech-api`
 
@@ -45,7 +45,7 @@ You can check you have the right version with this command:
 $ beech-app --version
 ```
 
-## Creating a project
+# Creating a project
 
 Create a new project run:
 
@@ -64,7 +64,7 @@ $ yarn start
 ❓ **Note:** The Beech API it's start server at [http://localhost:9000](http://localhost:9000) you can change new a port in `app.config.js` file.
 
 
-## Upgrade to latest version ##
+# Upgrade to latest version
 The Beech API upgrade to latest version command avariable :
 
 ```sh
@@ -75,7 +75,7 @@ $ beech-app update
 $ beech-app update -g, --global
 ```
 
-## Beech CLI tool available ##
+# Beech CLI tool available
 After installation, you will have access to the `beech` binary in your command line.
 The `beech` command has a number of options and you can explore them all by running:
 
@@ -107,7 +107,7 @@ The following commands are available:
 ```
 ❓ **Note:** Every to create new project will be generated new ``app_key`` in ``app.config.js`` file, If you can re-generate. Can use command ``$ beech key:generate`` or ``$ beech key:gen``
 
-## Database connection ##
+# Database connection
 
 You might connection to Database with `database_config` object in `app.config.js` file. Anything can support to multiple Database connections.
 
@@ -156,9 +156,9 @@ database_config: [
 ```
 ❓ **Caution! :**  Every re-new generate `app_key`. Must to new Hash your Access and change to ALL Database connections.
 
-## Part of generate file
+# Part of generate file
 
-### # Generate Endpoints ###
+## # Generate Endpoints
 
 The `endpoints` keep the endpoints basic request files currently support `GET`, `POST`, `PUT`, `PATCH` and `DELETE`.
 
@@ -169,7 +169,7 @@ $ beech make endpointName
 ```
 You might using [special] `-R, --require` for choose Model(s) used for that endpoint.
 
-**Example ***(Basic)***** : Fruit endpoints. 
+### Example ***(Basic)*** : Fruit endpoints.
 
 📂 fruit-endpoints.js
 ```js
@@ -227,7 +227,7 @@ exports.init = () => {
 }
 ```
 
-**Example ***(Sequelize)***** : Fruit endpoints. 
+### Example ***(Sequelize)*** : Fruit endpoints. 
 
 📂 fruit-endpoints.js
 ```js
@@ -252,7 +252,7 @@ exports.init = () => {
 ```
 
 
-### # Generate Models ###
+## # Generate Models ###
 
 The `models` keep the files of function(s) data managemnets for Retriving, Creating, Updating and Destroying (CRUD). for understanding you might make model name same your table name inside `src/models` folder.
 
@@ -260,7 +260,7 @@ The `models` keep the files of function(s) data managemnets for Retriving, Creat
 $ beech make modelName --model
 ```
 
-**Example ***(Basic)***** : Fruit model.
+### Example ***(Basic)*** : Fruit model.
 
 📂 Fruit.js
 ```js
@@ -292,7 +292,7 @@ module.exports = {
 };
 ```
 
-**Example ***(Sequelize)***** : Fruit model.
+### Example ***(Sequelize)*** : Fruit model.
 
   You can asign more DataTypes, Learn more : [Sequelize docs](https://sequelize.org/docs/v6/core-concepts/model-basics/#data-types)
 
@@ -368,7 +368,7 @@ Now! you can request to `/fruit` with methods GET, POST, PATCH and DELETE like t
 |
 
 
-### # Generate Helpers ###
+## # Generate Helpers ###
 
 The `helpers` keep the files of functions for process specific something in the project. So, you might create the `helpers` in path `src/helpers` folder.
 
@@ -376,7 +376,7 @@ The `helpers` keep the files of functions for process specific something in the 
 $ beech make helperName --helper
 ```
 
-**Example:** Text editor helper.
+***Example:*** Text editor helper.
 
 📂 TextEditor.js
 ```js
@@ -395,11 +395,11 @@ module.exports = {
 };
 ```
 
-## Authentication (passport-jwt)
+# Authentication (passport-jwt)
 
 Passport is authentication middleware for Node. It is designed to serve a singular purpose: authenticate requests. When writing modules, encapsulation is a virtue, so Passport delegates all other functionality to the application. This separation of concerns keeps code clean and maintainable, and makes Passport extremely easy to integrate into an application.
 
-Passport-jwt initiation :
+### Passport-jwt Run initiation
 
 ```sh
 $ beech passport init
@@ -462,7 +462,7 @@ module.exports = {
 };
 ```
 
-***Authentication structure :*** Simple ``users`` table:
+**Authentication structure :** Simple ``users`` table:
 ```
 ==============================================================
 |  id  |  username | password |     name     |     email     |
@@ -478,7 +478,7 @@ POST:  "/authentication/create"        // Create new Auth data
 PATCH: "/authentication/update/:id"    // Update old Auth data (needed id)
 ```
 
-Example :
+***XHR Example :***
 
 ```js
 // Request with body for gether Token
@@ -510,8 +510,10 @@ Bearer Authorization: your_token
 }
 ```
 
-### Beech 2FA Factor
+# Beech Two Factor (2FA)
 You can easy using 2 Factor authenticate with ```guard_field``` inside ```passport.config.js``` file and add your Guard field ex: ```2fa``` field for Authenticate Conditions.
+
+## # Usage guard (2FA, Other)
 
 📂 passport.config.js
 ```js
@@ -519,7 +521,7 @@ module.exports = {
   ...
 
   guard: {
-    // Other fields add for authenticate, exmaple ["pin", "email", "2fa"]
+    // Other fields add for authenticate, exmaple ["pin", "hint", "2fa"]
     guard_field: ["2fa"], 👈 // your feild guard.
 
     ...
@@ -530,7 +532,7 @@ module.exports = {
 }
 ```
 
-#### Beech Advanced Guard (Recommended After 2FA)
+## # Beech Advanced Guard (Recommended After 2FA)
 After 2FA login you can add Advance Guard for Protection your Authentication endpoint with Timing. You can allowment timing in object ```advance_guard``` inside ```passport.config.js``` file. So let's go add your Advance Guard Configuration.
 
 📂 passport.config.js
@@ -591,7 +593,7 @@ Auth0(unix_time, 'your_advance_guard_secret', (error, hashTiming) => {
 
 ```
 
-### Beech auth managements with User ###
+## # Beech User auth managements ###
 You can easy management `users` data with Beech, Only ```Store, Update``` NO ```Delete```, Anything you can make DELETE endpoint by yourself
 
 ```js
@@ -635,12 +637,12 @@ Update(data, id, (err, updated) => {
 });
 ```
 
-## Beech with Official Strategy
+# Beech with Official Strategy
 
 Latest supported with ``Google`` and ``Facebook`` Strategy.
 
 
-### Google Strategy
+## # Google Strategy
 
 
 The Google OAuth 2.0 authentication strategy authenticates users using a Google account and OAuth 2.0 tokens. The strategy requires a verify callback, which accepts these credentials and calls done providing a user, as well as options specifying a client ID, client secret, and callback URL.
@@ -699,7 +701,7 @@ Place a button on the application's login page, prompting the user to sign in wi
 ❓ **Note:** The URL "``/authentication``" will be follow by ``auth_endpoint`` when you custom it.
 
 
-### Facebook Strategy
+## # Facebook Strategy
 
 
 Facebook Login allows users to sign in using their Facebook account. Support for Faceboook Login is provided by the ``passport-facebook`` package.
@@ -763,7 +765,7 @@ Place a button on the application's login page, prompting the user to sign in wi
 
 ❓ **Note:** The URL "``/authentication``" will be follow by ``auth_endpoint`` when you custom it.
 
-## CORS Origin & Server Configuration
+# CORS Origin & Server Configuration
 The origin array to the callback can be any value allowed for the origin option of the middleware. Certain CORS requests are considered `complex` and require an initial OPTIONS request (called the `pre-flight request`). You can allowed CORS origin inside file `beech.config.js`
 
 📂 beech.config.js
@@ -821,6 +823,8 @@ endpoint.get("/banana", specificRateLimit1, (req, res) => {
 ```
 
 ## # Custom Endpoint Specific Delay
+**DON'T DO IT.** &nbsp; Because it's annoying to users.
+
 When you need assign specific request Endpoint with [express-slow-down](https://www.npmjs.com/package/express-slow-down), You can managemnet with Beech object ```lateDelay``` for your custom Rate Limit like this.
 
 ```js
@@ -854,6 +858,8 @@ endpoint.get("/banana", specificSlowDown1, (req, res) => {
 ```
 
 ## # Custom Endpoint Specific Slow Down
+This middleware to Limit each IP duplicated requests per window.
+
 When you need assign specific request Endpoint with Slow Down use [express-duplicate-request](https://github.com/bombkiml/express-duplicate-request), You can managemnet with Beech object ```slowDown``` for your custom Rate Limit like this.
 
 ```js
@@ -875,7 +881,7 @@ endpoint.get("/banana", specificSlow1, (req, res) => {
 
 
 
-## Databases managements
+# Databases managements
 
 ### # Migrations & Seeder
 
@@ -883,7 +889,7 @@ Just like you use Git / SVN to manage changes in your source code, you can use m
 
 You will need [Sequelize CLI.](https://github.com/sequelize/cli) The CLI ships support for [migrations](https://sequelize.org/v5/manual/migrations.html) and project.
 
-### # Usage
+## # Usage
 
 To create an empty project you will need to execute `init` command
 
@@ -898,7 +904,7 @@ This will create following folders inside `databases` folder.
 - `migrations`, contains all migration files.
 - `seeders`, contains all seed files.
 
-### # Configuration
+## # Configuration
 
 Before continuing further we will need to tell CLI how to connect to database. To do that let's open default config file `databases/config/database.json` It looks something like this:
 
@@ -932,7 +938,7 @@ Before continuing further we will need to tell CLI how to connect to database. T
 
 ❓ **Note:** If your database doesn't exists yet, you can just call `npx sequelize-cli db:create` command. With proper access it will create that database for you.
 
-### # Creating first Migrations
+## # Creating first Migrations
 
 Create `model` use `model:generate` command. This command requires two options.
 
@@ -945,7 +951,7 @@ Let's create a model name example `User`. See more about of [Datatypes](https://
 $ npx sequelize-cli model:generate --name User --attributes firstName:string,lastName:string,email:string,birhday:date
 ```
 
-### # Migrations Up and Down
+## # Migrations Up and Down
 
 Until this step, we haven't inserted anything into the database. We have just created required model and migration files for our first model User.
 
@@ -960,7 +966,7 @@ Until this step, we haven't inserted anything into the database. We have just cr
   $ npx sequelize-cli db:migrate:undo
   ```
 
-### # Creating First Seeder
+## # Creating First Seeder
 
 To manage all data migrations you can use seeders. Seed files are some change in data that can be used to populate database table with sample data or test data.
 
@@ -970,7 +976,7 @@ Let's create a seed file which will add a demo user to our User table.
 $ npx sequelize-cli seed:generate --name user
 ```
 
-### # Seeder Up and Down
+## # Seeder Up and Down
 
 In last step you have create a seed file. It's still not committed to database. To do that we need to run a simple command.
 
@@ -1000,7 +1006,7 @@ In last step you have create a seed file. It's still not committed to database. 
   $ npx sequelize-cli db:seed:undo:all
   ```
 
-## Testing
+# Testing
 
 Test using [Jest](https://jestjs.io/en/) for testing the project. Jest is a delightful JavaScript Testing Framework with a focus on simplicity. Learn more [Jest docs](https://jestjs.io/docs/en/getting-started.html)
 
@@ -1027,9 +1033,9 @@ describe("Test endpoint : " + endpoint, () => {
 ```
 
 
-## Implementation
+# Implementation
   
-### # Implement with [PM2](https://pm2.keymetrics.io/)
+## # Implement with [PM2](https://pm2.keymetrics.io/)
 [PM2](https://pm2.keymetrics.io/) is a daemon process manager that will help you manage and keep your application online. Getting started with PM2 is straightforward, it is offered as a simple and intuitive CLI, installable via [NPM](https://www.npmjs.com/).
 
 ```sh
@@ -1042,11 +1048,11 @@ $ pm2 start ./node_modules/beech-api/packages/cli/beech --name <serviceName>
 $ pm2 start ./node_modules/beech-api/packages/cli/beech --name <serviceName> -i <instances>
 ```
 
-### # Implement with [Docker](https://www.docker.com)
+## # Implement with [Docker](https://www.docker.com)
 
 [Docker](https://www.docker.com) is an open platform for developing, shipping, and running applications. Docker enables you to separate your applications from your infrastructure so you can deliver software quickly.
 
-- **Create Dockerfile**
+- ### **Create Dockerfile**
 
 Docker builds images automatically by reading the instructions from a Dockerfile -- a text file that contains all commands, in order, needed to build a given image. A Dockerfile adheres to a specific format and set of instructions which you can find at [Dockerfile reference](https://docs.docker.com/engine/reference/builder/).
 
@@ -1062,7 +1068,7 @@ EXPOSE 9000
 CMD ["node", "./node_modules/beech-api/packages/cli/beech"]
 ```
 
-- **Docker build image**
+- ### **Docker build image**
 
 The docker build command builds an image from a Dockerfile and a context. The build’s context is the set of files at a specified location ```PATH``` or ```URL```. The PATH is a directory on your local filesystem. The URL is a Git repository location.
 
@@ -1072,16 +1078,16 @@ $ docker build -t <imageName> .
 
 ❓ **Note:** You can specify a repository and tag at which to save the new image : ``` $ docker build -t <imageName>:<tags> . ```
 
-- **Run docker**
+- ### **Run docker**
 
   After create ``image`` you can run docker engine following :
 
-  - **Docker Container (Standalone)**
+  - ### **Docker Container (Standalone)**
   ```sh
   $ docker run -d -p 9000:9000 --name <containerName> <imageName>
   ```
 
-  - **Create Docker Swarm (Cluster)**
+  - ### **Create Docker Swarm (Cluster)**
   ```sh
   # Initiate swarm
   $ docker swarm init
@@ -1091,7 +1097,7 @@ $ docker build -t <imageName> .
   ```
 
 
-## Bonus
+# Bonus
 
 Free `helpers` you can make [LINE Notify](https://github.com/Yuhsak/line-api#readme) by using [line-api](https://notify-bot.line.me/en/) package with create the helper function following.
 
@@ -1125,7 +1131,7 @@ module.exports = {
 
 Enjoy.
 
-## Development
+# Development
 
 Want to contribute or join for great job!, You can contact to me via
 
@@ -1133,6 +1139,6 @@ Want to contribute or join for great job!, You can contact to me via
 - E-mail: nattapat.jquery@gmail.com
 - Facebook: [https://www.facebook.com/bombkiml](https://www.facebook.com/bombkiml)
 
-## License
+# License
 
 The Beech API framework is open-sourced software licensed under the [MIT license.](https://opensource.org/licenses/MIT)
