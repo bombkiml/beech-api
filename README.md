@@ -399,7 +399,7 @@ module.exports = {
 
 Passport is authentication middleware for Node. It is designed to serve a singular purpose: authenticate requests. When writing modules, encapsulation is a virtue, so Passport delegates all other functionality to the application. This separation of concerns keeps code clean and maintainable, and makes Passport extremely easy to integrate into an application.
 
-### Passport-jwt Run initiation
+### Passport-jwt Initialization
 
 ```sh
 $ beech passport init
@@ -867,7 +867,7 @@ const { slowDown } = require("beech-api").Express;
 
 // Specific of your slow down
 const specificSlow1 = slowDown({
-  expiration: 500, // Slow down 5 milliseconds
+  expiration: 500, // Slow down 5 milliseconds, Should 0 to disabled
   // more...
 });
 
@@ -883,7 +883,7 @@ endpoint.get("/banana", specificSlow1, (req, res) => {
 
 # Databases managements
 
-### # Migrations & Seeder
+## # Migrations & Seeder
 
 Just like you use Git / SVN to manage changes in your source code, you can use migrations to keep track of changes to the database. With migrations you can transfer your existing database into another state and vice versa: Those state transitions are saved in migration files, which describe how to get to the new state and how to revert the changes in order to get back to the old state.
 
