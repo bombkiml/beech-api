@@ -6,9 +6,6 @@ const _express_ = require("express");
 global._app_ = _express_();
 const cors = require("cors");
 global.endpoint = _express_.Router();
-const { Limiter, Slower } = require("./middleware/index");
-endpoint.use(Limiter);
-endpoint.use(Slower);
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const methodOverride = require("method-override");
@@ -18,10 +15,15 @@ const globalVariable = require(appRoot + "/global.config.js");
 globalVariable.init();
 // Local environments
 global._config_ = require(appRoot + "/app.config");
-global._publicPath_ = require(appRoot + "/beech.config.js").defineConfig.base;
+const _beech_ = require(appRoot + "/beech.config.js").defineConfig;
+global._publicPath_ = _beech_.base;
 const mySqlDbConnect = require("./databases/mysql");
 const SequelizeDbConnect = require("./databases/sequelize");
-// database test
+// Rate Request middleware
+const { Limiter, Duplicater } = require("./middleware/index");
+endpoint.use(Limiter);
+endpoint.use(Duplicater);
+// Database test
 const {
   testConnectInProcess,
   filterDbIsTrue,
@@ -32,7 +34,7 @@ const { QueryTypes, DataTypes, Op } = require("sequelize");
 global.QueryTypes = QueryTypes;
 global.DataTypes = DataTypes;
 global.Op = Op;
-// allow whitelist cors
+// Allow whitelist cors
 const { whitelist, sign } = require("./middleware/index");
 _app_.use(cors({ origin: true, credentials: true }));
 _app_.use((req, res, next) => {
@@ -69,10 +71,10 @@ _app_.use((req, res, next) => {
   });
   next();
 });
-// engine import
+// Engine import
 const httpExpress = require("./services/http.express");
 const fileWalk = require("./file-walk/file-walk");
-// passport initialization
+// Passport initialization
 const authPassport = require("./auth/Passport");
 const passport = require("passport");
 _app_.use(passport.initialize());
@@ -158,5 +160,5 @@ init = async (jsfiles) => {
     throw error;
   }
 };
-// use router
+// Use router
 _app_.use(_publicPath_, endpoint);

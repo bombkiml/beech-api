@@ -1,7 +1,7 @@
 const { rateLimit } = require("../../cli/core/middleware/express/rateLimit");
-const { rateDelay } = require("../../cli/core/middleware/express/rateDelay");
 const { slowDown } = require("../../cli/core/middleware/express/slowDown");
+const { duplicateRequest } = require("../../cli/core/middleware/express/duplicateRequest");
 let specificExpress = () => {
-  return { rateLimit, rateDelay, slowDown };
+  return { rateLimit, slowDown, duplicateRequest };
 };
 module.exports = { specificExpress };

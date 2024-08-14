@@ -1,5 +1,5 @@
 const { whitelist, sign } = require("./origin/whitelist/cors");
 const { Limiter } = require("./express/rateLimit");
-const { Slower } = require("./express/slowDown");
+const { Duplicater } = require("./express/duplicateRequest");
 
-module.exports = { whitelist, sign, Limiter, Slower };
+module.exports = { whitelist, sign, Limiter, Duplicater };
