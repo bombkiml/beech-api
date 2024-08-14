@@ -790,9 +790,9 @@ module.exports = {
         // See more: https://www.npmjs.com/package/express-rate-limit#Configuration
       },
 
-      // API Request slow down
-      slowDown: {
-        expiration: 300, // One Request for Slow down 3 milliseconds each IP requests per `window`
+      // API Duplicate Request
+      duplicateRequest: {
+        expiration: 500, // Can't duplicate request for 5 milliseconds each IP requests per `window`
       },
     },
   },
@@ -822,16 +822,16 @@ endpoint.get("/banana", specificRateLimit1, (req, res) => {
 ...
 ```
 
-## # Custom Endpoint Specific Delay
+## # Custom Endpoint Specific Slow Down
 **DON'T DO IT.** &nbsp; Because it's annoying to users.
 
-When you need assign specific request Endpoint with [express-slow-down](https://www.npmjs.com/package/express-slow-down), You can managemnet with Beech object ```lateDelay``` for your custom Rate Limit like this.
+When you need assign specific request Endpoint with [express-slow-down](https://www.npmjs.com/package/express-slow-down), You can managemnet with Beech object ```slowDown``` for your custom Slow Down like this.
 
 ```js
-const { lateDelay } = require("beech-api").Express;
+const { slowDown } = require("beech-api").Express;
 
 // Specific of your slow down
-const specificDelay1 = lateDelay({
+const specificSlowDown1 = slowDown({
   windowMs: 15 * 60 * 1000,      // 15 minutes
   delayAfter: 5,                 // Allow 5 requests per 15 minutes.
   delayMs: (hits) => hits * 100, // Add 100 ms of delay to every request after the 5th one.
@@ -857,22 +857,22 @@ endpoint.get("/banana", specificSlowDown1, (req, res) => {
 ...
 ```
 
-## # Custom Endpoint Specific Slow Down
+## # Custom Endpoint Specific Duplicate Request
 This middleware to Limit each IP duplicated requests per window.
 
-When you need assign specific request Endpoint with Slow Down use [express-duplicate-request](https://github.com/bombkiml/express-duplicate-request), You can managemnet with Beech object ```slowDown``` for your custom Rate Limit like this.
+When you need assign specific request Endpoint with duplicate request use [express-duplicate-request](https://github.com/bombkiml/express-duplicate-request), You can managemnet with Beech object ```duplicateRequest``` for your custom Duplicate Request like this.
 
 ```js
-const { slowDown } = require("beech-api").Express;
+const { duplicateRequest } = require("beech-api").Express;
 
-// Specific of your slow down
-const specificSlow1 = slowDown({
-  expiration: 500, // Slow down 5 milliseconds, Should 0 to disabled
+// Specific of your duplicate request
+const specificDup1 = duplicateRequest({
+  expiration: 500, // Can't duplicate request for 5 milliseconds, Should 0 to disabled
   // more...
 });
 
 // Your Endpoints...
-endpoint.get("/banana", specificSlow1, (req, res) => {
+endpoint.get("/banana", specificDup1, (req, res) => {
   ...
 });
 

@@ -20,9 +20,9 @@ global._publicPath_ = _beech_.base;
 const mySqlDbConnect = require("./databases/mysql");
 const SequelizeDbConnect = require("./databases/sequelize");
 // Rate Request middleware
-const { Limiter, Slower } = require("./middleware/index");
+const { Limiter, Duplicater } = require("./middleware/index");
 endpoint.use(Limiter);
-endpoint.use(Slower);
+endpoint.use(Duplicater);
 // Database test
 const {
   testConnectInProcess,
