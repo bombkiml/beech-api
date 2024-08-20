@@ -13,7 +13,7 @@ const {{modelNameUppercase}} = Schema(sql.{{dbSelected}}).define("{{modelName}}"
     type: DataTypes.STRING,
     allowNull: false,
     // set(value) {
-    //   this.setDataValue("examField3", md5(value));
+    //   this.setDataValue("examField4", md5(value));
     // },
   },
   createdAt: DataTypes.DATE,

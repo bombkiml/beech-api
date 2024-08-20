@@ -321,7 +321,7 @@ const Fruit = Schema(sql.default_db).define("fruit", {
 Users.options = {
   // Allowment magic generate default endpoint (CRUD)
   defaultEndpoint: true, // boolean DEFAULT: true  👈 // It's like magic creating The endpoints for you (CRUD) ✨
-  limitRows: 100, // Limit rows default
+  limitRows: 100, // Limit rows default 100
 };
 
 // Example Finder by id (ORM), Learn more: https://sequelize.org/docs/v6/core-concepts/model-querying-finders/
@@ -365,8 +365,93 @@ Now! you can request to `/fruit` with methods GET, POST, PATCH and DELETE like t
 |  Read    |  GET     | /fruit/:limit/:offset |     No     |
 |  Update  |  PATCH   | /fruit/:id            |     { }    |
 |  Delete  |  DELETE  | /fruit/:id            |     No     |
-|
 
+## # Transactions
+
+Sequelize does not use transactions by default. However, for production-ready usage of Sequelize, you should definitely configure Sequelize to use transactions.
+
+Beech use Sequelize supports three ways of using transactions:
+
+- ### Way 1 - Disorganized transactions :
+```js
+// First, we start a transaction from your connection and save it into a variable
+const t = await Fruit.transaction();
+
+try {
+
+  // Then, we do some calls passing this transaction as an option:
+  const fruit = await Fruit.create({ fruitName: 'Banana', fruitQty: '5', }, { transaction: t });
+  await fruit.addSibling({ fruitName: 'Litle', fruitQty: '2', }, { transaction: t }); // Error function
+
+  // If the execution reaches this line, no errors were thrown.
+  // We commit the transaction.
+  await t.commit();
+
+} catch (error) {
+
+  // If the execution reaches this line, an error was thrown.
+  // We rollback the transaction.
+  await t.rollback();
+
+}
+```
+
+- ### Way 2 - Organized transactions :
+```js
+// First, we start a transaction from your connection and save it into a variable
+Fruit.transaction(async t => {
+  try {
+
+    // Then, we do some calls passing this transaction as an option:
+    const fruit = await Fruit.create({ fruitName: 'Banana', fruitQty: '5', }, { transaction: t });
+    await fruit.addSibling({ fruitName: 'Litle', fruitQty: '2', }, { transaction: t }); // Error function
+
+    // If the execution reaches this line, no errors were thrown.
+    // We commit the transaction.
+    await t.commit();
+
+  } catch (error) {
+
+    // If the execution reaches this line, an error was thrown.
+    // We rollback the transaction.
+    await t.rollback();
+
+  }
+});
+```
+
+- ### Way 3 - Transactions set Isolation levels :
+
+The possible [isolations levels](https://sequelize.org/docs/v6/other-topics/transactions/#isolation-levels) to use when starting a transaction:
+
+```js
+const { Transaction } = require('sequelize');
+
+// First, we start a transaction from your connection and save it into a variable
+Fruit.transaction(
+  {
+    isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE,
+  },
+  async t => {
+    try {
+
+      // Then, we do some calls passing this transaction as an option:
+      const fruit = await Fruit.create({ fruitName: 'Banana', fruitQty: '5', }, { transaction: t });
+      await fruit.addSibling({ fruitName: 'Litle', fruitQty: '2', }, { transaction: t }); // Error function
+
+      // If the execution reaches this line, no errors were thrown.
+      // We commit the transaction.
+      await t.commit();
+
+    } catch (error) {
+
+      // If the execution reaches this line, an error was thrown.
+      // We rollback the transaction.
+      await t.rollback();
+
+    }
+});
+```
 
 ## # Generate Helpers ###
 
@@ -782,7 +867,7 @@ module.exports = {
       origin: ["http://example.com", "http://my-webapp:8080", "https://cat.io"],
       originSensitive: false, // Sensitive with contrasts wording
 
-      // API Request rate limit
+      // API Request rate limit (Disabled for Remove it.)
       rateLimit: {
         windowMs: 15 * 60 * 1000, // 15 minutes
         limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
@@ -790,7 +875,7 @@ module.exports = {
         // See more: https://www.npmjs.com/package/express-rate-limit#Configuration
       },
 
-      // API Duplicate Request
+      // API Duplicate Request (Disabled for Set expiration to 0 zero.)
       duplicateRequest: {
         expiration: 500, // Can't duplicate request for 5 milliseconds each IP requests per `window`
       },
