@@ -3,6 +3,7 @@ const Cryptr = require("cryptr");
 const CryptoJS  = require("crypto-js");
 const md5 = require("md5");
 const fs = require("fs");
+const appRoot = require("app-root-path");
 
 function Rand(length) {
   let result = "";

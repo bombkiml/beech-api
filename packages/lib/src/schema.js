@@ -1,3 +1,5 @@
+const { Transaction } = require("sequelize");
+let isolationLevel = { isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE };
 function Schema(Sequelize) {
   return {
     define: (table, schemaProps = {}) => {
@@ -28,6 +30,25 @@ function Schema(Sequelize) {
             });
           },
           Sequelize,
+          /**
+           * Transaction
+           * 
+           * @param object DEFAULT isolationLevel SERIALIZABLE
+           * @param cb Object
+           * 
+           * @returns Object
+           */
+          transaction: async (object, cb = null) => {
+            if(typeof object == "function") {
+              const t = await Sequelize.transaction(isolationLevel);
+              object(t);
+            } else if(cb) {
+              const t = await Sequelize.transaction(object = isolationLevel);
+              cb(t);
+            } else {
+              return await Sequelize.transaction(object = isolationLevel);
+            }
+          },
         });
       } catch (error) {
         let errTurnOffDbDefine = JSON.stringify(error.toString()).match(/'define'/);
