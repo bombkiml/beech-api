@@ -35,7 +35,7 @@ global.QueryTypes = QueryTypes;
 global.DataTypes = DataTypes;
 global.Op = Op;
 // Allow whitelist cors
-const { whitelist, sign } = require("./middleware/index");
+const { whitelist, sign, avg } = require("./middleware/index");
 _app_.use(cors({ origin: true, credentials: true }));
 _app_.use((req, res, next) => {
   whitelist(async (lists, originSensitive) => {
@@ -53,13 +53,11 @@ _app_.use(bodyParser.json());
 _app_.use(bodyParser.urlencoded({ extended: true }));
 _app_.use(methodOverride());
 _app_.use(cookieParser());
-_app_.use(
-  expressSession({
-    secret: "surprise you mother f*cker",
-    resave: true,
-    saveUninitialized: true,
-  })
-);
+_app_.use(expressSession({
+  secret: "surprise you mother f*cker",
+  resave: true,
+  saveUninitialized: true,
+}));
 _app_.use(expressValidator());
 // Dev. activity
 _app_.use((req, res, next) => {
@@ -71,6 +69,21 @@ _app_.use((req, res, next) => {
   });
   next();
 });
+// Check Syntax error.
+_app_.use((error, req, res, next) => {
+  if (error instanceof SyntaxError) {
+    res.status(400).json({
+      ...error,
+      status: "BAD_REQUEST",
+      message: "Bad Request.",
+      body: error.body,
+    });
+  } else {
+    next();
+  }
+});
+// Advance Guard
+_app_.use(avg);
 // Engine import
 const httpExpress = require("./services/http.express");
 const fileWalk = require("./file-walk/file-walk");

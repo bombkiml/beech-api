@@ -319,7 +319,7 @@ const Fruit = Schema(sql.default_db).define("fruit", {
 });
 
 Users.options = {
-  // Allowment magic generate default endpoint (CRUD)
+  // Allow magic generate default endpoint (CRUD)
   defaultEndpoint: true, // boolean DEFAULT: true  👈 // It's like magic creating The endpoints for you (CRUD) ✨
   limitRows: 100, // Limit rows default 100
 };
@@ -495,7 +495,7 @@ After passport initialized the `passport.config.js` it's appeared
 📂 passport.config.js
 ```js
 module.exports = {
-  // Allowment using passport-jwt
+  // Allow for using passport-jwt
   jwt_allow: true,
 
   // custom authenticaiton endpoint name, default `/authentication`
@@ -539,7 +539,7 @@ module.exports = {
     },
   },
 
-  // Allowment using request with app_key entity (Every request must be using the app_key entity in headers)
+  // Allow for using request with app_key entity (Every request must be using the app_key entity in headers)
   app_key_allow: false
 
   ...
@@ -586,7 +586,7 @@ POST: "/authentication/create"
 
 // Request with body for Update Auth data
 PATCH: "/authentication/update/1"
-Bearer Authorization: your_token
+headers: Authorization: Bearer <your_token>
 {
   username: "update_bombkiml",
   password: "update_secret",
@@ -598,7 +598,7 @@ Bearer Authorization: your_token
 # Beech Two Factor (2FA)
 You can easy using 2 Factor authenticate with ```guard_field``` inside ```passport.config.js``` file and add your Guard field ex: ```2fa``` field for Authenticate Conditions.
 
-## # Usage guard (2FA, Other)
+## # Guard (2FA, Other)
 
 📂 passport.config.js
 ```js
@@ -607,7 +607,7 @@ module.exports = {
 
   guard: {
     // Other fields add for authenticate, exmaple ["pin", "hint", "2fa"]
-    guard_field: ["2fa"], 👈 // your feild guard.
+    guard_field: ["2fa"], 👈 // your feild guard. (Disabled to remove it.)
 
     ...
   },
@@ -617,8 +617,8 @@ module.exports = {
 }
 ```
 
-## # Beech Advanced Guard (Recommended After 2FA)
-After 2FA login you can add Advance Guard for Protection your Authentication endpoint with Timing. You can allowment timing in object ```advance_guard``` inside ```passport.config.js``` file. So let's go add your Advance Guard Configuration.
+## # Beech Advanced Guard (Timing)
+Advance Guard for Protection your Endpoint with Timing. You can allow in object ```advance_guard``` inside ```passport.config.js``` file. So let's go add your Advance Guard Configuration.
 
 📂 passport.config.js
 ```js
@@ -628,9 +628,9 @@ module.exports = {
   guard: {
     ...
 
-    // Advanced authentication jwt request (needed some logical from front-end)
+    // Advanced guard to Request (Needed some logical from front-end)
     advanced_guard: {
-      allow: false, 👈 // advanced guard allowment.
+      allow: false, 👈 // advanced guard allow for All Endpoint.
       entity: "", // default entity `timing`
       secret: "your_advance_guard_secret",
       time_expired: {
@@ -648,7 +648,7 @@ module.exports = {
 
 <b>After configure</b>, You must add some logic in your front-end like this.
 
-Before add logic, We needed [```beech-auth0```](https://github.com/bombkiml/beech-auth0) and [```moment.js```](https://momentjs.com) Policy.
+Before add logic, We needed [```beech-auth0```](https://github.com/bombkiml/beech-auth0) and [```moment.js```](https://momentjs.com) for apply in Policy.
 
 ```sh
 # NPM
@@ -662,17 +662,15 @@ Now! you can add some logic.
 const { Auth0 } = require("beech-auth0");
 const moment = require("moment");
 
+// Get UNIX TIME with moment
 let unix_time = moment().unix();
 
-Auth0(unix_time, 'your_advance_guard_secret', (error, hashTiming) => {
-  
-  // Your XHR request for /authentication
+// Auth0 Policy.
+Auth0(unix_time, 'your_advance_guard_secret', (error, hashing) => {
+
+  // Your XHR request for All Endpoint.
   POST: "/authentication"
-  {
-    username: "bombkiml",
-    password: "secret",
-    timing: hashTiming, 👈 // Assign advance guard entity with callback hashTiming.
-  }
+  headers: timing: hashing, 👈 // Assign advance guard entity to headers with callback hashing.
 
 });
 
@@ -744,7 +742,7 @@ strategy: {
 
   google: {
 
-    // Allowment using google strategy
+    // Allow for using google strategy
     allow: true,
 
     // Authen profile store fields available: `google_id`, `name`, `email`, `photos`, `locate`
@@ -803,7 +801,7 @@ strategy: {
 
   facebook: {
 
-    // Allowment using facebook strategy
+    // Allow for using facebook strategy
     allow: true,
 
     // Authen profile store fields available: `facebook_id`, `name`, `email`, `photos`, `locate`

@@ -1,5 +1,5 @@
 module.exports = {
-  // Allowment using jwt
+  // Allow for using jwt
   jwt_allow: true,
 
   // Custom authenticaiton endpoint, default `/authentication`
@@ -38,7 +38,7 @@ module.exports = {
     },
   },
 
-  // Allowment using request with app_key entity (Every request must be using the app_key entity in headers)
+  // Allow for using request with app_key entity (Every request must be using the app_key entity in headers)
   app_key_allow: true,
 
   // Official strategy
@@ -50,7 +50,7 @@ module.exports = {
      *
      */
     google: {
-      // Allowment using google strategy
+      // Allow for using google strategy
       allow: false,
       // Authen profile store fields available: `google_id`, `name`, `email`, `photos`, `locate`
       local_profile_fields: {
@@ -74,7 +74,7 @@ module.exports = {
      *
      */
     facebook: {
-      // Allowment using facebook strategy
+      // Allow for using facebook strategy
       allow: false,
       // Authen profile store fields available: `facebook_id`, `name`, `email`, `photos`, `locate`
       local_profile_fields: {
