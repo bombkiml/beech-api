@@ -34,7 +34,7 @@
     "cors": "^2.8.1",
     "crypto-js": "^4.2.0",
     "cryptr": "^6.3.0",
-    "express": "4.19.2",
+    "express": "4.20.0",
     "express-duplicate-request": "^1.0.3",
     "express-rate-limit": "^7.4.0",
     "express-session": "^1.17.1",
