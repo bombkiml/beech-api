@@ -14,12 +14,13 @@ function avg(req, res, next) {
   });
   // promise all
   Promise.all([checkPassport]).then((final) => {
-    let item = final[0];
-    let passport_config = item[1];
     /**
      * item[0] : Boolean = passport file found.
-     * item[1] : Object  = passport object.
+     * item[1] : Object  = passport object. (for check on/off)
      */
+    let item = final[0];
+    let passport_config = item[1];
+    // check passport file exists ?, when not exists go to next
     if(item[0]) {
       if ((passport_config.model.guard.advanced_guard) ? passport_config.model.guard.advanced_guard.allow : false) {
         let advanced_guard_entity = req.headers[passport_config.model.guard.advanced_guard.entity || "timing"];
@@ -47,7 +48,7 @@ function avg(req, res, next) {
               message: "Bad request.",
               info: {
                 status: "BAD_VALUE",
-                message: "Bad with wrong Advance guard."
+                message: "Bad with wrong Advance guard key."
               },
             });
           }

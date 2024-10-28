@@ -37,34 +37,33 @@ function walkModel(cb) {
   }
 }
 
-function filterProject(Projects, reqUrl, req, res, cb) {
+function filterProject(Projects, reqUrl, params = "", method = "", req, res, cb) {
   try {
     let pj = Projects.shift();
-    let regx = new RegExp(pj[1] + "?[^\/].?[a-zA-Z0-9].*$", 'g');
-    let regxMatch = reqUrl.match(regx);
-    let regxMatchLength = (regxMatch) ? regxMatch.length: 0;
-    if (pj[1] == reqUrl) {
+    let leaveParamsAlone = params.slice(0);
+    let paramsItem = leaveParamsAlone.replace(/^\/|\/$/g, "").split('/');
+    let leaveReqUrlAlone = reqUrl.slice(0);
+    let newParams = params.split("/").filter((e) => (e !== 'undefined')).join("/");
+    let urlWithoutParams = leaveReqUrlAlone.replace(newParams, '').split("?")[0].replace(/\/$/, "");
+    // sub-way for PATCH method
+    urlWithoutParams = (method == "PATCH" || method == "DELETE") ? urlWithoutParams.substring(0, urlWithoutParams.lastIndexOf('/')) : urlWithoutParams;
+    // check match project by url
+    if(pj[1] == urlWithoutParams) {
       return checkOffset(Object.values(require(pj[0]))[0], req, res, (thenChecked) => {
         if(thenChecked) {
-          return cb(null, Object.values(require(pj[0]))[0]);
-        }
-      });
-    } else if(regxMatchLength) {
-      return checkOffset(Object.values(require(pj[0]))[0], req, res, (thenChecked) => {
-        if(thenChecked) {
-          return cb(null, Object.values(require(pj[0]))[0]);
+          return cb(null, Object.values(require(pj[0]))[0], paramsItem);
         }
       });
     }
     // Finally recursive filterProject function
     if (Projects.length > 0) {
-      filterProject(Projects, reqUrl, req, res, cb);
+      filterProject(Projects, reqUrl, params, method, req, res, cb);
     } else {
       // not match
       return notfound(res);
     }
   } catch (error) {
-    cb(error, null);
+    cb(error, null, []);
   }
 }
 
@@ -116,6 +115,53 @@ function errMessage(err, res) {
   }
 }
 
+function whereCond(objectCond, cb) {
+  if(typeof objectCond === 'object' && Object.keys(objectCond).length) {
+    let keys = Object.keys(objectCond);
+    let where = {};
+    keys.map(async (k, index) => {
+      let valueItem = await (typeof objectCond[k] === 'object')
+                            ? [] // Set NULL [] for Duplicate fields in condition
+                            : objectCond[k].replace(/[\[\]|\s']+/g, '').split(',');
+      let onlyValueItem = await valueItem.slice(0);
+      await onlyValueItem.shift();
+      where[k] = await (valueItem[1])
+                  ? {
+                      [Op[valueItem[0]]]: (valueItem[1] == 'null')
+                                          ? null  : (valueItem[1] == 'true')
+                                          ? true  : (valueItem[1] == 'false')
+                                          ? false : (valueItem[0] == 'between' || valueItem[0] == 'notBetween')
+                                          ? [valueItem[1],valueItem[2]] :
+                                            (
+                                              valueItem[0] == 'or'
+                                              || valueItem[0] == 'in'
+                                              || valueItem[0] == 'notIn'
+                                            )
+                                          ? onlyValueItem : valueItem[1]
+                    }
+                  : valueItem[0]
+      if(keys.length == index+1) {
+        cb(where);
+      }
+    });
+  } else {
+    cb({});
+  }
+}
+
+async function findAll(Project, where, offset, limitRow, cb) {
+  try {
+    const results = await Project.findAll({
+      where,
+      offset: offset,
+      limit: limitRow,
+    });
+    await cb(null, results)
+  } catch (error) {
+    cb(error, null);
+  }
+}
+
 function Base() {
   return new Promise((resolve, reject) => {
     try {
@@ -137,107 +183,126 @@ function Base() {
           // passport conifg promise
           checkPassport.then((authEndpoint) => {
             if(Projects.length) {
-              // GET method with ALL data, default: limit rows 100
-              endpoint.get("/:hash", Credentials, async (req, res, next) => {
-                let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
-                  if (!err) {
-                    if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
-                      try {
-                        const results = await Project.findAll({
-                          offset: 0,
-                          limit: (Project.options.limitRows) ? Project.options.limitRows : 100,
-                        });
-                        // @ return
-                        await res.json({
-                          code: 200,
-                          status: "SUCCESS",
-                          results,
-                          length: results.length,
-                        });
-                      } catch (error) {
-                        // @return
-                        return errMessage(error, res);
-                      }
-                    } else {
-                      next();
-                    }
-                  } else {
-                    // @return
-                    return errMessage(err, res);
-                  }
-                });
-              });
-              // GET method with id
-              endpoint.get("/:hash/:id", Credentials, async (req, res, next) => {
+              // GET method
+              endpoint.get("/:hash*/:id([a-zA-Z0-9-]+)?/:limit([0-9]+)?/:offset([0-9]+)?", Credentials, async (req, res, next) => {
+                let params = req.params;
+                let hash = "/" + req.params.hash;
                 // allow official stetragy
-                if(req.params.id == "google" || req.params.id == "facebook") {
+                if(hash == authEndpoint && (params[0] == "/facebook" || params[0] == "/google")) {
                   return next();
                 }
-                // filter GET project
+                // declare variable for check request with params
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
-                  if (!err) {
-                    if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
-                      try {
-                        const results = await Project.findByPk(req.params.id);
-                        // @ return
-                        await res.json({
-                          code: 200,
-                          status: "SUCCESS",
-                          results,
-                        });
-                      } catch (error) {
-                        // @return
-                        return errMessage(error, res);
+                let mergeThirdVar = [req.params.id, req.params.limit, req.params.offset].map((e) => (e || 'undefined')).join("/");
+                let reqUrl = req.originalUrl.replace(_publicPath_, '/');
+                let checkConditionIsQueryOrId = Object.keys(req.query).length
+                                                  ? req.query
+                                                  : (req.params.id)
+                                                      ? String(req.params.id)
+                                                      : 'undefined';
+                /**
+                 * Function whereCond with callback property
+                 * 
+                 * @where Object|String
+                 * 
+                 */
+                whereCond(checkConditionIsQueryOrId, async (where) => {
+                  /**
+                   * Filter Project with callback property
+                   * 
+                   * @err String
+                   * @Project Require
+                   * @params Object [0=id|limit, 1=offset, 2=blind]
+                   * 
+                   */
+                  await filterProject(leaveMeAlone, reqUrl, "/".concat(mergeThirdVar), "", req, res, async (err, Project, params) => {
+                    if (!err) {
+                      if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
+                        try {
+                          // declare default limit offset
+                          let offset = 0;
+                          let limitRow = await (Project.options.limitRows) ? Project.options.limitRows : 100;
+                          // check assign limit, offset ?
+                          if ((params[0] && params[0]  != 'undefined') && ((params[1] && params[1] != 'undefined') || parseInt(params[1]) === 0) && (!params[2] || params[2] == 'undefined')) {
+                            // Only case: /limit/offset/undefined
+                            limitRow = parseInt(params[0]);
+                            offset = parseInt(params[1]);
+                          }
+                          // check response condition from whereCond function is Object or String and params 1,2 is undefined
+                          if(typeof checkConditionIsQueryOrId !== 'object' && checkConditionIsQueryOrId != 'undefined' && (params[1] == 'undefined' && params[2] == 'undefined')) {
+                            const result = await Project.findByPk(checkConditionIsQueryOrId);
+                            // @ return findByPk
+                            await res.json({
+                              code: 200,
+                              status: "SUCCESS",
+                              result: (result || {}),
+                            });
+                          // check params 0,1 is not undefined and params 2 is undefined
+                          } else if (params[0] != 'undefined' && params[1] != 'undefined' && params[2] == 'undefined') {
+                            // check id|limit is numeric
+                            if(params[0].match(/^-?\d+$/)) {
+                              await findAll(Project, where, offset, limitRow, (err, results) => {
+                                if(err) {
+                                  res.status(500).json({
+                                    code: 500,
+                                    status: "READ_CATCH_WITH_NUM",
+                                    err: String(err),
+                                  });
+                                } else {
+                                  // @ return findAll
+                                  res.json({
+                                    code: 200,
+                                    status: "SUCCESS",
+                                    results,
+                                    length: results.length,
+                                    limitRow,
+                                  });
+                                }
+                              });
+                            } else {
+                              next();
+                            }
+                          // check all params is undefined
+                          } else if (params[0] == 'undefined' && params[1] == 'undefined' && params[2] == 'undefined') {
+                            await findAll(Project, where, offset, limitRow, (err, results) => {
+                              if(err) {
+                                res.status(500).json({
+                                  code: 500,
+                                  status: "READ_CATCH_WITH_ALL",
+                                  err: String(err),
+                                });
+                              } else {
+                                // @ return findAll
+                                res.json({
+                                  code: 200,
+                                  status: "SUCCESS",
+                                  results,
+                                  length: results.length,
+                                  limitRow,
+                                });
+                              }
+                            });
+                          // somethin else
+                          } else {
+                            next();
+                          }
+                        } catch (error) {
+                          // @return
+                          return errMessage(error, res);
+                        }
+                      } else {
+                        next();
                       }
                     } else {
-                      next();
+                      // @return
+                      return errMessage(err, res);
                     }
-                  } else {
-                    // @return
-                    return errMessage(err, res);
-                  }
+                  });
                 });
               });
-              // GET method with :limit and :offset
-              endpoint.get("/:hash/:limit/:offset", Credentials, async (req, res, next) => {
-                // allow official stetragy
-                if(req.params.limit == "facebook" || req.params.offset == "collback") {
-                  return next();
-                }
-                // filter GET limit,offset project
-                let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
-                  if (!err) {
-                    if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
-                      try {
-                        const results = await Project.findAll({
-                          offset: parseInt(req.params.offset) || 0,
-                          limit: (parseInt(req.params.limit) === 0) ? 0 : parseInt(req.params.limit),
-                        });
-                        // @ return
-                        await res.json({
-                          code: 200,
-                          status: "SUCCESS",
-                          results,
-                          length: results.length,
-                        });
-                      } catch (error) {
-                        // @return
-                        return errMessage(error, res);
-                      }
-                    } else {
-                      next();
-                    }
-                  } else {
-                    // @return
-                    return errMessage(err, res);
-                  }
-                });
-              });
+
               // POST method
-              endpoint.post("/:hash", async (req, res, next) => {
+              endpoint.post("/:hash*", async (req, res, next) => {
                 // Check auth request match send next
                 if(authEndpoint !== undefined) {
                   if(req.params.hash == authEndpoint.replace(/^\/|\/$/g, "")) {
@@ -246,7 +311,8 @@ function Base() {
                 }
                 // When lost IF
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
+                let reqUrl = req.originalUrl.replace(_publicPath_, '/');
+                await filterProject(leaveMeAlone, reqUrl, "", "", req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
@@ -278,16 +344,16 @@ function Base() {
                   }
                 });
               });
+
               // PATCH method
-              endpoint.patch("/:hash/:id", Credentials, async (req, res, next) => {
+              endpoint.patch("/:hash*/:id([a-zA-Z0-9-]+)?", Credentials, async (req, res, next) => {
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
+                let reqUrl = req.originalUrl.replace(_publicPath_, '/');
+                await filterProject(leaveMeAlone, reqUrl, "", "PATCH", req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
-                        let updatePk = await {
-                          [Project.primaryKeyAttributes[0]]: req.params.id
-                        };
+                        let updatePk = await { [Project.primaryKeyAttributes[0]]: req.params.id };
                         await Project.update(req.body, {
                           where: updatePk,
                         }).then((updated) => {
@@ -321,16 +387,15 @@ function Base() {
                   }
                 });
               });
+
               // DELETE method
-              endpoint.delete("/:hash/:id", Credentials, async (req, res, next) => {
+              endpoint.delete("/:hash*/:id([a-zA-Z0-9-]+)?", Credentials, async (req, res, next) => {
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), "", "DELETE", req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
-                        let deletePk = await {
-                          [Project.primaryKeyAttributes[0]]: req.params.id
-                        };
+                        let deletePk = await { [Project.primaryKeyAttributes[0]]: req.params.id };
                         await Project.destroy({
                           where: deletePk,
                         }).then((deleted) => {
