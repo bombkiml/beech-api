@@ -127,7 +127,7 @@ module.exports = {
                         return done(null, null, true);
                       }
                     }));
-      
+
                     // Passport jwt payload (decoder)
                     passport.use(new JWTStrategy({
                       jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),

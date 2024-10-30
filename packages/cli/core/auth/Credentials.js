@@ -98,10 +98,14 @@ function checkAppKey(req, res, cb) {
       if (_config_.main_config.app_key == req.headers.app_key) {
         return cb(true);
       } else {
-        res.status(401).json({
-          code: 401,
-          status: "BAD_REQUEST",
-          message: "Unauthorized with wrong key.",
+        res.status(400).json({
+          code: 400,
+          status: 'BAD_REQUEST',
+          message: "Bad request.",
+          info: {
+            status: "BAD_VALUE",
+            message: "Bad with wrong key."
+          },
         });
         return cb(false);
       }

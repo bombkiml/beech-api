@@ -36,10 +36,19 @@ function TwoFactor(user, reqBody, guard_field, cb) {
               }
             });
           } else {
-            cb(true, { code: 422, status: "UNPROCESSABLE", message: "Unprocessable Entity." });
+            cb(true, {
+              code: 400,
+              status: 'BAD_REQUEST',
+              message: "Bad request.",
+              info: {
+                status: "BAD_ENTITY",
+                message: "Bad guard Entity."
+              },
+            });
           }
         } else {
-          cb(true, { code: 422, status: "UNPROCESSABLE", message: "Unprocessable Auth Open ID Entity." });
+          // Can't find Auth Open ID
+          cb(true, { code: 422, status: "UNPROCESSABLE", message: "Unprocessable with Auth Open ID Entity." });
         }
       }
     });

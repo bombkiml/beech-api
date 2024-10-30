@@ -128,7 +128,7 @@ $ beech hash:password
 Output: FjgcgJPylkV7EeQJjea_EeifPwaHVO9onD3ATk3YYAyvjtMGu3dcDS0ejA
 
 ```
-Example:
+For Example:
 
 📂 app.config.js
 ```js
@@ -169,7 +169,7 @@ $ beech make endpointName
 ```
 You might using [special] `-R, --require` for choose Model(s) used for that endpoint.
 
-### Example ***(Basic)*** : Fruit endpoints.
+### For Example ***(Basic)*** : Fruit endpoints.
 
 📂 fruit-endpoints.js
 ```js
@@ -227,7 +227,7 @@ exports.init = () => {
 }
 ```
 
-### Example ***(Sequelize)*** : Fruit endpoints. 
+### For Example ***(Sequelize)*** : Fruit endpoints. 
 
 📂 fruit-endpoints.js
 ```js
@@ -260,7 +260,7 @@ The `models` keep the files of function(s) data managemnets for Retriving, Creat
 $ beech make modelName --model
 ```
 
-### Example ***(Basic)*** : Fruit model.
+### For Example ***(Basic)*** : Fruit model.
 
 📂 Fruit.js
 ```js
@@ -292,7 +292,7 @@ module.exports = {
 };
 ```
 
-### Example ***(Sequelize)*** : Fruit model.
+### For Example ***(Sequelize)*** : Fruit model.
 
   You can asign more DataTypes, Learn more : [Sequelize docs](https://sequelize.org/docs/v6/core-concepts/model-basics/#data-types)
 
@@ -319,7 +319,7 @@ const Fruit = Schema(sql.default_db).define("fruit", {
 });
 
 Users.options = {
-  // Allowment magic generate default endpoint (CRUD)
+  // Allow magic generate default endpoint (CRUD)
   defaultEndpoint: true, // boolean DEFAULT: true  👈 // It's like magic creating The endpoints for you (CRUD) ✨
   limitRows: 100, // Limit rows default 100
 };
@@ -359,12 +359,52 @@ Now! you can request to `/fruit` with methods GET, POST, PATCH and DELETE like t
 
 | Efficacy |  Method  |        Endpoint        |    Body    |
 |:---------|:---------|:-----------------------|:-----------|
-|  Create  |  POST    | /fruit                |     { }    |
-|  Read    |  GET     | /fruit                |     No     |
-|  Read    |  GET     | /fruit/:id            |     No     |
-|  Read    |  GET     | /fruit/:limit/:offset |     No     |
-|  Update  |  PATCH   | /fruit/:id            |     { }    |
-|  Delete  |  DELETE  | /fruit/:id            |     No     |
+|  Create  |  POST    | /fruit                 |     { }    |
+|  Read    |  GET     | /fruit                 |     No     |
+|  Read    |  GET     | /fruit/:id             |     No     |
+|  Read    |  GET     | /fruit/:limit/:offset  |     No     |
+|  Read    |  GET     | /fruit?someField=1     |     No     |
+|  Update  |  PATCH   | /fruit/:id             |     { }    |
+|  Delete  |  DELETE  | /fruit/:id             |     No     |
+
+### # Read with Query String Conditions
+For Example to Add some Basic Conditions with `QUERY STRING` into GET `/fruit?someField=[eq,1]` Endpoint.
+
+#### For Example:
+```java
+GET: /fruit?isActived=[eq,1]            // isActived = 1
+GET: /fruit?fruitName=[like,Banana%]    // fruitName LIKE 'Banana%'
+GET: /fruit?cost=[gt,50]&qty=[lt,10]    // cost > 50 AND qty < 10
+GET: /fruit/10/0?qty=[lt,10]            // qty < 10 LIMIT 0,10
+```
+
+For usage avariable:
+
+```java
+// Basics
+[eq, 3]                   // = 3
+[ne, 20]                  // != 20
+[is, null]                // IS NULL
+[not, null]               // IS NOT NULL
+[or, [5, 6]]              // (someField = 5) OR (someField = 6) // Not support NULL value
+
+// Number comparisons
+[gt, 6]                   // > 6
+[gte, 6]                  // >= 6
+[lt, 10]                  // < 10
+[lte, 10]                 // <= 10
+[between, [6, 10]]        // BETWEEN 6 AND 10
+[notBetween, [11, 15]]    // NOT BETWEEN 11 AND 15
+
+// Other operators
+[in, [1, 2, 3]],          // IN [1, 2, 3]
+[notIn, [1, 2, 3]],       // NOT IN [1, 2, 3]
+[like, %hat]              // LIKE '%hat'
+[notLike, %hat]           // NOT LIKE '%hat'
+[startsWith, hat]         // LIKE 'hat%'
+[endsWith, hat]           // LIKE '%hat'
+[substring, hat]          // LIKE '%hat%'
+```
 
 ## # Transactions
 
@@ -461,7 +501,7 @@ The `helpers` keep the files of functions for process specific something in the 
 $ beech make helperName --helper
 ```
 
-***Example:*** Text editor helper.
+***For Example:*** Text editor helper.
 
 📂 TextEditor.js
 ```js
@@ -495,7 +535,7 @@ After passport initialized the `passport.config.js` it's appeared
 📂 passport.config.js
 ```js
 module.exports = {
-  // Allowment using passport-jwt
+  // Allow for using passport-jwt
   jwt_allow: true,
 
   // custom authenticaiton endpoint name, default `/authentication`
@@ -539,7 +579,7 @@ module.exports = {
     },
   },
 
-  // Allowment using request with app_key entity (Every request must be using the app_key entity in headers)
+  // Allow for using request with app_key entity (Every request must be using the app_key entity in headers)
   app_key_allow: false
 
   ...
@@ -586,7 +626,7 @@ POST: "/authentication/create"
 
 // Request with body for Update Auth data
 PATCH: "/authentication/update/1"
-Bearer Authorization: your_token
+headers: Authorization: Bearer <your_token>
 {
   username: "update_bombkiml",
   password: "update_secret",
@@ -598,7 +638,7 @@ Bearer Authorization: your_token
 # Beech Two Factor (2FA)
 You can easy using 2 Factor authenticate with ```guard_field``` inside ```passport.config.js``` file and add your Guard field ex: ```2fa``` field for Authenticate Conditions.
 
-## # Usage guard (2FA, Other)
+## # Guard (2FA, Other)
 
 📂 passport.config.js
 ```js
@@ -607,7 +647,7 @@ module.exports = {
 
   guard: {
     // Other fields add for authenticate, exmaple ["pin", "hint", "2fa"]
-    guard_field: ["2fa"], 👈 // your feild guard.
+    guard_field: ["2fa"], 👈 // your feild guard. (Disabled to remove it.)
 
     ...
   },
@@ -617,8 +657,8 @@ module.exports = {
 }
 ```
 
-## # Beech Advanced Guard (Recommended After 2FA)
-After 2FA login you can add Advance Guard for Protection your Authentication endpoint with Timing. You can allowment timing in object ```advance_guard``` inside ```passport.config.js``` file. So let's go add your Advance Guard Configuration.
+## # Beech Advanced Guard (Timing)
+Advance Guard for Protection your Endpoint with Timing. You can allow in object ```advance_guard``` inside ```passport.config.js``` file. So let's go add your Advance Guard Configuration.
 
 📂 passport.config.js
 ```js
@@ -628,9 +668,9 @@ module.exports = {
   guard: {
     ...
 
-    // Advanced authentication jwt request (needed some logical from front-end)
+    // Advanced guard to Request (Needed some logical from front-end)
     advanced_guard: {
-      allow: false, 👈 // advanced guard allowment.
+      allow: false, 👈 // advanced guard allow for All Endpoint.
       entity: "", // default entity `timing`
       secret: "your_advance_guard_secret",
       time_expired: {
@@ -648,7 +688,7 @@ module.exports = {
 
 <b>After configure</b>, You must add some logic in your front-end like this.
 
-Before add logic, We needed [```beech-auth0```](https://github.com/bombkiml/beech-auth0) and [```moment.js```](https://momentjs.com) Policy.
+Before add logic, We needed [```beech-auth0```](https://github.com/bombkiml/beech-auth0) and [```moment.js```](https://momentjs.com) for apply in Policy.
 
 ```sh
 # NPM
@@ -662,17 +702,15 @@ Now! you can add some logic.
 const { Auth0 } = require("beech-auth0");
 const moment = require("moment");
 
+// Get UNIX TIME with moment
 let unix_time = moment().unix();
 
-Auth0(unix_time, 'your_advance_guard_secret', (error, hashTiming) => {
-  
-  // Your XHR request for /authentication
+// Auth0 Policy.
+Auth0(unix_time, 'your_advance_guard_secret', (error, hashing) => {
+
+  // Your XHR request for All Endpoint.
   POST: "/authentication"
-  {
-    username: "bombkiml",
-    password: "secret",
-    timing: hashTiming, 👈 // Assign advance guard entity with callback hashTiming.
-  }
+  headers: timing: hashing, 👈 // Assign advance guard entity to headers with callback hashing.
 
 });
 
@@ -744,7 +782,7 @@ strategy: {
 
   google: {
 
-    // Allowment using google strategy
+    // Allow for using google strategy
     allow: true,
 
     // Authen profile store fields available: `google_id`, `name`, `email`, `photos`, `locate`
@@ -803,7 +841,7 @@ strategy: {
 
   facebook: {
 
-    // Allowment using facebook strategy
+    // Allow for using facebook strategy
     allow: true,
 
     // Authen profile store fields available: `facebook_id`, `name`, `email`, `photos`, `locate`
@@ -964,8 +1002,6 @@ endpoint.get("/banana", specificDup1, (req, res) => {
 ...
 ```
 
-
-
 # Databases managements
 
 ## # Migrations & Seeder
@@ -1097,7 +1133,7 @@ Test using [Jest](https://jestjs.io/en/) for testing the project. Jest is a deli
 
 So, When you make the new endpoints it's automatic create test file end with `.spec.js` in `__test__` folder with constant `baseUrl` variable and `axios` package.
 
-Example endpoints testing :
+For Example endpoints testing :
 
 📂 fruit-endpoints.spec.js
 ```js
@@ -1180,41 +1216,6 @@ $ docker build -t <imageName> .
   # Run docker service
   $ docker service create --replicas <instances> --name <containerName> --publish 9000:9000 <imageName>
   ```
-
-
-# Bonus
-
-Free `helpers` you can make [LINE Notify](https://github.com/Yuhsak/line-api#readme) by using [line-api](https://notify-bot.line.me/en/) package with create the helper function following.
-
-Installation the package:
-
-```
-$ npm install line-api
-```
-
-Create file `Line.js` in `src/helpers` folder and copy code below:
-
-📂 Line.js
-```js
-const Line = require("line-api");
-
-module.exports = {
-
-  notify(message, token) {
-    const notify = new Line.Notify({
-      token: token
-    });
-    notify
-      .send({
-        message: message
-      })
-      .then(console.log);
-  }
-
-};
-```
-
-Enjoy.
 
 # Development
 
