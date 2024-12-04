@@ -7,15 +7,14 @@
 
 # What is Beech API ?
 
-`Beech API` is a Node.js framework it's help you with very easy create API project under [Node.js](https://nodejs.org)
+`Beech API` is The best Node.js framework it's help you with very easy create API project under [Node.js](https://nodejs.org)
+
+- Best Node.js API frameworks.
+- CRUD automation in Node.js.
 
 # Why Beech API ?
 
 `Beech API` is a Very easy for using, very feather framework, easy to installation, easy to implementation, and high security.
-
-## Powered by Node.js & Express.js
-
-![N|Solid](https://i.ibb.co/CQqYZkK/node-epressjs.jpg)
 
 # Environment
 
@@ -361,7 +360,6 @@ Now! you can request to `/fruit` with methods GET, POST, PATCH and DELETE like t
 |:---------|:---------|:-----------------------|:-----------|
 |  Create  |  POST    | /fruit                 |     { }    |
 |  Read    |  GET     | /fruit                 |     No     |
-|  Read    |  GET     | /fruit/:id             |     No     |
 |  Read    |  GET     | /fruit/:limit/:offset  |     No     |
 |  Read    |  GET     | /fruit?someField=1     |     No     |
 |  Update  |  PATCH   | /fruit/:id             |     { }    |
@@ -697,20 +695,36 @@ $ npm install --save beech-auth0 moment
 # Yarn
 $ yarn add beech-auth0 moment
 ```
-Now! you can add some logic.
+Now! you can add some logic like this.
+
+ - Import packages
+
 ```js
+// CommonJS
 const { Auth0 } = require("beech-auth0");
 const moment = require("moment");
 
+// ES6
+import { Auth0 } from "beech-auth0";
+import moment from "moment";
+```
+
+- Get unix time with momentJS
+
+```js
 // Get UNIX TIME with moment
 let unix_time = moment().unix();
+```
 
+- Get hashing with Beech Auth0
+
+```js
 // Auth0 Policy.
 Auth0(unix_time, 'your_advance_guard_secret', (error, hashing) => {
 
   // Your XHR request for All Endpoint.
   POST: "/authentication"
-  headers: timing: hashing, 👈 // Assign advance guard entity to headers with callback hashing.
+  headers: { timing: hashing } 👈 // Assign advance guard entity to headers with callback hashing.
 
 });
 
