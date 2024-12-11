@@ -127,10 +127,12 @@ connectInProcess = async (database_config, headDbShow, cb) => {
           }
         });
 
-        // Hook to set `SET NAMES xxx`
+        // Hook to set `SET NAMES xxx` (ONLY MySQL)
         await sq.addHook('afterConnect', async (connection) => {
-          let charset = ["SET NAMES", ((val.define) ? ((val.define.charset) ? val.define.charset : "utf8") : "utf8")].join(" ");
-          connection.query(charset);
+          if(val.dialect == "mysql") {
+            let charset = ["SET NAMES", ((val.define) ? ((val.define.charset) ? val.define.charset : "utf8") : "utf8")].join(" ");
+            connection.query(charset);
+          }
         });
 
         // show only one text db connnections
