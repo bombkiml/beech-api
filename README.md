@@ -18,11 +18,11 @@
 
 # Environment
 
-- [`Node.js`](https://nodejs.org) >= 14.19.0+ (recommended)
+- [`Node.js`](https://nodejs.org) >= 16.20.0+ (recommended)
 
 # Installation
 
-Beech API requires Node.js version 14.19.0 or above. You can manage multiple versions of Node on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows). So, Let's go to install `beech-api`
+Beech API requires Node.js version 16.20.0 or above. You can manage multiple versions of Node on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows). So, Let's go to install `beech-api`
 
 ```sh
 # NPM
@@ -365,7 +365,7 @@ Now! you can request to `/fruit` with methods GET, POST, PATCH and DELETE like t
 |  Update  |  PATCH   | /fruit/:id             |     { }    |
 |  Delete  |  DELETE  | /fruit/:id             |     No     |
 
-### # Read with Query String Conditions
+### # Read with Query String Conditional (Only support GET method)
 For Example to Add some Basic Conditions with `QUERY STRING` into GET `/fruit?someField=[eq,1]` Endpoint.
 
 #### For Example:
@@ -1193,7 +1193,7 @@ Docker builds images automatically by reading the instructions from a Dockerfile
 
 📂 Dockerfile
 ```js
-FROM node:14.19-alpine
+FROM node:16-alpine
 ENV NODE_ENV=production
 WORKDIR /usr/src/api
 COPY ["package.json", "package-lock.json*", "./"]
