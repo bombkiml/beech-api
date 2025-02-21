@@ -122,7 +122,7 @@ connectInProcess = async (database_config, headDbShow, cb) => {
   
           // JSON response
           query: {
-            raw: ((val.query) ? ((val.query.raw) ? val.query.raw : true) : true),
+            raw: ((val.query) ? ((val.query.raw) ? val.query.raw : false) : false),
             nest: ((val.query) ? ((val.query.nest) ? val.query.nest : true) : true),
           }
         });
