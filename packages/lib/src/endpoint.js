@@ -119,40 +119,97 @@ function whereCond(objectCond, cb) {
   if(typeof objectCond === 'object' && Object.keys(objectCond).length) {
     let keys = Object.keys(objectCond);
     let where = {};
-    keys.map(async (k, index) => {
-      let valueItem = await (typeof objectCond[k] === 'object')
-                            ? [] // Set NULL [] for Duplicate fields in condition
-                            : objectCond[k].replace(/[\[\]|\s']+/g, '').split(',');
-      let onlyValueItem = await valueItem.slice(0);
-      await onlyValueItem.shift();
-      where[k] = await (valueItem[1])
-                  ? {
-                      [Op[valueItem[0]]]: (valueItem[1] == 'null')
-                                          ? null  : (valueItem[1] == 'true')
-                                          ? true  : (valueItem[1] == 'false')
-                                          ? false : (valueItem[0] == 'between' || valueItem[0] == 'notBetween')
-                                          ? [valueItem[1],valueItem[2]] :
-                                            (
-                                              valueItem[0] == 'or'
-                                              || valueItem[0] == 'in'
-                                              || valueItem[0] == 'notIn'
-                                            )
-                                          ? onlyValueItem : valueItem[1]
-                    }
-                  : valueItem[0]
-      if(keys.length == index+1) {
-        cb(where);
-      }
+    let orderBy = {};
+    let groupBy = {};
+    // Start Recursive for Check Where condition OR GroupBy OR OrderBy
+    recursiveWhereCond(keys, objectCond, where, groupBy, orderBy, (err, cbWhere, cbGroupBy, cbOrderBy) => {
+      cb(err, cbWhere, cbGroupBy, cbOrderBy);
     });
   } else {
-    cb({});
+    cb(null, {}, { group: { groupby: [] } }, { order: { orderby: [] } });
   }
 }
 
-async function findAll(Project, where, offset, limitRow, cb) {
+async function recursiveWhereCond(keys, objectCond, where, groupBy, orderBy, cb) {
+  if(keys.length > 0) {
+    let k = keys.shift();
+    // Check param key for Where condition OR GroupBy OR OrderBy
+    if(k == 'orderby') {
+      let oderByValueItemFromQueryString = objectCond[k].replace(/\w+/g, '"$&"').replace(/\[\s*\]/g, '[]');
+      // Check Array syntax from Query String
+      isValidArrayFormat(oderByValueItemFromQueryString, (err, isArray, strArr) => {
+        if(err) {
+          cb(["SyntaxError: Unexpected end of Array or String input", ` (${k})`], null, null, null);
+        } else {
+          let order = JSON.parse(strArr);
+          orderBy[k] = order.length ? order : null;
+          // Recursive re-call function
+          recursiveWhereCond(keys, objectCond, where, groupBy, orderBy, cb);
+        }
+      });
+    } else if(k == 'groupby') {
+      let groupByValueItemFromQueryString = objectCond[k].replace(/\w+/g, '"$&"').replace(/\[\s*\]/g, '[]');
+      // Check Array syntax from Query String
+      isValidArrayFormat(groupByValueItemFromQueryString, (err, isArray, strArr) => {
+        if(err) {
+          cb(["SyntaxError: Unexpected end of Array or String input", ` (${k})`], null, null, null);
+        } else {
+          let group = JSON.parse(strArr);
+          groupBy[k] = group.length ? group : null;
+          // Recursive re-call function
+          recursiveWhereCond(keys, objectCond, where, groupBy, orderBy, cb);
+        }
+      });
+    } else {
+      let fieldValueItemFromQueryString = objectCond[k].replace(/\w+/g, '"$&"').replace(/\[\s*\]/g, '[]');
+      let valueItem = objectCond[k].replace(/[\[\]|\s']+/g, '').split(',');
+      // Check Array syntax from Query String
+      isValidArrayFormat(fieldValueItemFromQueryString, async (err) => {
+        if(err) {
+          cb(["SyntaxError: Unexpected end of Array or String input", ` (${k})`], null, null, null);
+        } else {
+          let onlyValueItem = await valueItem.slice(0);
+          await onlyValueItem.shift();
+          where[k] = await (valueItem[1])
+                      ? {
+                          [Op[valueItem[0]]]: (valueItem[1] == 'null')
+                                              ? null  : (valueItem[1] == 'true')
+                                              ? true  : (valueItem[1] == 'false')
+                                              ? false : (valueItem[0] == 'between' || valueItem[0] == 'notBetween')
+                                              ? [valueItem[1],valueItem[2]] :
+                                                (
+                                                  valueItem[0] == 'or'
+                                                  || valueItem[0] == 'in'
+                                                  || valueItem[0] == 'notIn'
+                                                )
+                                              ? onlyValueItem : valueItem[1]
+                        }
+                      : valueItem[0];
+          // Recursive re-call function
+          recursiveWhereCond(keys, objectCond, where, groupBy, orderBy, cb);
+        }
+      });
+    }
+  } else {
+    cb(null, where, groupBy, orderBy);
+  }
+}
+
+function isValidArrayFormat(str, cb) {
+  try {
+    const parsed = JSON.parse(str);
+    cb(null, Array.isArray(parsed), str);
+  } catch (err) {
+    cb(err, false, null);
+  }
+}
+
+async function findAll(Project, where, offset, group, order, limitRow, cb) {
   try {
     const results = await Project.findAll({
       where,
+      group: (group.groupby) ? group.groupby : [],
+      order: (order.orderby) ? [order.orderby] : [],
       offset: offset,
       limit: limitRow,
     });
@@ -182,59 +239,67 @@ async function retrieving(authEndpoint, Projects, req, res, next) {
    * @where Object|String
    * 
    */
-  whereCond(checkConditionIsQueryOrId, async (where) => {
-    /**
-     * Filter Project with callback property
-     * 
-     * @err String
-     * @Project Require
-     * @params Object [0=limit, 1=offset]
-     * 
-     */
-    await filterProject(leaveMeAlone, reqUrl, "/".concat(mergeDuoVar), "", req, res, async (err, Project, params) => {
-      if (!err) {
-        if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
-          try {
-            // declare default limit offset
-            let offset = 0;
-            let limitRow = await (Project.options.limitRows) ? Project.options.limitRows : 100;
-            // check assign limit, offset ?
-            if ((params[0] && params[0]  != 'undefined') && ((params[1] && params[1] != 'undefined') || parseInt(params[1]) === 0)) {
-              // Only case: /limit/offset
-              limitRow = parseInt(params[0]);
-              offset = parseInt(params[1]);
-            }
-            // findAll data
-            await findAll(Project, where, offset, limitRow, (err, results) => {
-              if(err) {
-                res.status(500).json({
-                  code: 500,
-                  status: "READ_CATCH",
-                  err: String(err),
-                });
-              } else {
-                // @ return findAll
-                res.json({
-                  code: 200,
-                  status: "SUCCESS",
-                  results,
-                  length: results.length,
-                  limitRow,
-                });
+  whereCond(checkConditionIsQueryOrId, async (err, where, groupBy, orderBy) => {
+    if(err) {
+      res.status(400).json({
+        code: 400,
+        status: "BAD_REQUEST",
+        err: String(err),
+      });
+    } else {
+      /**
+       * Filter Project with callback property
+       * 
+       * @err String
+       * @Project Require
+       * @params Object [0=limit, 1=offset]
+       * 
+       */
+      await filterProject(leaveMeAlone, reqUrl, "/".concat(mergeDuoVar), "", req, res, async (err, Project, params) => {
+        if (!err) {
+          if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
+            try {
+              // declare default limit offset
+              let offset = 0;
+              let limitRow = await (Project.options.limitRows) ? Project.options.limitRows : 100;
+              // check assign limit, offset ?
+              if ((params[0] && params[0]  != 'undefined') && ((params[1] && params[1] != 'undefined') || parseInt(params[1]) === 0)) {
+                // Only case: /limit/offset
+                limitRow = parseInt(params[0]);
+                offset = parseInt(params[1]);
               }
-            });
-          } catch (error) {
-            // @return
-            return errMessage(error, res);
+              // findAll data
+              await findAll(Project, where, offset, groupBy, orderBy, limitRow, (err, results) => {
+                if(err) {
+                  res.status(500).json({
+                    code: 500,
+                    status: "READ_CATCH",
+                    err: String(err),
+                  });
+                } else {
+                  // @ return findAll
+                  res.json({
+                    code: 200,
+                    status: "SUCCESS",
+                    results,
+                    length: results.length,
+                    limitRow,
+                  });
+                }
+              });
+            } catch (error) {
+              // @return
+              return errMessage(error, res);
+            }
+          } else {
+            next();
           }
         } else {
-          next();
+          // @return
+          return errMessage(err, res);
         }
-      } else {
-        // @return
-        return errMessage(err, res);
-      }
-    });
+      });
+    }
   });
 }
 

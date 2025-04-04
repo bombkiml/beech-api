@@ -365,43 +365,65 @@ Now! you can request to `/fruit` with methods GET, POST, PATCH and DELETE like t
 |  Update  |  PATCH   | /fruit/:id             |     { }    |
 |  Delete  |  DELETE  | /fruit/:id             |     No     |
 
-### # Read with Query String Conditional (Only support GET method)
-For Example to Add some Basic Conditions with `QUERY STRING` into GET `/fruit?someField=[eq,1]` Endpoint.
+### # Read with Query String Conditional, Grouping and Ordering (Support Readonly for GET method)
+For Example to Add some Basic Conditions, Grouping and Ordering with `QUERY STRING` into GET `/fruit?someField=[eq,1]&groupby=[id]&orderby=[id,desc]` Endpoint.
 
 #### For Example:
 ```java
+// WHERE Condition
+GET: /fruit?id=1                        // id = 1
 GET: /fruit?isActived=[eq,1]            // isActived = 1
 GET: /fruit?fruitName=[like,Banana%]    // fruitName LIKE 'Banana%'
 GET: /fruit?cost=[gt,50]&qty=[lt,10]    // cost > 50 AND qty < 10
 GET: /fruit/10/0?qty=[lt,10]            // qty < 10 LIMIT 0,10
+
+// Grouping
+GET: /fruit?groupby=id                  // GROUP BY id
+GET: /fruit?groupby=[id,fruitName]      // GROUP BY id, fruitName
+
+// Ordering
+GET: /fruit?oderby=id                   // ORDER BY id ASC
+GET: /fruit?oderby=[sort,desc]          // ORDER BY sort DESC
 ```
 
 For usage avariable:
 
 ```java
 // Basics
-[eq, 3]                   // = 3
-[ne, 20]                  // != 20
-[is, null]                // IS NULL
-[not, null]               // IS NOT NULL
-[or, [5, 6]]              // (someField = 5) OR (someField = 6) // Not support NULL value
+3                            // = 3
+[eq, 3]                      // = 3
+[ne, 20]                     // != 20
+[is, null]                   // IS NULL
+[not, null]                  // IS NOT NULL
+[or, [5, 6]]                 // (someField = 5) OR (someField = 6) // Not support NULL value
 
 // Number comparisons
-[gt, 6]                   // > 6
-[gte, 6]                  // >= 6
-[lt, 10]                  // < 10
-[lte, 10]                 // <= 10
-[between, [6, 10]]        // BETWEEN 6 AND 10
-[notBetween, [11, 15]]    // NOT BETWEEN 11 AND 15
+[gt, 6]                      // > 6
+[gte, 6]                     // >= 6
+[lt, 10]                     // < 10
+[lte, 10]                    // <= 10
+[between, [6, 10]]           // BETWEEN 6 AND 10
+[notBetween, [11, 15]]       // NOT BETWEEN 11 AND 15
 
 // Other operators
-[in, [1, 2, 3]],          // IN [1, 2, 3]
-[notIn, [1, 2, 3]],       // NOT IN [1, 2, 3]
-[like, %hat]              // LIKE '%hat'
-[notLike, %hat]           // NOT LIKE '%hat'
-[startsWith, hat]         // LIKE 'hat%'
-[endsWith, hat]           // LIKE '%hat'
-[substring, hat]          // LIKE '%hat%'
+[in, [1, 2, 3]],             // IN [1, 2, 3]
+[notIn, [1, 2, 3]],          // NOT IN [1, 2, 3]
+[like, %hat]                 // LIKE '%hat'
+[notLike, %hat]              // NOT LIKE '%hat'
+[startsWith, hat]            // LIKE 'hat%'
+[endsWith, hat]              // LIKE '%hat'
+[substring, hat]             // LIKE '%hat%'
+
+// Grouping
+id                           // GROUP BY id
+[id]                         // ORDER BY id
+[id, fruitName]              // ORDER BY id, fruitName
+
+// Ordering
+id                           // ORDER BY id ASC (Basic usage default Ascending)
+[id, asc]                    // ORDER BY id ASC
+[id, desc]                   // ORDER BY id ASC
+[[id, desc], [sort, asc]]    // ORDER BY id DESC, sort ASC
 ```
 
 ## # Transactions
