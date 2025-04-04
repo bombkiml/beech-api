@@ -4,6 +4,10 @@ const moduleAlias = require("module-alias");
 moduleAlias.addAlias("@", appRoot + "/src");
 const _express_ = require("express");
 global._app_ = _express_();
+// Compression
+const compression = require("compression");
+_app_.use(compression());
+// CORS
 const cors = require("cors");
 global.endpoint = _express_.Router();
 const cookieParser = require("cookie-parser");

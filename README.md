@@ -7,23 +7,22 @@
 
 # What is Beech API ?
 
-`Beech API` is a Node.js framework it's help you with very easy create API project under [Node.js](https://nodejs.org)
+`Beech API` is The best Node.js framework it's help you with very easy create API project under [Node.js](https://nodejs.org)
+
+- Best Node.js API frameworks.
+- CRUD automation in Node.js.
 
 # Why Beech API ?
 
 `Beech API` is a Very easy for using, very feather framework, easy to installation, easy to implementation, and high security.
 
-## Powered by Node.js & Express.js
-
-![N|Solid](https://i.ibb.co/CQqYZkK/node-epressjs.jpg)
-
 # Environment
 
-- [`Node.js`](https://nodejs.org) >= 14.19.0+ (recommended)
+- [`Node.js`](https://nodejs.org) >= 16.20.0+ (recommended)
 
 # Installation
 
-Beech API requires Node.js version 14.19.0 or above. You can manage multiple versions of Node on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows). So, Let's go to install `beech-api`
+Beech API requires Node.js version 16.20.0 or above. You can manage multiple versions of Node on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows). So, Let's go to install `beech-api`
 
 ```sh
 # NPM
@@ -361,49 +360,70 @@ Now! you can request to `/fruit` with methods GET, POST, PATCH and DELETE like t
 |:---------|:---------|:-----------------------|:-----------|
 |  Create  |  POST    | /fruit                 |     { }    |
 |  Read    |  GET     | /fruit                 |     No     |
-|  Read    |  GET     | /fruit/:id             |     No     |
 |  Read    |  GET     | /fruit/:limit/:offset  |     No     |
 |  Read    |  GET     | /fruit?someField=1     |     No     |
 |  Update  |  PATCH   | /fruit/:id             |     { }    |
 |  Delete  |  DELETE  | /fruit/:id             |     No     |
 
-### # Read with Query String Conditions
-For Example to Add some Basic Conditions with `QUERY STRING` into GET `/fruit?someField=[eq,1]` Endpoint.
+### # Read with Query String Conditional, Grouping and Ordering (Support Readonly for GET method)
+For Example to Add some Basic Conditions, Grouping and Ordering with `QUERY STRING` into GET `/fruit?someField=[eq,1]&groupby=[id]&orderby=[id,desc]` Endpoint.
 
 #### For Example:
 ```java
+// WHERE Condition
+GET: /fruit?id=1                        // id = 1
 GET: /fruit?isActived=[eq,1]            // isActived = 1
 GET: /fruit?fruitName=[like,Banana%]    // fruitName LIKE 'Banana%'
 GET: /fruit?cost=[gt,50]&qty=[lt,10]    // cost > 50 AND qty < 10
 GET: /fruit/10/0?qty=[lt,10]            // qty < 10 LIMIT 0,10
+
+// Grouping
+GET: /fruit?groupby=id                  // GROUP BY id
+GET: /fruit?groupby=[id,fruitName]      // GROUP BY id, fruitName
+
+// Ordering
+GET: /fruit?oderby=id                   // ORDER BY id ASC
+GET: /fruit?oderby=[sort,desc]          // ORDER BY sort DESC
 ```
 
 For usage avariable:
 
 ```java
 // Basics
-[eq, 3]                   // = 3
-[ne, 20]                  // != 20
-[is, null]                // IS NULL
-[not, null]               // IS NOT NULL
-[or, [5, 6]]              // (someField = 5) OR (someField = 6) // Not support NULL value
+3                            // = 3
+[eq, 3]                      // = 3
+[ne, 20]                     // != 20
+[is, null]                   // IS NULL
+[not, null]                  // IS NOT NULL
+[or, [5, 6]]                 // (someField = 5) OR (someField = 6) // Not support NULL value
 
 // Number comparisons
-[gt, 6]                   // > 6
-[gte, 6]                  // >= 6
-[lt, 10]                  // < 10
-[lte, 10]                 // <= 10
-[between, [6, 10]]        // BETWEEN 6 AND 10
-[notBetween, [11, 15]]    // NOT BETWEEN 11 AND 15
+[gt, 6]                      // > 6
+[gte, 6]                     // >= 6
+[lt, 10]                     // < 10
+[lte, 10]                    // <= 10
+[between, [6, 10]]           // BETWEEN 6 AND 10
+[notBetween, [11, 15]]       // NOT BETWEEN 11 AND 15
 
 // Other operators
-[in, [1, 2, 3]],          // IN [1, 2, 3]
-[notIn, [1, 2, 3]],       // NOT IN [1, 2, 3]
-[like, %hat]              // LIKE '%hat'
-[notLike, %hat]           // NOT LIKE '%hat'
-[startsWith, hat]         // LIKE 'hat%'
-[endsWith, hat]           // LIKE '%hat'
-[substring, hat]          // LIKE '%hat%'
+[in, [1, 2, 3]],             // IN [1, 2, 3]
+[notIn, [1, 2, 3]],          // NOT IN [1, 2, 3]
+[like, %hat]                 // LIKE '%hat'
+[notLike, %hat]              // NOT LIKE '%hat'
+[startsWith, hat]            // LIKE 'hat%'
+[endsWith, hat]              // LIKE '%hat'
+[substring, hat]             // LIKE '%hat%'
+
+// Grouping
+id                           // GROUP BY id
+[id]                         // ORDER BY id
+[id, fruitName]              // ORDER BY id, fruitName
+
+// Ordering
+id                           // ORDER BY id ASC (Basic usage default Ascending)
+[id, asc]                    // ORDER BY id ASC
+[id, desc]                   // ORDER BY id ASC
+[[id, desc], [sort, asc]]    // ORDER BY id DESC, sort ASC
 ```
 
 ## # Transactions
@@ -697,20 +717,36 @@ $ npm install --save beech-auth0 moment
 # Yarn
 $ yarn add beech-auth0 moment
 ```
-Now! you can add some logic.
+Now! you can add some logic like this.
+
+ - Import packages
+
 ```js
+// CommonJS
 const { Auth0 } = require("beech-auth0");
 const moment = require("moment");
 
+// ES6
+import { Auth0 } from "beech-auth0";
+import moment from "moment";
+```
+
+- Get unix time with momentJS
+
+```js
 // Get UNIX TIME with moment
 let unix_time = moment().unix();
+```
 
+- Get hashing with Beech Auth0
+
+```js
 // Auth0 Policy.
 Auth0(unix_time, 'your_advance_guard_secret', (error, hashing) => {
 
   // Your XHR request for All Endpoint.
   POST: "/authentication"
-  headers: timing: hashing, 👈 // Assign advance guard entity to headers with callback hashing.
+  headers: { timing: hashing } 👈 // Assign advance guard entity to headers with callback hashing.
 
 });
 
@@ -1179,7 +1215,7 @@ Docker builds images automatically by reading the instructions from a Dockerfile
 
 📂 Dockerfile
 ```js
-FROM node:14.19-alpine
+FROM node:16-alpine
 ENV NODE_ENV=production
 WORKDIR /usr/src/api
 COPY ["package.json", "package-lock.json*", "./"]

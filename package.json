@@ -1,6 +1,6 @@
 {
   "name": "beech-api",
-  "version": "3.8.0",
+  "version": "3.9.0",
   "description": "Command line interface for rapid Beech API development",
   "keywords": [
     "api",
@@ -23,13 +23,14 @@
   "homepage": "https://github.com/bombkiml/beech-api/blob/master/README.md",
   "deprecated": false,
   "engines": {
-    "node": ">=14.19"
+    "node": ">=16.20"
   },
   "dependencies": {
     "app-root-path": "^3.0.0",
     "axios": "0.28.0",
     "child-process-promise": "^2.2.1",
     "cli-clear": "^1.0.4",
+    "compression": "^1.7.5",
     "cookie-parser": "1.4.3",
     "cors": "^2.8.1",
     "crypto-js": "^4.2.0",
