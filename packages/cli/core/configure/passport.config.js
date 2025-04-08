@@ -19,7 +19,7 @@ module.exports = {
     // The fields for authenticate, default fields: (`username` and `password`)
     username_field: "",
     password_field: "",
-    // JWT playload data
+    // JWT playload data, You can add it. Example: ["name", "email", ...]
     fields: [],
     // Other fields add for authentication.
     guard: {
