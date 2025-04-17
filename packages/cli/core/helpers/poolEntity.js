@@ -50,6 +50,8 @@ function checkAuthFields(pool_base, pool, passportTable, passportConfigField, cb
       } else {
         cb("The Base pool error. UNKNOWN pool_base = '"+ pool_base +"'", null);
       }
+    } else {
+      cb(null, []);
     }
   } catch (error) {
     cb(error, null);

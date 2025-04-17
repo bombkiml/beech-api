@@ -144,7 +144,8 @@ database_config: [
     password: "FjgcgJPylkV7EeQJjea_EeifPwaHVO9onD3ATk3YYAyvjtMGu3dcDS0ejA",
     database: "my_store_db",
     port: "3306",
-    is_connect: true, // boolean, Turn ON/OFF to connect
+    logging: console.log, // Shout log queury call. Learn more: https://sequelize.org/docs/v6/getting-started/#logging
+    is_connect: true, // Boolean, Turn ON/OFF to connect
   },
 
   ...
@@ -365,12 +366,15 @@ Now! you can request to `/fruit` with methods GET, POST, PATCH and DELETE like t
 |  Update  |  PATCH   | /fruit/:id             |     { }    |
 |  Delete  |  DELETE  | /fruit/:id             |     No     |
 
-### # Read with Query String Conditional, Grouping and Ordering (Support Readonly for GET method)
-For Example to Add some Basic Conditions, Grouping and Ordering with `QUERY STRING` into GET `/fruit?someField=[eq,1]&groupby=[id]&orderby=[id,desc]` Endpoint.
+### # Retrieving data with Query String
+
+Now you can add Query String with Conditional, Grouping and Ordering (Now Support Readonly for GET method)
+
+For Example to Add some Basic Conditions, Grouping and Ordering with `QUERY STRING` into GET `/fruit?someField=[eq,1]&groupby=[id]&orderby=[id,desc]` of your Endpoint.
 
 #### For Example:
 ```java
-// WHERE Condition
+// WHERE Conditions
 GET: /fruit?id=1                        // id = 1
 GET: /fruit?isActived=[eq,1]            // isActived = 1
 GET: /fruit?fruitName=[like,Banana%]    // fruitName LIKE 'Banana%'
@@ -389,7 +393,7 @@ GET: /fruit?oderby=[sort,desc]          // ORDER BY sort DESC
 For usage avariable:
 
 ```java
-// Basics
+// Basics conditions
 3                            // = 3
 [eq, 3]                      // = 3
 [ne, 20]                     // != 20
@@ -397,7 +401,7 @@ For usage avariable:
 [not, null]                  // IS NOT NULL
 [or, [5, 6]]                 // (someField = 5) OR (someField = 6) // Not support NULL value
 
-// Number comparisons
+// Number comparisons conditions
 [gt, 6]                      // > 6
 [gte, 6]                     // >= 6
 [lt, 10]                     // < 10
@@ -405,7 +409,7 @@ For usage avariable:
 [between, [6, 10]]           // BETWEEN 6 AND 10
 [notBetween, [11, 15]]       // NOT BETWEEN 11 AND 15
 
-// Other operators
+// Other operators conditions
 [in, [1, 2, 3]],             // IN [1, 2, 3]
 [notIn, [1, 2, 3]],          // NOT IN [1, 2, 3]
 [like, %hat]                 // LIKE '%hat'
