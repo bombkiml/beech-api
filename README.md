@@ -7,14 +7,43 @@
 
 # What is Beech API ?
 
-`Beech API` is The best Node.js framework it's help you with very easy create API project under [Node.js](https://nodejs.org)
+The Beech API is API framework, It's help you with very easy to create API project under [Node.js](https://nodejs.org)
 
-- Best Node.js API frameworks.
-- CRUD automation in Node.js.
-
-# Why Beech API ?
-
-`Beech API` is a Very easy for using, very feather framework, easy to installation, easy to implementation, and high security.
+- ✨ <b>Automation endpoints with CRUD</b>
+  - Retrieving data with Query String
+    - Conditions
+    - Grouping
+    - Ordering
+  - Transactions
+    - Disorganized transactions
+    - Organized transactions
+    - Transactions set Isolation levels
+- 🔐 <b>System Management of Authentication</b>
+  - Authentication manegement
+    - Request Token
+    - Create Auth
+    - Update Auth
+  - Verify identity management
+    - Two Factor
+- 🛠️ <b>Safe endpoints request</b>
+  - Rate Limit
+  - Block duplicate request per window
+  - Advance Guard (timimg)
+- 🙂 <b>Hight Secuerity under passport-jwt, oauth2</b>
+- 🌐 <b>Supported Official strategy</b>
+  - Google
+  - Facebook
+- 🖥️ <b>CORS Origin & Server Configuration</b>
+  - Config base public path `./`
+  - Allow origin whitelist
+- 📚 <b>Databases managements</b>
+  - Migrations
+  - Seeder
+- ☕ <b>Testing</b>
+- 🏃 <b>Implementration</b>
+  - pm2
+  - docker
+  - docker swarm (cluster)
 
 # Environment
 
@@ -22,7 +51,9 @@
 
 # Installation
 
-Beech API requires Node.js version 16.20.0 or above. You can manage multiple versions of Node on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows). So, Let's go to install `beech-api`
+Beech API needed Node.js version 16.20.0 or above. You can management multiple versions on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows).
+
+<b>So, Let's go to install</b> `beech-api`
 
 ```sh
 # NPM
@@ -104,7 +135,9 @@ The following commands are available:
   $ beech key:generate, key:gen       Re-Generate application key (Dangerous!).
   $ beech hash:<text>                 Hash text for Access to Database connection.
 ```
-❓ **Note:** Every to create new project will be generated new ``app_key`` in ``app.config.js`` file, If you can re-generate. Can use command ``$ beech key:generate`` or ``$ beech key:gen``
+❓ **Note:** Every to create new project will be generated new ``app_key`` in ``app.config.js`` file.
+
+❓ **Note:** If you can re-generate. Can use command ``$ beech key:generate`` or ``$ beech key:gen``
 
 # Database connection
 
@@ -144,7 +177,7 @@ database_config: [
     password: "FjgcgJPylkV7EeQJjea_EeifPwaHVO9onD3ATk3YYAyvjtMGu3dcDS0ejA",
     database: "my_store_db",
     port: "3306",
-    logging: console.log, // Shout log queury call. Learn more: https://sequelize.org/docs/v6/getting-started/#logging
+    logging: console.log, // Shout log query call. Learn more: https://sequelize.org/docs/v6/getting-started/#logging
     is_connect: true, // Boolean, Turn ON/OFF to connect
   },
 
@@ -368,9 +401,10 @@ Now! you can request to `/fruit` with methods GET, POST, PATCH and DELETE like t
 
 ### # Retrieving data with Query String
 
-Now you can add Query String with Conditional, Grouping and Ordering (Now Support Readonly for GET method)
+Now you can add Query String with Conditional, Grouping and Ordering (Now Support Readonly for GET method)<br/>
+Add some Basic Conditions, Grouping and Ordering with `QUERY STRING` into GET methods<br/>
 
-For Example to Add some Basic Conditions, Grouping and Ordering with `QUERY STRING` into GET `/fruit?someField=[eq,1]&groupby=[id]&orderby=[id,desc]` of your Endpoint.
+Retrieving `fruit` data with GET : `/fruit?someField=[eq,1]&groupby=[id]&orderby=[id,desc]`
 
 #### For Example:
 ```java
