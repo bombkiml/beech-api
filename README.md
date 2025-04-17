@@ -29,7 +29,7 @@ The Beech API is API framework, It's help you with very easy to create API proje
   - Rate Limit
   - Block duplicate request per window
   - Advance Guard (timimg)
-- 🙂 <b>Hight Secuerity under passport-jwt, oauth2</b>
+- 🙂 <b>Hight Security under passport-jwt, oauth2</b>
 - 🌐 <b>Supported Official strategy</b>
   - Google
   - Facebook
