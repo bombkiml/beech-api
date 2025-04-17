@@ -1194,7 +1194,7 @@ So, When you make the new endpoints it's automatic create test file end with `.s
 
 ***For Example :***
 
-📂 fruit-endpoints.spec.js
+📂 \_\_test\_\_/unit/endpoints/fruit-endpoints.spec.js
 ```js
 const endpoint = baseUrl.concat("/fruit");
 
