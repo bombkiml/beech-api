@@ -160,7 +160,7 @@ $ beech hash:password
 Output: FjgcgJPylkV7EeQJjea_EeifPwaHVO9onD3ATk3YYAyvjtMGu3dcDS0ejA
 
 ```
-For Example:
+***For Example :***
 
 📂 app.config.js
 ```js
@@ -189,103 +189,7 @@ database_config: [
 ```
 ❓ **Caution! :**  Every re-new generate `app_key`. Must to new Hash your Access and change to ALL Database connections.
 
-# Part of generate file
-
-## # Generate Endpoints
-
-The `endpoints` keep the endpoints basic request files currently support `GET`, `POST`, `PUT`, `PATCH` and `DELETE`.
-
-So, you might create new endpoints with constant `endpoint` object variable in `src/endpoints/` folder and file neme must be end with `-endpoints.js`
-
-```sh
-$ beech make endpointName
-```
-You might using [special] `-R, --require` for choose Model(s) used for that endpoint.
-
-### For Example ***(Basic)*** : Fruit endpoints.
-
-📂 fruit-endpoints.js
-```js
-exports.init = () => {
-
-  // GET method
-  endpoint.get("/fruit", Credentials, (req, res) => {
-    // @response
-    res.json({
-      code: 200,
-      status: "SUCCESS",
-      message: "GET /fruit request.",
-    });
-  });
-
-
-  // POST method
-  endpoint.post("/fruit", Credentials, (req, res) => {
-    // @response
-    res.json({
-      code: 200,
-      status: "SUCCESS",
-      message: "POST request at /fruit",
-      result: {
-        id: req.body.id,
-        name: req.body.name,
-      },
-    });
-  });
-
-
-  // PUT method
-  endpoint.put("/fruit/:id", Credentials, (req, res) => {
-    // @response
-    res.json({
-      code: 200,
-      status: "SUCCESS",
-      message: "PUT request at /fruit/" + req.params.id,
-    });
-  });
-
-
-  // DELETE method
-  endpoint.delete("/fruit/:id", Credentials, (req, res) => {
-    // @response
-    res.json({
-      code: 200,
-      status: "SUCCESS",
-      message: "DELETE request at /fruit/" + req.params.id,
-    });
-  });
-
-  ...
-
-}
-```
-
-### For Example ***(Sequelize)*** : Fruit endpoints. 
-
-📂 fruit-endpoints.js
-```js
-  // Require Model schema, Function & Others
-  const { Fruit } = require("@/models/Fruit");
-
-  exports.init = () => {
-
-    // GET method
-    endpoint.get('/fruit', async (req, res) => {
-      // example call Fruit model for get data
-      res.json({
-        code: 200,
-        status: "SUCCESS",
-        results: await Fruit.findAll();
-      });
-    });
-
-    ...
-
-  }
-```
-
-
-## # Generate Models ###
+# Models
 
 The `models` keep the files of function(s) data managemnets for Retriving, Creating, Updating and Destroying (CRUD). for understanding you might make model name same your table name inside `src/models` folder.
 
@@ -293,9 +197,13 @@ The `models` keep the files of function(s) data managemnets for Retriving, Creat
 $ beech make modelName --model
 ```
 
-### For Example ***(Basic)*** : Fruit model.
+## # Model (Basic)
 
-📂 Fruit.js
+  Basic model only support `MySQL` Raw Query format and freedom of your SQL query
+
+***For example :***
+
+📂 models/Fruit.js
 ```js
 module.exports = {
 
@@ -325,11 +233,15 @@ module.exports = {
 };
 ```
 
-### For Example ***(Sequelize)*** : Fruit model.
+## # Model (Sequelize)
 
+  Sequelize is a promise-based Node.js ORM tool for Postgres, MySQL, MariaDB, SQLite, Microsoft SQL Server, Oracle Database, Amazon Redshift and Snowflake’s Data Cloud. It features solid transaction support, relations, eager and lazy loading, read replication and more. <br/>You can learn more: [Sequelize docs](https://sequelize.org/docs/v6)
+  
   You can asign more DataTypes, Learn more : [Sequelize docs](https://sequelize.org/docs/v6/core-concepts/model-basics/#data-types)
 
-📂Fruit.js
+***For example :***
+
+📂 models/Fruit.js
 ```js
 const { Schema } = require("beech-api");
 
@@ -406,7 +318,8 @@ Add some Basic Conditions, Grouping and Ordering with `QUERY STRING` into GET me
 
 Retrieving `fruit` data with GET : `/fruit?someField=[eq,1]&groupby=[id]&orderby=[id,desc]`
 
-#### For Example:
+***For Example :***
+
 ```java
 // WHERE Conditions
 GET: /fruit?id=1                        // id = 1
@@ -551,7 +464,79 @@ Fruit.transaction(
 });
 ```
 
-## # Generate Helpers ###
+# Endpoints
+
+The `endpoints` keep the endpoints basic request files currently support `GET`, `POST`, `PUT`, `PATCH` and `DELETE`.
+
+So, you might create new endpoints with constant `endpoint` object variable in `src/endpoints/` folder and file neme must be end with `-endpoints.js`
+
+```sh
+$ beech make endpointName
+```
+You might using [special] `-R, --require` for choose Model(s) used for that endpoint.
+
+***For Example :***
+
+📂 endpoints/fruit-endpoints.js
+```js
+// Require Model schema, Function & Others
+const { Fruit } = require("@/models/Fruit");
+
+exports.init = () => {
+
+  // GET method
+  endpoint.get("/fruit", Credentials, async (req, res) => {
+    // example call Fruit model for get data
+    res.json({
+      code: 200,
+      status: "SUCCESS",
+      results: await Fruit.findAll();
+    });
+  });
+
+
+  // POST method
+  endpoint.post("/fruit", Credentials, (req, res) => {
+    // @response
+    res.json({
+      code: 200,
+      status: "SUCCESS",
+      message: "POST request at /fruit",
+      result: {
+        id: req.body.id,
+        name: req.body.name,
+      },
+    });
+  });
+
+
+  // PUT method
+  endpoint.put("/fruit/:id", Credentials, (req, res) => {
+    // @response
+    res.json({
+      code: 200,
+      status: "SUCCESS",
+      message: "PUT request at /fruit/" + req.params.id,
+    });
+  });
+
+
+  // DELETE method
+  endpoint.delete("/fruit/:id", Credentials, (req, res) => {
+    // @response
+    res.json({
+      code: 200,
+      status: "SUCCESS",
+      message: "DELETE request at /fruit/" + req.params.id,
+    });
+  });
+
+  ...
+
+}
+```
+
+# Helpers
 
 The `helpers` keep the files of functions for process specific something in the project. So, you might create the `helpers` in path `src/helpers` folder.
 
@@ -559,9 +544,9 @@ The `helpers` keep the files of functions for process specific something in the 
 $ beech make helperName --helper
 ```
 
-***For Example:*** Text editor helper.
+***For Example :***
 
-📂 TextEditor.js
+📂 helpers/TextEditor.js
 ```js
 module.exports = {
 
@@ -1207,7 +1192,7 @@ Test using [Jest](https://jestjs.io/en/) for testing the project. Jest is a deli
 
 So, When you make the new endpoints it's automatic create test file end with `.spec.js` in `__test__` folder with constant `baseUrl` variable and `axios` package.
 
-For Example endpoints testing :
+***For Example :***
 
 📂 fruit-endpoints.spec.js
 ```js
