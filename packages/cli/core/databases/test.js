@@ -25,11 +25,12 @@ function filterDbIsTrue(dbConfig, cb) {
   }
 }
 
-function testConnectInProcess (database_config, dbConnTotal, cb) {
+function testConnectInProcess(database_config, dbConnTotal, cb) {
   try {
+    // Recursive test connection
     let val = database_config.shift();
     if (val) {
-      initSequelize(val, async (err, sq) => {
+      initSequelize(val, true, async (err, sq) => {
         if (err) {
           console.error("[101m Failed [0m Can't connect to connection name:[36m", val.name, "[0m\n", err);
           cb(err, null, null);
@@ -88,33 +89,39 @@ function logit(msg, next = false) {
   }
 }
 
-function initSequelize(val, cb) {
+function initSequelize(val, testConn = true, cb) {
   try {
     const promise = new Promise((resolve) => {
       // check hash ?
       if(val.username && val.password) {
         if(val.username.length < 55 || val.password < 55) {
-          return cb("[91mERROR:[0m No Hash access for connect to database.\n", null);
+          return cb("[91mERR:[0m No Hash access for connect to database, Please Hashing your access by command `beech hash:<your_access>`\n", null);
         }
         let accessDb = [];
-        [val.username, val.password].map((e, k) => {
-          DeHashIt(e.toString(), null, (17).toString().slice(0,-1).length, (err, d) => {
-            if(!err) {
-              accessDb.push(d.split("sh,")[1].split(M(X).toString().slice(0,2)+M(X).toString())[0].slice(0,-1));
+        [val.username, val.password].map(async (e, k) => {
+          await DeHashIt(e.toString(), null, (17).toString().slice(0,-1).length, async (err, d) => {
+            if(err) {
+              cb("[91mERR:[0m Hash access error,", err);
+              throw err;
+            }
+            accessDb.push(d.split("sh,")[1].split(M(X).toString().slice(0,2)+M(X).toString())[0].slice(0,-1));
+            // Finally username & password
+            if(k+1==2) {
+              resolve(accessDb);
             }
           });
-          if(k+1==2) {
-            resolve(accessDb);
-          }
         });
       } else {
         resolve([null, null]);
       }
     });
     Promise.all([promise]).then(final => {
-      // stdout pre-flight connection
-      logit(`- [91m[${val.dialect}] [0m[36m${val.name}[0m`);
-      logit(emoji.get('heavy_multiplication_x') + `  [91m[${val.dialect}] [0m[36m${val.name}[0m`);
+      // Check test connection for stdout pre-flight
+      if(testConn) {
+        // stdout pre-flight connection
+        logit(`- [91m[${val.dialect}] [0m[36m${val.name}[0m`);
+        logit(emoji.get('heavy_multiplication_x') + `  [91m[${val.dialect}] [0m[36m${val.name}[0m`);
+      }
       // create connection
       const sq = new Sequelize({
         dialect: val.dialect || "mysql",
@@ -157,7 +164,10 @@ function initSequelize(val, cb) {
           nest: ((val.query) ? ((val.query.nest) ? val.query.nest : true) : true),
         }
       });
-      logit(emoji.get('heavy_check_mark') + `  [91m[${val.dialect}] [0m[36m${val.name}[0m`, true);
+      // Check test connection for stdout pre-flight (mark)
+      if(testConn) {
+        logit(emoji.get('heavy_check_mark') + `  [91m[${val.dialect}] [0m[36m${val.name}[0m`, true);
+      }
       cb(false, sq);
     }).catch(err => {
       console.log(`[103m[90m Warning [0m[0m Connection name \`[93m${val.name}[0m\``, err);
@@ -167,4 +177,48 @@ function initSequelize(val, cb) {
   }
 }
 
-module.exports = { filterDbIsTrue, testConnectInProcess, disConnectTestDB }
+function connectForGenerateModel(dbConnectName, tableName, databaseConfig, cb) {
+  /**
+   * Callback
+   * 
+   * err String : Error message
+   * tableSchema Object : Schema of table
+   * tableName String : table name
+   * 
+   */
+  const connectionChoose = databaseConfig.filter((e) => e.name == dbConnectName)[0];
+  initSequelize(connectionChoose, false, async (err, sq) => {
+    if (err) {
+      cb(err, null, null);
+    }
+    // Connection
+    await sq.authenticate()
+      .then(() => {
+        getTableSchema(sq, tableName, (errSchema, tableSchema) => {
+          if(errSchema) {
+            cb(errSchema, null, null);
+          } else {
+            // Closing database
+            sq.close();
+            // Callback
+            cb(null, tableSchema, tableName);
+          }
+        });
+      })
+      .catch(err => {
+        cb(err, null, null);
+      });
+  });
+}
+
+async function getTableSchema(sq, tableName, cb) {
+  try {
+    const queryInterface = sq.getQueryInterface();
+    const schema = await queryInterface.describeTable(tableName);
+    cb(null, schema);
+  } catch (error) {
+    cb("Fetching table schema " + error, null);
+  }
+}
+
+module.exports = { filterDbIsTrue, testConnectInProcess, disConnectTestDB, connectForGenerateModel }
