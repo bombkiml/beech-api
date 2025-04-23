@@ -587,12 +587,24 @@ class Generator {
         lines.push(`    allowNull: ${props.allowNull},`);
         // Check is primary key
         if (props.primaryKey) lines.push(`    primaryKey: true,`);
-        if (props.defaultValue !== null && props.defaultValue !== undefined) {
-          const defaultVal = typeof props.defaultValue === 'string' ? `'${props.defaultValue}'` : props.defaultValue;
-          lines.push(`    defaultValue: ${defaultVal},`);
-        }
         if (props.autoIncrement) lines.push(`    autoIncrement: true,`);
         //if (props.comment) lines.push(`    comment: '${props.comment}',`);
+
+        // Handle defaultValue
+        if (props.defaultValue !== null && props.defaultValue !== undefined) {
+          const defaultVal = String(props.defaultValue).toUpperCase();
+          if (
+            defaultVal === 'CURRENT_TIMESTAMP' ||
+            defaultVal === 'NOW()' ||
+            defaultVal.includes('CURRENT_TIMESTAMP')
+          ) {
+            lines.push(`    defaultValue: DataTypes.NOW,`);
+          } else if (typeof props.defaultValue === 'string') {
+            lines.push(`    defaultValue: '${props.defaultValue}',`);
+          } else {
+            lines.push(`    defaultValue: ${props.defaultValue},`);
+          }
+        }
         // Finally
         return `  ${name}: {\n${lines.join('\n')}\n  }`;
       });
