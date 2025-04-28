@@ -3,8 +3,6 @@ const fs = require("fs");
 const passport_config_file = "/passport.config.js";
 const auth = require("../auth/Credentials");
 const { TwoFactor } = require("../helpers/2fa");
-const { avgDeHashIt } = require(__dirname + "/../helpers/math");
-const moment = require("moment");
 
 module.exports = {
   expressStart() {

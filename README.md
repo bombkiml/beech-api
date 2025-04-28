@@ -200,6 +200,9 @@ $ beech make modelName --model
 
   Basic model only support `MySQL` Raw Query format and freedom of your SQL query
 
+  ❓ **Note:**  The Basic pool engine it's not support auto Endpoints.
+
+
 ***For example :***
 
 📂 models/Fruit.js
@@ -300,9 +303,9 @@ module.exports = {
   ...
 };
 ```
-#### That's cool! It's like magic creating The endpoints for you (CRUD) ✨
+### ✨ That's cool! It's like magic Creating The Endpoints for you (CRUD) ✨
 
-<b>Now!</b>, You can request to `/fruit` with methods GET, POST, PATCH and DELETE like this.
+<b style="font-size:12pt">Now!</b>, You can request to `/fruit` with methods GET, POST, PATCH and DELETE like this.
 
 | Efficacy |  Method  |        Endpoint        |    Body    |
 |:---------|:---------|:-----------------------|:-----------|

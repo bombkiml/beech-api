@@ -27,7 +27,7 @@ connectInProcess = async (database_config, headDbShow, cb) => {
         // check hash ?
         if(val.username && val.password) {
           if(val.username.length < 55 || val.password < 55) {
-            return cb("Error: No Hash access for connect to database.\n", null);
+            return cb("Error: Incorrect Hash access for connect to database.\n", null);
           }
           let accessDb = [];
           [val.username, val.password].map((e, k) => {
