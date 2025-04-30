@@ -2,6 +2,7 @@ const logUpdate = require("log-update");
 const emoji = require('node-emoji')
 const { DeHashIt, M, X } = require(__dirname + "/../helpers/math");
 const Sequelize = require('sequelize');
+const fs = require("fs");
 let testSql = {};
 
 function filterDbIsTrue(dbConfig, cb) {
@@ -134,11 +135,24 @@ function initSequelize(val, testConn = true, cb) {
         logit(`- [91m[${val.dialect}] [0m[36m${val.name}[0m`);
         logit(emoji.get('heavy_multiplication_x') + `  [91m[${val.dialect}] [0m[36m${val.name}[0m`);
       }
-      if(pool_base == "basic") {
-        if(final[0][2] != "mysql") {
-          return cb(`The Basic pool engine not support with: ${val.dialect}, Please use Sequelize engine.`, null);
+      fs.readFile("./global.config.js", 'utf8', (err, data) => {
+        if (err) {
+          console.log("\n[101m Faltal [0m Can't read `global.config.js` file.\n", err);
+          return; // break;
+        } else {
+          let buffer = Buffer.from(data);
+          let buf2str = buffer.toString();
+          let buf2json = JSON.parse(JSON.stringify(buf2str));
+          let pool_base = /global.pool_base\s+=\s+(?:"|')([^"]+)(?:"|')(?:\r|\n|$|;|\r)/i.exec(buf2json);
+          if (pool_base) {
+            if(pool_base == "basic") {
+              if(final[0][2] != "mysql") {
+                return cb(`The Basic pool engine not support with: ${val.dialect}, Please use Sequelize engine.`, null);
+              }
+            }
+          }
         }
-      }
+      });
       // create connection
       const sq = new Sequelize({
         dialect: val.dialect || "mysql",
