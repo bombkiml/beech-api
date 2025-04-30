@@ -2,6 +2,7 @@
 const logUpdate = require("log-update");
 const inquirer = require('inquirer');
 const walk = require("walk");
+const { connectForGenerateModel } = require("../databases/test");
 
 class Generator {
   constructor() {
@@ -404,12 +405,12 @@ class Generator {
                     // check pool_base
                     if (pool_base[ 1 ] == "basic") {
                       tmpModelsPath += '/_models_basic';
-                      this.generateModel(tmpModelsPath, dbSelected.selectDbConnect)
+                      this.generateModel(tmpModelsPath, dbSelected.selectDbConnect, appBuf2eval, pool_base[1])
                         .then(console.log)
                         .catch(console.log);
                     } else if (pool_base[ 1 ] == "sequelize") {
                       tmpModelsPath += '/_models';
-                      this.generateModel(tmpModelsPath, dbSelected.selectDbConnect)
+                      this.generateModel(tmpModelsPath, dbSelected.selectDbConnect, appBuf2eval, pool_base[1])
                         .then(console.log)
                         .catch(console.log);
                     } else {
@@ -429,35 +430,113 @@ class Generator {
     });
   }
 
-  generateModel(tmpModelsPath, dbSelected) {
+  generateModel(tmpModelsPath, dbSelected, appBuf2eval, pool_base) {
     return new Promise((resolve, reject) => {
       try {
+        // Show generating msg
+        const frames = [
+          '\n[36m[-] Generating[0m',
+          '\n[36m[\\] Generating.[0m',
+          '\n[36m[|] Generating..[0m',
+          '\n[36m[/] Generating...[0m'
+        ];
+        let i = 0;
+        var refreshGenerateIntervalId = null;
+        // Save model folder
         let modelPath = './src/models/';
-        // argument join `slash`
+        // Argument join `slash`
         let arg = this.argument.replace(/^\/+|\/+$/g, '');
         arg = arg.split('/');
         let models = arg.pop();
+        let oriModelsName = models.slice(0);
         models = models.charAt(0).toUpperCase() + models.slice(1);
         let newModel = models.split("_").map(e => e.charAt(0).toUpperCase() + e.slice(1)).join("");
         let subFolder = arg.join('/');
-        // models
+        // Declare models
         let fullModels = modelPath + subFolder.concat('/') + models.concat('.js');
 
-        // check file exists
+        /**
+         * All properties
+         * 
+         * @tmpModelPath String : path to keep generate model file
+         * @dbSelect String : database connection name
+         * @appBug2eval Object : database connection object
+         * @pool_base Object : pool base connection
+         * 
+         * @i Number : loop count running...
+         * @refreshGenerateIntervalId Object : for clear interval id
+         * 
+         * @arg String : argument from typing
+         * @models String : model name
+         * @oriModelsName String : original model name from typing
+         * @newModel String : model first upper case
+         * @subFolder String : agument sub folder
+         * @fullModels String : full model path and model file name
+         * 
+         */
+        // Check file exists
         if (!this.fs.existsSync(fullModels)) {
-          // generater model
-          this.makeFolder(modelPath + subFolder)
-            .then(this.copy.bind(this, tmpModelsPath, fullModels))
-            .then(this.modelContentReplace.bind(this, fullModels, {
-              'modelNameUppercase': newModel,
-              'modelName': models.toLowerCase(),
-              'dbSelected': dbSelected,
-            }))
-            .then(logUpdate("\n[104m [37mProcessing[0m [0m The model `" + models + "` it's generating..."))
-            .then(generated => logUpdate(generated))
-            .catch(err => {
-              throw err;
+          // Check pool base is basic|sequelize
+          if(pool_base == "basic") {
+            // Generate basic model
+            this.makeFolder(modelPath + subFolder)
+              .then(this.copy.bind(this, tmpModelsPath, fullModels))
+              .then(this.modelContentReplace.bind(this, fullModels, {
+                'modelName': oriModelsName,
+                'dbSelected': dbSelected,
+              }))
+              .then(
+                refreshGenerateIntervalId = setInterval(() => {
+                  const frame = frames[i = ++i % frames.length];
+                  logUpdate(`${frame}`);
+                }, 300)
+              )
+              .then(generated => {
+                logUpdate(generated);
+                clearInterval(refreshGenerateIntervalId);
+              })
+              .catch(err => {
+                throw err;
+              });
+          } else if(pool_base == "sequelize") {
+            // Gether table schema
+            connectForGenerateModel(dbSelected, oriModelsName, appBuf2eval.database_config, (err, tableSchema, tableName) => {
+              if(err) {
+                throw logUpdate("\n[101m Faltal [0m", String(err), "\n");
+              } else {
+                // Raw model schema
+                this.rawSchemaTable(dbSelected, newModel, tableName, tableSchema, (SchemaErr, rawSchema) => {
+                  if(err) {
+                    throw logUpdate("\n[101m Faltal [0m RAW Schema ERR:", String(SchemaErr), "\n");
+                  } else {
+                    // Generate sequelize model
+                    this.makeFolder(modelPath + subFolder)
+                    .then(this.copy.bind(this, tmpModelsPath, fullModels))
+                    .then(this.modelContentReplace.bind(this, fullModels, {
+                      'modelNameUppercase': newModel,
+                      'modelStructure': rawSchema,
+                    }))
+                    .then(
+                      refreshGenerateIntervalId = setInterval(() => {
+                        const frame = frames[i = ++i % frames.length];
+                        logUpdate(`${frame}`);
+                      }, 300)
+                    )
+                    .then(generated => {
+                      logUpdate(generated);
+                      clearInterval(refreshGenerateIntervalId);
+                    })
+                    .catch(err => {
+                      throw err;
+                    });
+                  }
+                });
+              }
             });
+          } else {
+            // Fallback (When Accident)
+            resolve("\n[101m Faltal [0m The pool_base in `global.config.js` file does not match the specific.");
+          }
         } else {
           resolve("\n[103m[90m Warning [0m[0m The model `" + models + "` it's duplicated.");
         }
@@ -465,6 +544,75 @@ class Generator {
         reject(error);
       }
     });
+  }
+
+  rawSchemaTable(dbNameSelected, newModelName, tableName, modelSchema, cb) {
+    try {
+      // Function map type
+      const mapToSequelizeType = (rawType) => {
+        const type = rawType.toUpperCase();
+        // Assign all conditions
+        if (type.includes('INT')) return 'DataTypes.INTEGER';
+        if (type.includes('BIGINT')) return 'DataTypes.BIGINT';
+        if (type.includes('FLOAT')) return 'DataTypes.FLOAT';
+        if (type.includes('DOUBLE')) return 'DataTypes.DOUBLE';
+        if (type.includes('DECIMAL')) return 'DataTypes.DECIMAL';
+        if (type.includes('BOOLEAN') || type === 'TINYINT(1)') return 'DataTypes.BOOLEAN';
+        if (type.includes('CHAR')) {
+          const match = type.match(/\((\d+)\)/);
+          const length = match ? match[1] : '255';
+          return `DataTypes.STRING(${length})`;
+        }
+        if (type.includes('VARCHAR')) {
+          const match = type.match(/\((\d+)\)/);
+          const length = match ? match[1] : '255';
+          return `DataTypes.STRING(${length})`;
+        }
+        if (type.includes('TEXT')) return 'DataTypes.TEXT';
+        if (type.includes('DATE') || type.includes('TIME')) return 'DataTypes.DATE';
+        if (type.includes('JSON')) return 'DataTypes.JSON';
+        if (type.includes('UUID')) return 'DataTypes.UUID';
+        if (type.includes('BLOB')) return 'DataTypes.BLOB';
+        if (type.includes('ENUM')) return 'DataTypes.ENUM'; // Needs manual values
+        if (type.includes('GEOMETRY')) return 'DataTypes.GEOMETRY';
+        // Fallback
+        return `DataTypes.STRING`;
+      };
+      // Looping key fields
+      const fields = Object.entries(modelSchema).map(([name, props]) => {
+        // Declare line
+        const lines = [];
+        // Push line and assign space for beautiful
+        lines.push(`    type: ${mapToSequelizeType(props.type)},`);
+        lines.push(`    allowNull: ${props.allowNull},`);
+        // Check is primary key
+        if (props.primaryKey) lines.push(`    primaryKey: true,`);
+        if (props.autoIncrement) lines.push(`    autoIncrement: true,`);
+        //if (props.comment) lines.push(`    comment: '${props.comment}',`);
+
+        // Handle defaultValue
+        if (props.defaultValue !== null && props.defaultValue !== undefined) {
+          const defaultVal = String(props.defaultValue).toUpperCase();
+          if (
+            defaultVal === 'CURRENT_TIMESTAMP' ||
+            defaultVal === 'NOW()' ||
+            defaultVal.includes('CURRENT_TIMESTAMP')
+          ) {
+            lines.push(`    defaultValue: DataTypes.NOW,`);
+          } else if (typeof props.defaultValue === 'string') {
+            lines.push(`    defaultValue: '${props.defaultValue}',`);
+          } else {
+            lines.push(`    defaultValue: ${props.defaultValue},`);
+          }
+        }
+        // Finally
+        return `  ${name}: {\n${lines.join('\n')}\n  }`;
+      });
+      // Callback
+      cb(null, `const ${newModelName} = Schema(sql.${dbNameSelected}).define("${tableName}", {\n${fields.join(',\n')}\n});`);
+    } catch (error) {
+      cb(error, null);
+    }
   }
 
   makeHelper() {
@@ -632,6 +780,7 @@ class Generator {
               text = text.replace(new RegExp('{{dbSelected}}', 'g'), textCondition.dbSelected);
               // check add model name text uppercase
               if (Object.keys(textCondition).length > 1) {
+                text = text.replace(new RegExp('{{modelStructure}}', 'g'), textCondition.modelStructure);
                 text = text.replace(new RegExp('{{modelNameUppercase}}', 'g'), textCondition.modelNameUppercase);
               }
               // writing the file
@@ -644,7 +793,7 @@ class Generator {
               });
             }
           })
-        }, 1000);
+        }, 2000);
       } catch (error) {
         reject(error);
       }

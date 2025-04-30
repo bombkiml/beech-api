@@ -6,7 +6,7 @@ async function Guard(usr, pws, fields = [], fieldCondArr = {}, cb) {
   try {
     const passport_config = require(appRoot + "/passport.config.js");
     let stm = '';
-    let cond = '1';
+    let cond = '1=1';
     let passportTable = await [passport_config.model.table || "users"];
     let passportUsernameField = passport_config.model.username_field || "username";
     let passportPasswordField = passport_config.model.password_field || "password";
@@ -16,18 +16,20 @@ async function Guard(usr, pws, fields = [], fieldCondArr = {}, cb) {
       if(err) {
         cb(err, null);
       } else {
-        cond += ` AND ${passportUsernameField} = '${usr}' AND ${passportPasswordField} = '${md5(pws + secret)}'`
+        cond += ` AND ${passportUsernameField} = ? AND ${passportPasswordField} = ?`
+        let dynReplacement = [];
         // Check for generate more condition
         if(fieldCondArr) {
-          await Object.keys(fieldCondArr).forEach(key => {
-            cond += ` AND ${key} = '${fieldCondArr[key]}'`;
+          Object.keys(fieldCondArr).forEach(key => {
+            cond += ` AND ${key} = ?`;
+            dynReplacement.push(fieldCondArr[key]);
           });
         }
         // check base pool
         if (pool_base == "basic") {
           // pool base is MySQL
-          stm += 'SELECT ?? FROM ?? WHERE ' + cond;
-          await pool.query(stm, [passportFields, passportTable], (err, row) => {
+          stm += 'SELECT ?? FROM ?? WHERE ' + cond + ' LIMIT 1;';
+          await pool.query(stm, [passportFields, passportTable, usr, md5(pws + secret), ...dynReplacement], (err, row) => {
             if(err) {
               cb(err, null);
             } else {
@@ -39,6 +41,7 @@ async function Guard(usr, pws, fields = [], fieldCondArr = {}, cb) {
           try {
             stm += `SELECT ${passportFields} FROM ${passportTable} WHERE ` + cond;
             let result = await pool.query(stm, {
+              replacements: [usr, md5(pws + secret), ...dynReplacement],
               type: QueryTypes.SELECT
             });
             return cb(null, result);

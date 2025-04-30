@@ -43,15 +43,14 @@ The Beech API is API framework, It's help you with very easy to create API proje
 - 🏃 <b>Implementration</b>
   - pm2
   - docker
-  - docker swarm (cluster)
 
 # Environment
 
-- [`Node.js`](https://nodejs.org) >= 16.20.0+ (recommended)
+- [`Node.js`](https://nodejs.org) >= 18.17.1+ (recommended)
 
 # Installation
 
-Beech API needed Node.js version 16.20.0 or above. You can management multiple versions on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows).
+Beech API needed Node.js version 18.17.1 or above. You can management multiple versions on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows).
 
 <b>So, Let's go to install</b> `beech-api`
 
@@ -201,6 +200,9 @@ $ beech make modelName --model
 
   Basic model only support `MySQL` Raw Query format and freedom of your SQL query
 
+  ❓ **Note:**  The Basic pool engine it's not support auto Endpoints.
+
+
 ***For example :***
 
 📂 models/Fruit.js
@@ -239,6 +241,8 @@ module.exports = {
   
   You can asign more DataTypes, Learn more : [Sequelize docs](https://sequelize.org/docs/v6/core-concepts/model-basics/#data-types)
 
+  ❓ **Note:** When you generate a model it's create table structure for automatically for you.
+
 ***For example :***
 
 📂 models/Fruit.js
@@ -259,6 +263,7 @@ const Fruit = Schema(sql.default_db).define("fruit", {
     type: DataTypes.INTEGER,
     allowNull: false, // Allow null feilds
   },
+  sort: DataTypes.STRING,
   createdAt: DataTypes.DATE,
   updatedAt: DataTypes.DATE,
 });
@@ -298,9 +303,9 @@ module.exports = {
   ...
 };
 ```
-#### That's cool! It's like magic creating The endpoints for you (CRUD) ✨
+### ✨ That's cool! It's like magic Creating The Endpoints for you (CRUD) ✨
 
-Now! you can request to `/fruit` with methods GET, POST, PATCH and DELETE like this.
+<b style="font-size:12pt">Now!</b>, You can request to `/fruit` with methods GET, POST, PATCH and DELETE like this.
 
 | Efficacy |  Method  |        Endpoint        |    Body    |
 |:---------|:---------|:-----------------------|:-----------|
@@ -308,13 +313,15 @@ Now! you can request to `/fruit` with methods GET, POST, PATCH and DELETE like t
 |  Read    |  GET     | /fruit                 |     No     |
 |  Read    |  GET     | /fruit/:limit/:offset  |     No     |
 |  Read    |  GET     | /fruit?someField=1     |     No     |
+|  Read    |  GET     | /fruit?orderby=sort    |     No     |
+|  Read    |  GET     | /fruit?groupby=id      |     No     |
 |  Update  |  PATCH   | /fruit/:id             |     { }    |
 |  Delete  |  DELETE  | /fruit/:id             |     No     |
 
 ### # Retrieving data with Query String
 
 Now you can add Query String with Conditional, Grouping and Ordering (Now Support Readonly for GET method)<br/>
-Add some Basic Conditions, Grouping and Ordering with `QUERY STRING` into GET methods<br/>
+Add some Basic Conditions, Grouping and Ordering with `QUERY STRING` under GET methods<br/>
 
 Retrieving `fruit` data with GET : `/fruit?someField=[eq,1]&groupby=[id]&orderby=[id,desc]`
 
@@ -1238,7 +1245,7 @@ Docker builds images automatically by reading the instructions from a Dockerfile
 
 📂 Dockerfile
 ```js
-FROM node:16-alpine
+FROM node:18-alpine
 ENV NODE_ENV=production
 WORKDIR /usr/src/api
 COPY ["package.json", "package-lock.json*", "./"]

@@ -1,14 +1,5 @@
 module.exports = {
 
-  // Example basic function return exam data
-  getData() {
-    return [
-      { "id": 1, "name": "Oggy" },
-      { "id": 2, "name": "Jack" },
-      { "id": 3, "name": "The Cockroaches Gang" }
-    ];
-  },
-
   // Example basic function get data from table {{modelName}}
   findAll() {
     return new Promise((resolve, reject) => {
