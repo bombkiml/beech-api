@@ -74,7 +74,6 @@ module.exports = {
             var passportPasswordField = passport_config.model.password_field || "password";
             var passportTable = passport_config.model.table || "users";
             var pool = eval("sql." + passport_config.model.name);
-            // Check your assign auth fields
             checkAuthFields(pool_base, pool, passportTable, passport_config.model.fields, (err, msg) => {
               if(err) {
                 console.error("\n[101m Error [0m", err);
@@ -158,38 +157,21 @@ module.exports = {
                         } else if (pool_base == "sequelize") {
                           // pool base is Sequelize
                           try {
-                            // Function Find table primaryKey
-                            const findPkOfTable = () => {
-                              return new Promise(async (resolve, reject) => {
-                                try {
-                                  const tableInfo = await pool.getQueryInterface().describeTable(String(passportTable));
-                                  const primaryKeys = Object.entries(tableInfo).filter(([columnName, columnInfo]) => columnInfo.primaryKey).map(([columnName]) => columnName);
-                                  if(primaryKeys.length) {
-                                    resolve(primaryKeys);
-                                  } else {
-                                    resolve([Object.keys(tableInfo)[0]]);
-                                  }
-                                } catch (error) {
-                                  reject(`Query Interface ${error}`);
-                                }
-                              });
-                            }
-                            // Find table primaryKey
-                            findPkOfTable()
-                              .then((fieldPk) => {
-                                pool.query("SELECT " + passportFields + " FROM " + passportTable + " WHERE " + fieldPk + " = :pk", {
-                                  replacements: {
-                                    pk: + jwtPayload[fieldPk]
-                                  },
-                                  type: QueryTypes.SELECT,
-                                }).then((result) => {
-                                  return done(null, JSON.parse(JSON.stringify(result[ 0 ] || null)));
-                                }).catch((err) => {
-                                  return done(err, null);
-                                });
-                              }).catch(err => {
+                            pool.query("SHOW KEYS FROM " + passportTable + " WHERE Key_name = 'PRIMARY'", { type: QueryTypes.SELECT }).then((pk) => {
+                              let fieldPk = pk[0].Column_name;
+                              pool.query("SELECT " + passportFields + " FROM " + passportTable + " WHERE " + fieldPk + " = :pk", {
+                                replacements: {
+                                  pk: + jwtPayload[fieldPk]
+                                },
+                                type: QueryTypes.SELECT,
+                              }).then((result) => {
+                                return done(null, JSON.parse(JSON.stringify(result[ 0 ] || null)));
+                              }).catch((err) => {
                                 return done(err, null);
                               });
+                            }).catch((err) => {
+                              return done(err, null);
+                            });
                           } catch (error) {
                             return done(error, null);
                           }

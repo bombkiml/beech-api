@@ -1,9 +1,5 @@
-const fs = require("fs");
 const { FindOne } = require("../../../lib/src/user");
 const { findPassportPk } = require("./poolEntity");
-const passport_config_file = appRoot + "/passport.config.js";
-const md5 = require("md5");
-const secret = require("../../../lib/src/salt").salt;
 
 function TwoFactor(user, reqBody, guard_field, cb) {
   try {
@@ -12,22 +8,6 @@ function TwoFactor(user, reqBody, guard_field, cb) {
         cb(true, err);
       } else {
         if(userId.length) {
-          if (fs.existsSync(passport_config_file)) {
-            passport_config = require(passport_config_file);
-          } else {
-            cb(true, {
-              code: 500,
-              status: "INTERNAL_SERVER_ERR",
-              error: {
-                code: 404,
-                status: "ERROR_FILE_NOT_EXISTS",
-                message: "The file passport.config.js not exists!",
-              }
-            });
-            return;
-          }
-          let usrField = passport_config.model.username_field || "username";
-          let pwdField = passport_config.model.password_field || "password"
           // filter without base user, pass
           let without_base = Object.keys(reqBody).map((k) => {
             return guard_field.filter((e) => e == k)[0];
@@ -39,8 +19,7 @@ function TwoFactor(user, reqBody, guard_field, cb) {
           // check length match ?
           if(x.length == guard_field.length) {
             let z = {};
-            z[usrField] = reqBody[usrField];
-            z[pwdField] = md5(reqBody[pwdField] + secret);
+            z[userId[0]] = user.id;
             x.map((guard) => {
               z[guard] = reqBody[guard];
             });

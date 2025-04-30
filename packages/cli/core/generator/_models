@@ -1,6 +1,29 @@
 const { Schema } = require("beech-api");
 // {{modelNameUppercase}} structure
-{{modelStructure}}
-// Asign more DataTypes, Learn more: https://sequelize.org/docs/v6/core-concepts/model-basics/#data-types
+const {{modelNameUppercase}} = Schema(sql.{{dbSelected}}).define("{{modelName}}", {
+  {{modelName}}_id: {
+    field: "id",
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  examField1: DataTypes.STRING,
+  examField3: DataTypes.DATE,
+  examField4: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    // set(value) {
+    //   this.setDataValue("examField4", md5(value));
+    // },
+  },
+  createdAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE,
+  // Asign more DataTypes, Learn more: https://sequelize.org/docs/v6/core-concepts/model-basics/#data-types
+});
 
-module.exports = { {{modelNameUppercase}} };
+// Example basic function Get one data by id
+function exampleFindOne{{modelNameUppercase}}ById(id) {
+  return {{modelNameUppercase}}.findOne({ where: { id: id } });
+}
+
+module.exports = { {{modelNameUppercase}}, exampleFindOne{{modelNameUppercase}}ById };

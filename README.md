@@ -9,50 +9,13 @@
 
 The Beech API is API framework, It's help you with very easy to create API project under [Node.js](https://nodejs.org)
 
-- ✨ <b>Automation endpoints with CRUD</b>
-  - Retrieving data with Query String
-    - Conditions
-    - Grouping
-    - Ordering
-  - Transactions
-    - Disorganized transactions
-    - Organized transactions
-    - Transactions set Isolation levels
-- 🔐 <b>System Management of Authentication</b>
-  - Authentication manegement
-    - Request Token
-    - Create Auth
-    - Update Auth
-  - Verify identity management
-    - Two Factor
-- 🛠️ <b>Safe endpoints request</b>
-  - Rate Limit
-  - Block duplicate request per window
-  - Advance Guard (timimg)
-- 🙂 <b>Hight Security under passport-jwt, oauth2</b>
-- 🌐 <b>Supported Official strategy</b>
-  - Google
-  - Facebook
-- 🖥️ <b>CORS Origin & Server Configuration</b>
-  - Config base public path `./`
-  - Allow origin whitelist
-- 📚 <b>Databases managements</b>
-  - Migrations
-  - Seeder
-- ☕ <b>Testing</b>
-- 🏃 <b>Implementration</b>
-  - pm2
-  - docker
-
 # Environment
 
-- [`Node.js`](https://nodejs.org) >= 18.17.1+ (recommended)
+- [`Node.js`](https://nodejs.org) >= 14.19.0+ (recommended)
 
 # Installation
 
-Beech API needed Node.js version 18.17.1 or above. You can management multiple versions on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows).
-
-<b>So, Let's go to install</b> `beech-api`
+Beech API requires Node.js version 14.19.0 or above. You can manage multiple versions of Node on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows). So, Let's go to install `beech-api`
 
 ```sh
 # NPM
@@ -134,9 +97,7 @@ The following commands are available:
   $ beech key:generate, key:gen       Re-Generate application key (Dangerous!).
   $ beech hash:<text>                 Hash text for Access to Database connection.
 ```
-❓ **Note:** Every to create new project will be generated new ``app_key`` in ``app.config.js`` file.
-
-❓ **Note:** If you can re-generate. Can use command ``$ beech key:generate`` or ``$ beech key:gen``
+❓ **Note:** Every to create new project will be generated new ``app_key`` in ``app.config.js`` file, If you can re-generate. Can use command ``$ beech key:generate`` or ``$ beech key:gen``
 
 # Database connection
 
@@ -159,7 +120,7 @@ $ beech hash:password
 Output: FjgcgJPylkV7EeQJjea_EeifPwaHVO9onD3ATk3YYAyvjtMGu3dcDS0ejA
 
 ```
-***For Example :***
+Example:
 
 📂 app.config.js
 ```js
@@ -176,8 +137,7 @@ database_config: [
     password: "FjgcgJPylkV7EeQJjea_EeifPwaHVO9onD3ATk3YYAyvjtMGu3dcDS0ejA",
     database: "my_store_db",
     port: "3306",
-    logging: console.log, // Shout log query call. Learn more: https://sequelize.org/docs/v6/getting-started/#logging
-    is_connect: true, // Boolean, Turn ON/OFF to connect
+    is_connect: true, // boolean, Turn ON/OFF to connect
   },
 
   ...
@@ -188,7 +148,103 @@ database_config: [
 ```
 ❓ **Caution! :**  Every re-new generate `app_key`. Must to new Hash your Access and change to ALL Database connections.
 
-# Models
+# Part of generate file
+
+## # Generate Endpoints
+
+The `endpoints` keep the endpoints basic request files currently support `GET`, `POST`, `PUT`, `PATCH` and `DELETE`.
+
+So, you might create new endpoints with constant `endpoint` object variable in `src/endpoints/` folder and file neme must be end with `-endpoints.js`
+
+```sh
+$ beech make endpointName
+```
+You might using [special] `-R, --require` for choose Model(s) used for that endpoint.
+
+### Example ***(Basic)*** : Fruit endpoints.
+
+📂 fruit-endpoints.js
+```js
+exports.init = () => {
+
+  // GET method
+  endpoint.get("/fruit", Credentials, (req, res) => {
+    // @response
+    res.json({
+      code: 200,
+      status: "SUCCESS",
+      message: "GET /fruit request.",
+    });
+  });
+
+
+  // POST method
+  endpoint.post("/fruit", Credentials, (req, res) => {
+    // @response
+    res.json({
+      code: 200,
+      status: "SUCCESS",
+      message: "POST request at /fruit",
+      result: {
+        id: req.body.id,
+        name: req.body.name,
+      },
+    });
+  });
+
+
+  // PUT method
+  endpoint.put("/fruit/:id", Credentials, (req, res) => {
+    // @response
+    res.json({
+      code: 200,
+      status: "SUCCESS",
+      message: "PUT request at /fruit/" + req.params.id,
+    });
+  });
+
+
+  // DELETE method
+  endpoint.delete("/fruit/:id", Credentials, (req, res) => {
+    // @response
+    res.json({
+      code: 200,
+      status: "SUCCESS",
+      message: "DELETE request at /fruit/" + req.params.id,
+    });
+  });
+
+  ...
+
+}
+```
+
+### Example ***(Sequelize)*** : Fruit endpoints. 
+
+📂 fruit-endpoints.js
+```js
+  // Require Model schema, Function & Others
+  const { Fruit } = require("@/models/Fruit");
+
+  exports.init = () => {
+
+    // GET method
+    endpoint.get('/fruit', async (req, res) => {
+      // example call Fruit model for get data
+      res.json({
+        code: 200,
+        status: "SUCCESS",
+        results: await Fruit.findAll();
+      });
+    });
+
+    ...
+
+  }
+```
+
+
+## # Generate Models ###
 
 The `models` keep the files of function(s) data managemnets for Retriving, Creating, Updating and Destroying (CRUD). for understanding you might make model name same your table name inside `src/models` folder.
 
@@ -196,16 +252,9 @@ The `models` keep the files of function(s) data managemnets for Retriving, Creat
 $ beech make modelName --model
 ```
 
-## # Model (Basic)
+### Example ***(Basic)*** : Fruit model.
 
-  Basic model only support `MySQL` Raw Query format and freedom of your SQL query
-
-  ❓ **Note:**  The Basic pool engine it's not support auto Endpoints.
-
-
-***For example :***
-
-📂 models/Fruit.js
+📂 Fruit.js
 ```js
 module.exports = {
 
@@ -235,17 +284,11 @@ module.exports = {
 };
 ```
 
-## # Model (Sequelize)
+### Example ***(Sequelize)*** : Fruit model.
 
-  Sequelize is a promise-based Node.js ORM tool for Postgres, MySQL, MariaDB, SQLite, Microsoft SQL Server, Oracle Database, Amazon Redshift and Snowflake’s Data Cloud. It features solid transaction support, relations, eager and lazy loading, read replication and more. <br/>You can learn more: [Sequelize docs](https://sequelize.org/docs/v6)
-  
   You can asign more DataTypes, Learn more : [Sequelize docs](https://sequelize.org/docs/v6/core-concepts/model-basics/#data-types)
 
-  ❓ **Note:** When you generate a model it's create table structure for automatically for you.
-
-***For example :***
-
-📂 models/Fruit.js
+📂Fruit.js
 ```js
 const { Schema } = require("beech-api");
 
@@ -263,7 +306,6 @@ const Fruit = Schema(sql.default_db).define("fruit", {
     type: DataTypes.INTEGER,
     allowNull: false, // Allow null feilds
   },
-  sort: DataTypes.STRING,
   createdAt: DataTypes.DATE,
   updatedAt: DataTypes.DATE,
 });
@@ -303,86 +345,18 @@ module.exports = {
   ...
 };
 ```
-### ✨ That's cool! It's like magic Creating The Endpoints for you (CRUD) ✨
+#### That's cool! It's like magic creating The endpoints for you (CRUD) ✨
 
-<b style="font-size:12pt">Now!</b>, You can request to `/fruit` with methods GET, POST, PATCH and DELETE like this.
+Now! you can request to `/fruit` with methods GET, POST, PATCH and DELETE like this.
 
 | Efficacy |  Method  |        Endpoint        |    Body    |
 |:---------|:---------|:-----------------------|:-----------|
-|  Create  |  POST    | /fruit                 |     { }    |
-|  Read    |  GET     | /fruit                 |     No     |
-|  Read    |  GET     | /fruit/:limit/:offset  |     No     |
-|  Read    |  GET     | /fruit?someField=1     |     No     |
-|  Read    |  GET     | /fruit?orderby=sort    |     No     |
-|  Read    |  GET     | /fruit?groupby=id      |     No     |
-|  Update  |  PATCH   | /fruit/:id             |     { }    |
-|  Delete  |  DELETE  | /fruit/:id             |     No     |
-
-### # Retrieving data with Query String
-
-Now you can add Query String with Conditional, Grouping and Ordering (Now Support Readonly for GET method)<br/>
-Add some Basic Conditions, Grouping and Ordering with `QUERY STRING` under GET methods<br/>
-
-Retrieving `fruit` data with GET : `/fruit?someField=[eq,1]&groupby=[id]&orderby=[id,desc]`
-
-***For Example :***
-
-```java
-// WHERE Conditions
-GET: /fruit?id=1                        // id = 1
-GET: /fruit?isActived=[eq,1]            // isActived = 1
-GET: /fruit?fruitName=[like,Banana%]    // fruitName LIKE 'Banana%'
-GET: /fruit?cost=[gt,50]&qty=[lt,10]    // cost > 50 AND qty < 10
-GET: /fruit/10/0?qty=[lt,10]            // qty < 10 LIMIT 0,10
-
-// Grouping
-GET: /fruit?groupby=id                  // GROUP BY id
-GET: /fruit?groupby=[id,fruitName]      // GROUP BY id, fruitName
-
-// Ordering
-GET: /fruit?oderby=id                   // ORDER BY id ASC
-GET: /fruit?oderby=[sort,desc]          // ORDER BY sort DESC
-```
-
-For usage avariable:
-
-```java
-// Basics conditions
-3                            // = 3
-[eq, 3]                      // = 3
-[ne, 20]                     // != 20
-[is, null]                   // IS NULL
-[not, null]                  // IS NOT NULL
-[or, [5, 6]]                 // (someField = 5) OR (someField = 6) // Not support NULL value
-
-// Number comparisons conditions
-[gt, 6]                      // > 6
-[gte, 6]                     // >= 6
-[lt, 10]                     // < 10
-[lte, 10]                    // <= 10
-[between, [6, 10]]           // BETWEEN 6 AND 10
-[notBetween, [11, 15]]       // NOT BETWEEN 11 AND 15
-
-// Other operators conditions
-[in, [1, 2, 3]],             // IN [1, 2, 3]
-[notIn, [1, 2, 3]],          // NOT IN [1, 2, 3]
-[like, %hat]                 // LIKE '%hat'
-[notLike, %hat]              // NOT LIKE '%hat'
-[startsWith, hat]            // LIKE 'hat%'
-[endsWith, hat]              // LIKE '%hat'
-[substring, hat]             // LIKE '%hat%'
-
-// Grouping
-id                           // GROUP BY id
-[id]                         // ORDER BY id
-[id, fruitName]              // ORDER BY id, fruitName
-
-// Ordering
-id                           // ORDER BY id ASC (Basic usage default Ascending)
-[id, asc]                    // ORDER BY id ASC
-[id, desc]                   // ORDER BY id ASC
-[[id, desc], [sort, asc]]    // ORDER BY id DESC, sort ASC
-```
+|  Create  |  POST    | /fruit                |     { }    |
+|  Read    |  GET     | /fruit                |     No     |
+|  Read    |  GET     | /fruit/:id            |     No     |
+|  Read    |  GET     | /fruit/:limit/:offset |     No     |
+|  Update  |  PATCH   | /fruit/:id            |     { }    |
+|  Delete  |  DELETE  | /fruit/:id            |     No     |
 
 ## # Transactions
 
@@ -471,79 +445,7 @@ Fruit.transaction(
 });
 ```
 
-# Endpoints
-
-The `endpoints` keep the endpoints basic request files currently support `GET`, `POST`, `PUT`, `PATCH` and `DELETE`.
-
-So, you might create new endpoints with constant `endpoint` object variable in `src/endpoints/` folder and file neme must be end with `-endpoints.js`
-
-```sh
-$ beech make endpointName
-```
-You might using [special] `-R, --require` for choose Model(s) used for that endpoint.
-
-***For Example :***
-
-📂 endpoints/fruit-endpoints.js
-```js
-// Require Model schema, Function & Others
-const { Fruit } = require("@/models/Fruit");
-
-exports.init = () => {
-
-  // GET method
-  endpoint.get("/fruit", Credentials, async (req, res) => {
-    // example call Fruit model for get data
-    res.json({
-      code: 200,
-      status: "SUCCESS",
-      results: await Fruit.findAll();
-    });
-  });
-
-
-  // POST method
-  endpoint.post("/fruit", Credentials, (req, res) => {
-    // @response
-    res.json({
-      code: 200,
-      status: "SUCCESS",
-      message: "POST request at /fruit",
-      result: {
-        id: req.body.id,
-        name: req.body.name,
-      },
-    });
-  });
-
-
-  // PUT method
-  endpoint.put("/fruit/:id", Credentials, (req, res) => {
-    // @response
-    res.json({
-      code: 200,
-      status: "SUCCESS",
-      message: "PUT request at /fruit/" + req.params.id,
-    });
-  });
-
-
-  // DELETE method
-  endpoint.delete("/fruit/:id", Credentials, (req, res) => {
-    // @response
-    res.json({
-      code: 200,
-      status: "SUCCESS",
-      message: "DELETE request at /fruit/" + req.params.id,
-    });
-  });
-
-  ...
-
-}
-```
-
-# Helpers
+## # Generate Helpers ###
 
 The `helpers` keep the files of functions for process specific something in the project. So, you might create the `helpers` in path `src/helpers` folder.
 
@@ -551,9 +453,9 @@ The `helpers` keep the files of functions for process specific something in the 
 $ beech make helperName --helper
 ```
 
-***For Example :***
+***Example:*** Text editor helper.
 
-📂 helpers/TextEditor.js
+📂 TextEditor.js
 ```js
 module.exports = {
 
@@ -688,7 +590,7 @@ headers: Authorization: Bearer <your_token>
 # Beech Two Factor (2FA)
 You can easy using 2 Factor authenticate with ```guard_field``` inside ```passport.config.js``` file and add your Guard field ex: ```2fa``` field for Authenticate Conditions.
 
-## # Guard (2FA, Other)
+## # Usage guard (2FA, Other)
 
 📂 passport.config.js
 ```js
@@ -697,7 +599,7 @@ module.exports = {
 
   guard: {
     // Other fields add for authenticate, exmaple ["pin", "hint", "2fa"]
-    guard_field: ["2fa"], 👈 // your feild guard. (Disabled to remove it.)
+    guard_field: ["2fa"], 👈 // your feild guard.
 
     ...
   },
@@ -718,7 +620,7 @@ module.exports = {
   guard: {
     ...
 
-    // Advanced guard to Request (Needed some logical from front-end)
+    // Advanced guard jwt request (needed some logical from front-end)
     advanced_guard: {
       allow: false, 👈 // advanced guard allow for All Endpoint.
       entity: "", // default entity `timing`
@@ -747,36 +649,20 @@ $ npm install --save beech-auth0 moment
 # Yarn
 $ yarn add beech-auth0 moment
 ```
-Now! you can add some logic like this.
-
- - Import packages
-
+Now! you can add some logic.
 ```js
-// CommonJS
 const { Auth0 } = require("beech-auth0");
 const moment = require("moment");
 
-// ES6
-import { Auth0 } from "beech-auth0";
-import moment from "moment";
-```
-
-- Get unix time with momentJS
-
-```js
 // Get UNIX TIME with moment
 let unix_time = moment().unix();
-```
 
-- Get hashing with Beech Auth0
-
-```js
 // Auth0 Policy.
 Auth0(unix_time, 'your_advance_guard_secret', (error, hashing) => {
-
+  
   // Your XHR request for All Endpoint.
   POST: "/authentication"
-  headers: { timing: hashing } 👈 // Assign advance guard entity to headers with callback hashing.
+  headers: timing: hashing, 👈 // Assign advance guard entity to headers with callback hashing.
 
 });
 
@@ -1068,6 +954,8 @@ endpoint.get("/banana", specificDup1, (req, res) => {
 ...
 ```
 
+
+
 # Databases managements
 
 ## # Migrations & Seeder
@@ -1199,9 +1087,9 @@ Test using [Jest](https://jestjs.io/en/) for testing the project. Jest is a deli
 
 So, When you make the new endpoints it's automatic create test file end with `.spec.js` in `__test__` folder with constant `baseUrl` variable and `axios` package.
 
-***For Example :***
+Example endpoints testing :
 
-📂 \_\_test\_\_/unit/endpoints/fruit-endpoints.spec.js
+📂 fruit-endpoints.spec.js
 ```js
 const endpoint = baseUrl.concat("/fruit");
 
@@ -1245,7 +1133,7 @@ Docker builds images automatically by reading the instructions from a Dockerfile
 
 📂 Dockerfile
 ```js
-FROM node:18-alpine
+FROM node:14.19-alpine
 ENV NODE_ENV=production
 WORKDIR /usr/src/api
 COPY ["package.json", "package-lock.json*", "./"]
@@ -1282,6 +1170,41 @@ $ docker build -t <imageName> .
   # Run docker service
   $ docker service create --replicas <instances> --name <containerName> --publish 9000:9000 <imageName>
   ```
+
+
+# Bonus
+
+Free `helpers` you can make [LINE Notify](https://github.com/Yuhsak/line-api#readme) by using [line-api](https://notify-bot.line.me/en/) package with create the helper function following.
+
+Installation the package:
+
+```
+$ npm install line-api
+```
+
+Create file `Line.js` in `src/helpers` folder and copy code below:
+
+📂 Line.js
+```js
+const Line = require("line-api");
+
+module.exports = {
+
+  notify(message, token) {
+    const notify = new Line.Notify({
+      token: token
+    });
+    notify
+      .send({
+        message: message
+      })
+      .then(console.log);
+  }
+
+};
+```
+
+Enjoy.
 
 # Development
 

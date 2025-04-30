@@ -52,8 +52,8 @@ class Beech {
               inquirer.prompt([ {
                 type: "list",
                 name: "sql",
-                message: "[93mPlease pick a pool base engine:[0m",
-                choices: [ "Basic (mysql only)", "Sequelize ORM tool (mysql, sqlite, mariadb, postgres, mssql)" ],
+                message: "[93mPlease pick a SQL structure base:[0m",
+                choices: [ "Basic (mysql only)", "Sequelize (mysql, sqlite, mariadb, postgres, mssql)" ],
               } ]).then(async resSql => {
                 if (resSql.sql.split(' ')[ 0 ] != "Basic") {
                   tmpGloablConfigFile = await __dirname + '/../core/configure/global.config-sequelize.js';

@@ -6,7 +6,7 @@ async function FindOne(fields, fieldCondArr, cb) {
   try {
     const passport_config = require(appRoot + "/passport.config.js");
     let stm = '';
-    let cond = '1=1';
+    let cond = '1';
     let passportTable = await [passport_config.model.table || "users"];
     const pool = await eval("sql." + passport_config.model.name);
     let expectFields = await (fields[0]) ? fields : (passport_config.model.fields.length) ? passport_config.model.fields : [];

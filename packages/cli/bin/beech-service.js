@@ -20,14 +20,6 @@ class Beech {
     return new Promise(async (resolve, reject) => {
       try {
         if (this.option == "serve") {
-          // Show comiling msg
-          const frames = ['\n[36m[-] Compiling[0m', '\n[36m[\\] Compiling.[0m', '\n[36m[|] Compiling..[0m', '\n[36m[/] Compiling...[0m'];
-          let i = 0;
-          var refreshCompileIntervalId = setInterval(() => {
-            const frame = frames[i = ++i % frames.length];
-            logUpdate(`${frame}`);
-          }, 300);
-          // option logic for silent notify
           let turnNoti = true;
           if (this.argument == "--silent" || this.argument == "-S") {
             turnNoti = false;
@@ -38,32 +30,15 @@ class Beech {
             testServ.listen(this._config_.main_config.app_port, async () => {
               await testServ.close();
               // Start real service.
-              this.serviceDevStart(this.argument, (err, run) => {
-                if(!err && run) {
-                  // Check turn on noti
-                  if (turnNoti) {
-                    this.notiCompile();
-                  }
-                  // Delay for new replace Compiling msg to Running
-                  setTimeout(() => {
-                    clearInterval(refreshCompileIntervalId);
-                    logUpdate("\n[36m[OK] Running...[0m");
-                  }, 2500);
-                } else {
-                  setTimeout(() => {
-                    clearInterval(refreshCompileIntervalId);
-                    logUpdate("\n[101m[ERR] Failed... [0m", err);
-                    reject();
-                  }, 2500);
-                }
-              });
+              await this.serviceDevStart(this.argument);
+              // check turn on nofi
+              if (turnNoti) {
+                this.notiCompile();
+              }
             }).on('error', (err) => {
-              clearInterval(refreshCompileIntervalId);
               console.log("\n[101m Faltal [0m", err);
-              reject();
             })
           } else {
-            clearInterval(refreshCompileIntervalId);
             resolve("\n[101m Faltal [0m The app.conifg.js file is not found.");
           }
         } else if (!this.option || this.option == "-h" || this.option == "?" || this.option == "--help") {
@@ -85,39 +60,28 @@ class Beech {
     });
   }
 
-  serviceDevStart(argument, cb) {
+  serviceDevStart(argument) {
+    logUpdate("[36mCompiling...[0m");
     let promise = null;
-    try {
-      const spawnData = new Promise((resolve) => {
-        // check Dev. run service
-        if(argument == "-D" || argument == "--dev") {
-          promise = this.spawn('npx', ['nodemon', '-q', './cli/beech']); // For Dev.
-        } else {
-          promise = this.spawn('npx', ['nodemon', '-q', './node_modules/beech-api/packages/cli/beech']); // For Prd.
+    // check Dev. run service
+    const spawnData = new Promise((resolve) => {
+      if(argument == "-D" || argument == "--dev") {
+        promise = this.spawn('npx', ['nodemon', '-q', './cli/beech']); // For Dev.
+      } else {
+        promise = this.spawn('npx', ['nodemon', '-q', './node_modules/beech-api/packages/cli/beech']); // For Prd.
+      }
+      resolve(promise.childProcess);
+    });
+    Promise.all([spawnData]).then((childProcess) => {
+      childProcess[0].stdout.on('data', (data) => {
+        console.log(data.toString().slice(0, -1));
+      });
+      childProcess[0].stderr.on('data', (data) => {
+        if(data.toString().slice(0, 8) != "Ignoring" && data.toString().match(/\[SEQUELIZE0006\]/g) != "[SEQUELIZE0006]") {
+          console.log(data.toString());
         }
-        resolve(promise.childProcess);
       });
-      Promise.all([spawnData]).then((childProcess) => {
-        childProcess[0].stdout.on('data', (data) => {
-          console.log(data.toString().slice(0, -1));
-        });
-        // Check process error
-        childProcess[0].stderr.on('data', (data) => {
-          // Check Error from std Allow for Mysql version error
-          if(data.toString().slice(0, 8) != "Ignoring" && data.toString().match(/\[SEQUELIZE0006\]/g) != "[SEQUELIZE0006]") {
-            if(data.toString().slice(0, 13) == "node:internal") {
-              cb(data.toString(), false);
-            } else {
-              console.log(data.toString());
-            }
-          }
-        });
-        // Callback first
-        cb(null, true);
-      });
-    } catch (error) {
-      cb(error, false);
-    }
+    });
   }
 
   notiCompile() {

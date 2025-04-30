@@ -27,7 +27,7 @@ connectInProcess = async (database_config, headDbShow, cb) => {
         // check hash ?
         if(val.username && val.password) {
           if(val.username.length < 55 || val.password < 55) {
-            return cb("Error: Incorrect Hash access for connect to database.\n", null);
+            return cb("Error: No Hash access for connect to database.\n", null);
           }
           let accessDb = [];
           [val.username, val.password].map((e, k) => {
@@ -99,7 +99,7 @@ connectInProcess = async (database_config, headDbShow, cb) => {
             freezeTableName: ((val.define) ? ((val.define.freezeTableName === false) ? val.define.freezeTableName : true) : true),
             charset: ((val.define) ? ((val.define.charset) ? val.define.charset : "utf8") : "utf8"),
             dialectOptions: {
-              collate: ((val.define) ? ((val.define.dialectOptions) ? ((val.define.dialectOptions.collate) ? val.define.dialectOptions.collate : "utf8_general_ci") : "utf8_general_ci") : "utf8_general_ci"),
+              collate: ((val.define) ? ((val.define.dialectOptions) ? ((val.define.dialectOptions.timestamps) ? val.define.dialectOptions.timestamps : "utf8_general_ci") : "utf8_general_ci") : "utf8_general_ci"),
             },
             timestamps: ((val.define) ? ((val.define.timestamps) ? val.define.timestamps : false) : false),
           },
@@ -122,19 +122,11 @@ connectInProcess = async (database_config, headDbShow, cb) => {
   
           // JSON response
           query: {
-            raw: ((val.query) ? ((val.query.raw) ? val.query.raw : false) : false),
+            raw: ((val.query) ? ((val.query.raw) ? val.query.raw : true) : true),
             nest: ((val.query) ? ((val.query.nest) ? val.query.nest : true) : true),
           }
         });
-
-        // Hook to set `SET NAMES xxx` (ONLY MySQL)
-        await sq.addHook('afterConnect', async (connection) => {
-          if(val.dialect == "mysql") {
-            let charset = ["SET NAMES", ((val.define) ? ((val.define.charset) ? val.define.charset : "utf8") : "utf8")].join(" ");
-            connection.query(charset);
-          }
-        });
-
+  
         // show only one text db connnections
         if (headDbShow) {
           console.log('[102m[90m Passed [0m [0mDatabase is connected at:');
@@ -149,7 +141,7 @@ connectInProcess = async (database_config, headDbShow, cb) => {
           // shuout
           console.log('- [91m[' + val.dialect + '] [0m[36m' + val.name + ' [0m->[93m ' + sq.config.database + ':' + sq.config.port + '[0m');
         }
-
+  
         // connection
         await sq.authenticate()
           .then(() => {

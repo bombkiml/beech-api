@@ -37,33 +37,34 @@ function walkModel(cb) {
   }
 }
 
-function filterProject(Projects, reqUrl, params = "", method = "", req, res, cb) {
+function filterProject(Projects, reqUrl, req, res, cb) {
   try {
     let pj = Projects.shift();
-    let leaveParamsAlone = params.slice(0);
-    let paramsItem = leaveParamsAlone.replace(/^\/|\/$/g, "").split('/');
-    let leaveReqUrlAlone = reqUrl.slice(0);
-    let newParams = params.split("/").filter((e) => (e !== 'undefined')).join("/");
-    let urlWithoutParams = leaveReqUrlAlone.replace(newParams, '').split("?")[0].replace(/\/$/, "");
-    // sub-way for PATCH method
-    urlWithoutParams = (method == "PATCH" || method == "DELETE") ? urlWithoutParams.substring(0, urlWithoutParams.lastIndexOf('/')) : urlWithoutParams;
-    // check match project by url
-    if(pj[1] == urlWithoutParams) {
+    let regx = new RegExp(pj[1] + "?[^\/].?[a-zA-Z0-9].*$", 'g');
+    let regxMatch = reqUrl.match(regx);
+    let regxMatchLength = (regxMatch) ? regxMatch.length: 0;
+    if (pj[1] == reqUrl) {
       return checkOffset(Object.values(require(pj[0]))[0], req, res, (thenChecked) => {
         if(thenChecked) {
-          return cb(null, Object.values(require(pj[0]))[0], paramsItem);
+          return cb(null, Object.values(require(pj[0]))[0]);
+        }
+      });
+    } else if(regxMatchLength) {
+      return checkOffset(Object.values(require(pj[0]))[0], req, res, (thenChecked) => {
+        if(thenChecked) {
+          return cb(null, Object.values(require(pj[0]))[0]);
         }
       });
     }
     // Finally recursive filterProject function
     if (Projects.length > 0) {
-      filterProject(Projects, reqUrl, params, method, req, res, cb);
+      filterProject(Projects, reqUrl, req, res, cb);
     } else {
       // not match
       return notfound(res);
     }
   } catch (error) {
-    cb(error, null, []);
+    cb(error, null);
   }
 }
 
@@ -115,194 +116,6 @@ function errMessage(err, res) {
   }
 }
 
-function whereCond(objectCond, cb) {
-  if(typeof objectCond === 'object' && Object.keys(objectCond).length) {
-    let keys = Object.keys(objectCond);
-    let where = {};
-    let orderBy = {};
-    let groupBy = {};
-    // Start Recursive for Check Where condition OR GroupBy OR OrderBy
-    recursiveWhereCond(keys, objectCond, where, groupBy, orderBy, (err, cbWhere, cbGroupBy, cbOrderBy) => {
-      cb(err, cbWhere, cbGroupBy, cbOrderBy);
-    });
-  } else {
-    cb(null, {}, { group: { groupby: [] } }, { order: { orderby: [] } });
-  }
-}
-
-async function recursiveWhereCond(keys, objectCond, where, groupBy, orderBy, cb) {
-  if(keys.length > 0) {
-    let k = keys.shift();
-    // Check param key for Where condition OR GroupBy OR OrderBy
-    if(k == 'orderby') {
-      let oderByValueItemFromQueryString = objectCond[k].replace(/\w+/g, '"$&"').replace(/\[\s*\]/g, '[]');
-      // Check Array syntax from Query String
-      isValidArrayFormat(oderByValueItemFromQueryString, (err, isArray, strArr) => {
-        if(err) {
-          cb(["SyntaxError: Unexpected end of Array or String input", ` (${k})`], null, null, null);
-        } else {
-          let order = JSON.parse(strArr);
-          orderBy[k] = order.length ? order : null;
-          // Recursive re-call function
-          recursiveWhereCond(keys, objectCond, where, groupBy, orderBy, cb);
-        }
-      });
-    } else if(k == 'groupby') {
-      let groupByValueItemFromQueryString = objectCond[k].replace(/\w+/g, '"$&"').replace(/\[\s*\]/g, '[]');
-      // Check Array syntax from Query String
-      isValidArrayFormat(groupByValueItemFromQueryString, (err, isArray, strArr) => {
-        if(err) {
-          cb(["SyntaxError: Unexpected end of Array or String input", ` (${k})`], null, null, null);
-        } else {
-          let group = JSON.parse(strArr);
-          groupBy[k] = group.length ? group : null;
-          // Recursive re-call function
-          recursiveWhereCond(keys, objectCond, where, groupBy, orderBy, cb);
-        }
-      });
-    } else {
-      let fieldValueItemFromQueryString = objectCond[k].replace(/\w+/g, '"$&"').replace(/\[\s*\]/g, '[]');
-      let valueItem = objectCond[k].replace(/[\[\]|\s']+/g, '').split(',');
-      // Check Array syntax from Query String
-      isValidArrayFormat(fieldValueItemFromQueryString, async (err) => {
-        if(err) {
-          cb(["SyntaxError: Unexpected end of Array or String input", ` (${k})`], null, null, null);
-        } else {
-          let onlyValueItem = await valueItem.slice(0);
-          await onlyValueItem.shift();
-          where[k] = await (valueItem[1])
-                      ? {
-                          [Op[valueItem[0]]]: (valueItem[1] == 'null')
-                                              ? null  : (valueItem[1] == 'true')
-                                              ? true  : (valueItem[1] == 'false')
-                                              ? false : (valueItem[0] == 'between' || valueItem[0] == 'notBetween')
-                                              ? [valueItem[1],valueItem[2]] :
-                                                (
-                                                  valueItem[0] == 'or'
-                                                  || valueItem[0] == 'in'
-                                                  || valueItem[0] == 'notIn'
-                                                )
-                                              ? onlyValueItem : valueItem[1]
-                        }
-                      : valueItem[0];
-          // Recursive re-call function
-          recursiveWhereCond(keys, objectCond, where, groupBy, orderBy, cb);
-        }
-      });
-    }
-  } else {
-    cb(null, where, groupBy, orderBy);
-  }
-}
-
-function isValidArrayFormat(str, cb) {
-  try {
-    const parsed = JSON.parse(str);
-    cb(null, Array.isArray(parsed), str);
-  } catch (err) {
-    cb(err, false, null);
-  }
-}
-
-async function findAll(Project, where, offset, group, order, limitRow, cb) {
-  try {
-    const results = await Project.findAll({
-      where,
-      group: (group.groupby) ? group.groupby : [],
-      order: (order.orderby) ? [order.orderby] : [],
-      offset: offset,
-      limit: limitRow,
-    });
-    await cb(null, results)
-  } catch (error) {
-    cb(error, null);
-  }
-}
-
-async function retrieving(authEndpoint, Projects, req, res, next) {
-  let params = req.params;
-  let hash = "/" + req.params.hash;
-  // allow official stetragy
-  if(hash == authEndpoint && (params[0] == "/facebook" || params[0] == "/google")) {
-    return next();
-  }
-  // declare variable for check request with params
-  let leaveMeAlone = await Projects.slice(0);
-  let mergeDuoVar = [req.params.limit, req.params.offset].map((e) => (e || 'undefined')).join("/");
-  let reqUrl = req.originalUrl.replace(_publicPath_, '/');
-  let checkConditionIsQueryOrId = Object.keys(req.query).length
-                                    ? req.query
-                                    : 'undefined';
-  /**
-   * Function whereCond with callback property
-   * 
-   * @where Object|String
-   * 
-   */
-  whereCond(checkConditionIsQueryOrId, async (err, where, groupBy, orderBy) => {
-    if(err) {
-      res.status(400).json({
-        code: 400,
-        status: "BAD_REQUEST",
-        err: String(err),
-      });
-    } else {
-      /**
-       * Filter Project with callback property
-       * 
-       * @err String
-       * @Project Require
-       * @params Object [0=limit, 1=offset]
-       * 
-       */
-      await filterProject(leaveMeAlone, reqUrl, "/".concat(mergeDuoVar), "", req, res, async (err, Project, params) => {
-        if (!err) {
-          if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
-            try {
-              // declare default limit offset
-              let offset = 0;
-              let limitRow = await (Project.options.limitRows) ? Project.options.limitRows : 100;
-              // check assign limit, offset ?
-              if ((params[0] && params[0]  != 'undefined') && ((params[1] && params[1] != 'undefined') || parseInt(params[1]) === 0)) {
-                // Only case: /limit/offset
-                limitRow = parseInt(params[0]);
-                offset = parseInt(params[1]);
-              }
-              // findAll data
-              await findAll(Project, where, offset, groupBy, orderBy, limitRow, (err, results) => {
-                if(err) {
-                  res.status(500).json({
-                    code: 500,
-                    status: "READ_CATCH",
-                    err: String(err),
-                  });
-                } else {
-                  // @ return findAll
-                  res.json({
-                    code: 200,
-                    status: "SUCCESS",
-                    results,
-                    length: results.length,
-                    limitRow,
-                  });
-                }
-              });
-            } catch (error) {
-              // @return
-              return errMessage(error, res);
-            }
-          } else {
-            next();
-          }
-        } else {
-          // @return
-          return errMessage(err, res);
-        }
-      });
-    }
-  });
-}
-
 function Base() {
   return new Promise((resolve, reject) => {
     try {
@@ -324,18 +137,107 @@ function Base() {
           // passport conifg promise
           checkPassport.then((authEndpoint) => {
             if(Projects.length) {
-              // GET method with /:limit/:offset
-              endpoint.get("/:hash([a-zA-Z0-9-]+)*/:limit([0-9]+)/:offset([0-9]+)", Credentials, async (req, res, next) => {
-                await retrieving(authEndpoint, Projects, req, res, next);
+              // GET method with ALL data, default: limit rows 100
+              endpoint.get("/:hash", Credentials, async (req, res, next) => {
+                let leaveMeAlone = await Projects.slice(0);
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
+                  if (!err) {
+                    if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
+                      try {
+                        const results = await Project.findAll({
+                          offset: 0,
+                          limit: (Project.options.limitRows) ? Project.options.limitRows : 100,
+                        });
+                        // @ return
+                        await res.json({
+                          code: 200,
+                          status: "SUCCESS",
+                          results,
+                          length: results.length,
+                        });
+                      } catch (error) {
+                        // @return
+                        return errMessage(error, res);
+                      }
+                    } else {
+                      next();
+                    }
+                  } else {
+                    // @return
+                    return errMessage(err, res);
+                  }
+                });
               });
-
-              // GET method only hash/*
-              endpoint.get("/:hash([a-zA-Z0-9-]+)*", Credentials, async (req, res, next) => {
-                await retrieving(authEndpoint, Projects, req, res, next);
+              // GET method with id
+              endpoint.get("/:hash/:id", Credentials, async (req, res, next) => {
+                // allow official stetragy
+                if(req.params.id == "google" || req.params.id == "facebook") {
+                  return next();
+                }
+                // filter GET project
+                let leaveMeAlone = await Projects.slice(0);
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
+                  if (!err) {
+                    if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
+                      try {
+                        const results = await Project.findByPk(req.params.id);
+                        // @ return
+                        await res.json({
+                          code: 200,
+                          status: "SUCCESS",
+                          results,
+                        });
+                      } catch (error) {
+                        // @return
+                        return errMessage(error, res);
+                      }
+                    } else {
+                      next();
+                    }
+                  } else {
+                    // @return
+                    return errMessage(err, res);
+                  }
+                });
               });
-
+              // GET method with :limit and :offset
+              endpoint.get("/:hash/:limit/:offset", Credentials, async (req, res, next) => {
+                // allow official stetragy
+                if(req.params.limit == "facebook" || req.params.offset == "collback") {
+                  return next();
+                }
+                // filter GET limit,offset project
+                let leaveMeAlone = await Projects.slice(0);
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
+                  if (!err) {
+                    if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
+                      try {
+                        const results = await Project.findAll({
+                          offset: parseInt(req.params.offset) || 0,
+                          limit: (parseInt(req.params.limit) === 0) ? 0 : parseInt(req.params.limit),
+                        });
+                        // @ return
+                        await res.json({
+                          code: 200,
+                          status: "SUCCESS",
+                          results,
+                          length: results.length,
+                        });
+                      } catch (error) {
+                        // @return
+                        return errMessage(error, res);
+                      }
+                    } else {
+                      next();
+                    }
+                  } else {
+                    // @return
+                    return errMessage(err, res);
+                  }
+                });
+              });
               // POST method
-              endpoint.post("/:hash*", async (req, res, next) => {
+              endpoint.post("/:hash", async (req, res, next) => {
                 // Check auth request match send next
                 if(authEndpoint !== undefined) {
                   if(req.params.hash == authEndpoint.replace(/^\/|\/$/g, "")) {
@@ -344,8 +246,7 @@ function Base() {
                 }
                 // When lost IF
                 let leaveMeAlone = await Projects.slice(0);
-                let reqUrl = req.originalUrl.replace(_publicPath_, '/');
-                await filterProject(leaveMeAlone, reqUrl, "", "", req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
@@ -377,16 +278,16 @@ function Base() {
                   }
                 });
               });
-
               // PATCH method
-              endpoint.patch("/:hash*/:id([a-zA-Z0-9-]+)", Credentials, async (req, res, next) => {
+              endpoint.patch("/:hash/:id", Credentials, async (req, res, next) => {
                 let leaveMeAlone = await Projects.slice(0);
-                let reqUrl = req.originalUrl.replace(_publicPath_, '/');
-                await filterProject(leaveMeAlone, reqUrl, "", "PATCH", req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
-                        let updatePk = await { [Project.primaryKeyAttributes[0]]: req.params.id };
+                        let updatePk = await {
+                          [Project.primaryKeyAttributes[0]]: req.params.id
+                        };
                         await Project.update(req.body, {
                           where: updatePk,
                         }).then((updated) => {
@@ -404,7 +305,7 @@ function Base() {
                           res.status(501).json({
                             code: 501,
                             status: "UPDATE_FAILED",
-                            error: String(err),
+                            error: err,
                           });
                         });
                       } catch (error) {
@@ -420,15 +321,16 @@ function Base() {
                   }
                 });
               });
-
               // DELETE method
-              endpoint.delete("/:hash*/:id([a-zA-Z0-9-]+)", Credentials, async (req, res, next) => {
+              endpoint.delete("/:hash/:id", Credentials, async (req, res, next) => {
                 let leaveMeAlone = await Projects.slice(0);
-                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), "", "DELETE", req, res, async (err, Project) => {
+                await filterProject(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
-                        let deletePk = await { [Project.primaryKeyAttributes[0]]: req.params.id };
+                        let deletePk = await {
+                          [Project.primaryKeyAttributes[0]]: req.params.id
+                        };
                         await Project.destroy({
                           where: deletePk,
                         }).then((deleted) => {
@@ -457,7 +359,7 @@ function Base() {
                           res.status(501).json({
                             code: 501,
                             status: "DELETE_FAILED",
-                            error: String(err),
+                            error: err,
                           });
                         });
                       } catch (error) {

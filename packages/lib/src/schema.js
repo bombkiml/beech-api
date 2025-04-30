@@ -5,12 +5,9 @@ function Schema(Sequelize) {
     define: (table, schemaProps = {}) => {
       try {
         let Project = Sequelize.define(table, schemaProps);
-        //Sequelize.options.charset = "utf8";
-        //Sequelize.options.define.charset = "utf8";
-        //Sequelize.options.define.dialectOptions.collate = "utf8_unicode_ci";
         return Object.assign(Project, {
           query: (
-            rawSql = "",
+            rawSql,
             props = {
               model: Project,
               mapToModel: false,
