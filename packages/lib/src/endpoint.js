@@ -349,6 +349,9 @@ function Base() {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
+                        // Leave pool by project for check pool error
+                        let pool = Project.sequelize;
+                        // Store with body
                         await Project.create(req.body).then((created) => {
                           // @return
                           res.status(201).json({
@@ -356,13 +359,47 @@ function Base() {
                             status: "CREATE_SUCCESS",
                             createdId: (created.id) ? created.id : created[Project.primaryKeyAttributes[0]],
                           });
-                        }).catch((err) => {
-                          // @return
-                          res.status(501).json({
-                            code: 501,
-                            status: "CREATE_FAILED",
-                            error: err,
-                          });
+                        }).catch((error) => {
+                          if(pool.options.logging) {
+                            // @return with all error
+                            res.status(501).json({
+                              code: 501,
+                              status: "CREATE_FAILED",
+                              error: error,
+                            });
+                          } else {
+                            if(error.sql) {
+                              delete error.sql;
+                              if(error.errors) {
+                                delete error.errors;
+                              }
+                              if(error.parent) {
+                                delete error.parent;
+                              }
+                              if(error.original) {
+                                delete error.original.sql;
+                                if(error.original.parameters) {
+                                  delete error.original.parameters;
+                                }
+                              }
+                              if(error.parameters) {
+                                delete error.parameters;
+                              }
+                              // @return with some error
+                              res.status(501).json({
+                                code: 501,
+                                status: "CREATE_FAILED",
+                                error: error,
+                              });
+                            } else {
+                              // @return with some string error
+                              res.status(501).json({
+                                code: 501,
+                                status: "CREATE_FAILED",
+                                error: String(error),
+                              });
+                            }
+                          }
                         });
                       } catch (error) {
                         // @return
@@ -386,7 +423,11 @@ function Base() {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
-                        let updatePk = await { [Project.primaryKeyAttributes[0]]: req.params.id };
+                        // Leave pool by project for check pool error
+                        let pool = Project.sequelize;
+                        // Assign update pk
+                        let updatePk = { [Project.primaryKeyAttributes[0]]: req.params.id };
+                        // Patch with body
                         await Project.update(req.body, {
                           where: updatePk,
                         }).then((updated) => {
@@ -399,13 +440,47 @@ function Base() {
                               affectedRows: updated[0],
                             },
                           });
-                        }).catch((err) => {
-                          // @return
-                          res.status(501).json({
-                            code: 501,
-                            status: "UPDATE_FAILED",
-                            error: String(err),
-                          });
+                        }).catch((error) => {
+                          if(pool.options.logging) {
+                            // @return with all error
+                            res.status(501).json({
+                              code: 501,
+                              status: "UPDATE_FAILED",
+                              error: error,
+                            });
+                          } else {
+                            if(error.sql) {
+                              delete error.sql;
+                              if(error.parent) {
+                                delete error.parent;
+                              }
+                              if(error.original) {
+                                delete error.original.sql;
+                                if(error.original.parameters) {
+                                  delete error.original.parameters;
+                                }
+                              }
+                              if(error.parameters) {
+                                delete error.parameters;
+                              }
+                              if(error.errors) {
+                                delete error.errors;
+                              }
+                              // @return with some error
+                              res.status(501).json({
+                                code: 501,
+                                status: "UPDATE_FAILED",
+                                error: error,
+                              });
+                            } else {
+                              // @return with some string error
+                              res.status(501).json({
+                                code: 501,
+                                status: "UPDATE_FAILED",
+                                error: String(error),
+                              });
+                            }
+                          }
                         });
                       } catch (error) {
                         // @return
@@ -428,7 +503,11 @@ function Base() {
                   if (!err) {
                     if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
                       try {
-                        let deletePk = await { [Project.primaryKeyAttributes[0]]: req.params.id };
+                        // Leave pool by project for check pool error
+                        let pool = Project.sequelize;
+                        // Assign delete pk
+                        let deletePk = { [Project.primaryKeyAttributes[0]]: req.params.id };
+                        // Delete with params
                         await Project.destroy({
                           where: deletePk,
                         }).then((deleted) => {
@@ -452,13 +531,47 @@ function Base() {
                               },
                             });
                           }
-                        }).catch((err) => {
-                          // @return
-                          res.status(501).json({
-                            code: 501,
-                            status: "DELETE_FAILED",
-                            error: String(err),
-                          });
+                        }).catch((error) => {
+                          if(pool.options.logging) {
+                            // @return with all error
+                            res.status(501).json({
+                              code: 501,
+                              status: "DELETE_FAILED",
+                              error: error,
+                            });
+                          } else {
+                            if(error.sql) {
+                              delete error.sql;
+                              if(error.parent) {
+                                delete error.parent;
+                              }
+                              if(error.original) {
+                                delete error.original.sql;
+                                if(error.original.parameters) {
+                                  delete error.original.parameters;
+                                }
+                              }
+                              if(error.parameters) {
+                                delete error.parameters;
+                              }
+                              if(error.errors) {
+                                delete error.errors;
+                              }
+                              // @return with some error
+                              res.status(501).json({
+                                code: 501,
+                                status: "DELETE_FAILED",
+                                error: error,
+                              });
+                            } else {
+                              // @return with some string error
+                              res.status(501).json({
+                                code: 501,
+                                status: "DELETE_FAILED",
+                                error: String(error),
+                              });
+                            }
+                          }
                         });
                       } catch (error) {
                         // @return
