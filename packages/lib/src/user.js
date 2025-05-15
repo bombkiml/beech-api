@@ -41,8 +41,21 @@ async function FindOne(fields, fieldCondArr, cb) {
             });
             return cb(null, result);
           } catch (error) {
-            delete error.sql;
-            return cb(error, null);
+            if(error.sql) {
+              delete error.sql;
+              if(error.parent) {
+                delete error.parent;
+              }
+              if(error.original) {
+                delete error.original.sql;
+              }
+              if(error.parameters) {
+                delete error.parameters;
+              }
+              return cb(error, null);
+            } else {
+              return cb(String(error), null);
+            }
           }
         } else {
           return cb({ error: "The Base pool error. UNKNOWN pool_base = '"+ pool_base +"'" }, null);
@@ -111,10 +124,24 @@ async function Store(fields, cb) {
             affectedRows: result[1]
           });
         } catch (error) {
-          if(error.sql) {
+          if(pool.options.logging) {
             return cb(error, null);
           } else {
-            return cb(String(error), null);
+            if(error.sql) {
+              delete error.sql;
+              if(error.parent) {
+                delete error.parent;
+              }
+              if(error.original) {
+                delete error.original.sql;
+              }
+              if(error.parameters) {
+                delete error.parameters;
+              }
+              return cb(error, null);
+            } else {
+              return cb(String(error), null);
+            }
           }
         }
       } else {
@@ -183,20 +210,52 @@ async function Update(someFields, id, cb) {
               updateId: (result[1]) ? parseInt(id) : null,
               affectedRows: result[1],
             });
-          }).catch((err) => {
-            if(err.sql) {
-              delete err.sql;
-              return cb(err, null);
+          }).catch((error) => {
+            if(pool.options.logging) {
+              return cb(error, null);
             } else {
-              return cb(String(err), null);
+              if(error.sql) {
+                delete error.sql;
+                if(error.errors) {
+                  delete error.errors;
+                }
+                if(error.parent) {
+                  delete error.parent;
+                }
+                if(error.original) {
+                  delete error.original.sql;
+                }
+                if(error.parameters) {
+                  delete error.parameters;
+                }
+                return cb(error, null);
+              } else {
+                return cb(String(error), null);
+              }
             }
           });
-        }).catch((err) => {
-          if(err.sql) {
-            delete err.sql;
-            return cb(err, null);
+        }).catch((error) => {
+          if(pool.options.logging) {
+            return cb(error, null);
           } else {
-            return cb(String(err), null);
+            if(error.sql) {
+              delete error.sql;
+              if(error.errors) {
+                delete error.errors;
+              }
+              if(error.parent) {
+                delete error.parent;
+              }
+              if(error.original) {
+                delete error.original.sql;
+              }
+              if(error.parameters) {
+                delete error.parameters;
+              }
+              return cb(error, null);
+            } else {
+              return cb(String(error), null);
+            }
           }
         });
       } catch (error) {

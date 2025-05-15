@@ -309,8 +309,8 @@ class Generator {
             // check global file exists.
             if(rqFileRes[0][0]) {
               logUpdate(": Initialize...");
-              // check for remove / slash from route endpoint
-              routeEndpoints = routeEndpoints.replace(/\\|\//g,'');
+              // check for remove first slash/backslash and replace / or \ or multiple slash/backslash to one slash for route endpoint name
+              routeEndpoints = routeEndpoints.replace(/^[\\\/]+/, "").replace(/[\\\/]+/g, "/");
               // timeout generate endpoint and replace content
               setTimeout(() => {
                 // generater endpoint

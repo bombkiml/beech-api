@@ -166,8 +166,29 @@ module.exports = {
                                 type: QueryTypes.SELECT,
                               }).then((result) => {
                                 return done(null, JSON.parse(JSON.stringify(result[ 0 ] || null)));
-                              }).catch((err) => {
-                                return done(err, null);
+                              }).catch((error) => {
+                                if(pool.options.logging) {
+                                  return cb(error, null);
+                                } else {
+                                  if(error.sql) {
+                                    delete error.sql;
+                                    if(error.errors) {
+                                      delete error.errors;
+                                    }
+                                    if(error.parent) {
+                                      delete error.parent;
+                                    }
+                                    if(error.original) {
+                                      delete error.original.sql;
+                                    }
+                                    if(error.parameters) {
+                                      delete error.parameters;
+                                    }
+                                    return cb(error, null);
+                                  } else {
+                                    return cb(String(error), null);
+                                  }
+                                }
                               });
                             }).catch((err) => {
                               return done(err, null);
@@ -274,7 +295,7 @@ module.exports = {
     if (pool) {
       this.query_one_where(pool, "SELECT " + passportFields + " FROM " + passportTable, idField, profile.id, async (err, result) => {
         if (err) {
-          cb(err);
+          cb(err, null);
         } else {
           // declare data response
           let data = {};
@@ -354,7 +375,28 @@ module.exports = {
                   data.google = profile;
                   cb(err, data);
                 } catch (error) {
-                  cb(error, null);
+                  if(pool.options.logging) {
+                    return cb(error, null);
+                  } else {
+                    if(error.sql) {
+                      delete error.sql;
+                      if(error.errors) {
+                        delete error.errors;
+                      }
+                      if(error.parent) {
+                        delete error.parent;
+                      }
+                      if(error.original) {
+                        delete error.original.sql;
+                      }
+                      if(error.parameters) {
+                        delete error.parameters;
+                      }
+                      return cb(error, null);
+                    } else {
+                      return cb(String(error), null);
+                    }
+                  }
                 }
               } else {
                 cb({ error: "The Base pool error. UNKNOWN pool_base = '"+ pool_base +"'" }, null);
@@ -448,7 +490,28 @@ module.exports = {
                   data.facebook = profile;
                   cb(err, data);
                 } catch (error) {
-                  cb(error, null);
+                  if(pool.options.logging) {
+                    return cb(error, null);
+                  } else {
+                    if(error.sql) {
+                      delete error.sql;
+                      if(error.errors) {
+                        delete error.errors;
+                      }
+                      if(error.parent) {
+                        delete error.parent;
+                      }
+                      if(error.original) {
+                        delete error.original.sql;
+                      }
+                      if(error.parameters) {
+                        delete error.parameters;
+                      }
+                      return cb(error, null);
+                    } else {
+                      return cb(String(error), null);
+                    }
+                  }
                 }
               } else {
                 cb({ error: "The Base pool error. UNKNOWN pool_base = '"+ pool_base +"'" }, null);
@@ -490,7 +553,28 @@ module.exports = {
           });
           return cb(null, JSON.parse(JSON.stringify(result || null)));
         } catch (error) {
-          return cb(error, null);
+          if(pool.options.logging) {
+            return cb(error, null);
+          } else {
+            if(error.sql) {
+              delete error.sql;
+              if(error.errors) {
+                delete error.errors;
+              }
+              if(error.parent) {
+                delete error.parent;
+              }
+              if(error.original) {
+                delete error.original.sql;
+              }
+              if(error.parameters) {
+                delete error.parameters;
+              }
+              return cb(error, null);
+            } else {
+              return cb(String(error), null);
+            }
+          }
         }
       } else {
         return done({ error: "The Base pool error. UNKNOWN pool_base = '"+ pool_base +"'" }, null);

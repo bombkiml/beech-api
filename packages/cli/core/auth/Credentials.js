@@ -110,10 +110,14 @@ function checkAppKey(req, res, cb) {
         return cb(false);
       }
     } else {
-      res.status(422).json({
-        code: 422,
-        status: "BAD_ENTIRY",
-        message: "Unprocessable Entity.",
+      res.status(400).json({
+        code: 400,
+        status: 'BAD_REQUEST',
+        message: "Bad request.",
+        info: {
+          status: "BAD_ENTIRY",
+          message: "Unprocessable Entity.",
+        },
       });
       return cb(false);
     }
