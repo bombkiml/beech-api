@@ -28,7 +28,6 @@
   "dependencies": {
     "app-root-path": "^3.0.0",
     "axios": "^0.26.1",
-    "beech-api": "^3.8.95",
     "child-process-promise": "^2.2.1",
     "cli-clear": "^1.0.4",
     "compression": "^1.7.5",
@@ -43,6 +42,7 @@
     "express-slow-down": "^2.0.3",
     "express-validator": "2.21.0",
     "fs": "0.0.1-security",
+    "helmet": "^8.1.0",
     "inquirer": "8.2.4",
     "jsonwebtoken": "^8.5.1",
     "log-update": "^4.0.0",

@@ -7,6 +7,9 @@ global._app_ = _express_();
 // Compression
 const compression = require("compression");
 _app_.use(compression());
+// Helmet
+const helmet = require("helmet");
+_app_.use(helmet());
 // CORS
 const cors = require("cors");
 global.endpoint = _express_.Router();

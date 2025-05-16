@@ -53,7 +53,7 @@ function TwoFactor(user, reqBody, guard_field, cb) {
             status: 'BAD_REQUEST',
             message: "Bad request.",
             info: {
-              status: "BAD_ENTIRY",
+              status: "BAD_ENTITY",
               message: "Unprocessable with Auth Open ID Entity.",
             },
           });
