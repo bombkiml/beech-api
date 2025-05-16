@@ -142,7 +142,7 @@ module.exports = {
                   // declare authentication endpoint name with publicPath
                   let auth_endpoint = (passport_config.auth_endpoint) ? (passport_config.auth_endpoint[ 0 ] === "/" ? passport_config.auth_endpoint : "/" + passport_config.auth_endpoint) : "/authentication";
                   // authentication endpoints
-                  endpoint.post(auth_endpoint, (req, res, next) => {
+                  endpoint.post(auth_endpoint, auth.credentialsGuard, (req, res, next) => {
                     passport.authenticate('local', { session: false }, (err, user, opt) => {
                       if (err) {
                         res.status(502).json({ code: 502, status: "BAD_GATEWAY", message: String(err) });
@@ -195,7 +195,7 @@ module.exports = {
                     })(req, res, next);
                   });
                   // create auth data endpoints
-                  endpoint.post(auth_endpoint + '/create', (req, res) => {
+                  endpoint.post(auth_endpoint + '/create', auth.credentialsGuard, (req, res) => {
                     const promise = new Promise((resolve) => {
                       /**
                        * 

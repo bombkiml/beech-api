@@ -115,8 +115,8 @@ function checkAppKey(req, res, cb) {
         status: 'BAD_REQUEST',
         message: "Bad request.",
         info: {
-          status: "BAD_ENTIRY",
-          message: "Unprocessable Entity.",
+          status: "BAD_ENTITY",
+          message: "Bad with app entity key.",
         },
       });
       return cb(false);

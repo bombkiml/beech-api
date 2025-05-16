@@ -20,8 +20,14 @@ module.exports = {
           if (fs.existsSync(passport_config_file)) {
             const auth = require("./Credentials");
             passport_config = require(passport_config_file);
-            if (passport_config.jwt_allow) {
-              global.Credentials = auth.credentials;
+            // Check if the JWT is allow
+            if (passport_config.jwt_allow === true) {
+              // Check if the APP_KEY is allow
+              if(passport_config.app_key_allow) {
+                global.Credentials = [ auth.credentials, auth.credentialsGuard ];
+              } else {
+                global.Credentials = auth.credentials;
+              }
               // loop check db connect is true
               fs.readFile("./app.config.js", "utf-8", (err, data) => {
                 if(err) {
@@ -45,7 +51,7 @@ module.exports = {
                   });
                 }
               });
-            } else if (passport_config.app_key_allow) {
+            } else if (passport_config.app_key_allow === true) {
               global.Credentials = auth.credentialsGuard;
               resolve([true, false, null]);
             } else {

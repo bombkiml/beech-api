@@ -42,6 +42,7 @@
     "express-slow-down": "^2.0.3",
     "express-validator": "2.21.0",
     "fs": "0.0.1-security",
+    "helmet": "^8.1.0",
     "inquirer": "8.2.4",
     "jsonwebtoken": "^9.0.2",
     "log-update": "^4.0.0",
