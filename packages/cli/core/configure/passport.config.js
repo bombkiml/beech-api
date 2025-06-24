@@ -11,6 +11,11 @@ module.exports = {
   // Set token expiry time (seconds), default expired in 24 hr.
   token_expired: 86400,
 
+  // Allow for using global jwt broken role
+  jwt_broken_role: [
+    // { role: [1, 2, 9] },
+  ],
+
   model: {
     // Main sql connection name. You must make sure connection name like inside `app.config.js` file and choose one connection name.
     name: "default_db",

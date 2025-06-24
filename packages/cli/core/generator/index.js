@@ -570,7 +570,8 @@ class Generator {
           return `DataTypes.STRING(${length})`;
         }
         if (type.includes('TEXT')) return 'DataTypes.TEXT';
-        if (type.includes('DATE') || type.includes('TIME')) return 'DataTypes.DATE';
+        if (type.includes('DATE')) return 'DataTypes.DATE';
+        if (type.includes('TIME')) return 'DataTypes.TIME';
         if (type.includes('JSON')) return 'DataTypes.JSON';
         if (type.includes('UUID')) return 'DataTypes.UUID';
         if (type.includes('BLOB')) return 'DataTypes.BLOB';
@@ -600,6 +601,8 @@ class Generator {
             defaultVal.includes('CURRENT_TIMESTAMP')
           ) {
             lines.push(`    defaultValue: DataTypes.NOW,`);
+          } else if (defaultVal === 'UUID()' || defaultVal === 'uuid()' || defaultVal === 'UUID') {
+            lines.push(`    defaultValue: DataTypes.UUIDV4,`);
           } else if (typeof props.defaultValue === 'string') {
             lines.push(`    defaultValue: '${props.defaultValue}',`);
           } else {
