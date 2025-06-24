@@ -301,17 +301,30 @@ const Fruit = Schema(sql.default_db).define("fruit", {
     autoIncrement: true,
     primaryKey: true
   },
+  friut_uuid: {
+    field: "uuid",
+    type: DataTypes.STRING(100),
+    allowNull: true,
+    defaultValue: DataTypes.UUIDV4,
+  },
   fruitName: DataTypes.STRING,
   fruitQty: DataTypes.INTEGER,
   fruitPrice: {
     type: DataTypes.INTEGER,
     allowNull: false, // Allow null feilds
   },
-  createdAt: DataTypes.DATE,
-  updatedAt: DataTypes.DATE,
+  createdAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
 });
 
-Users.options = {
+Fruit.options = {
   // Choose one for Allow magic generate default Endpoint (CRUD), It's like magic creating The endpoints for you (CRUD) ✨
 
   // [1] Allow all methods
