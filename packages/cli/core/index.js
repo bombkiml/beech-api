@@ -1,4 +1,5 @@
 global.appRoot = require("app-root-path");
+const moment = require("moment");
 const { performance } = require("perf_hooks");
 const moduleAlias = require("module-alias");
 moduleAlias.addAlias("@", appRoot + "/src");
@@ -7,6 +8,9 @@ global._app_ = _express_();
 // Compression
 const compression = require("compression");
 _app_.use(compression());
+// Helmet
+const helmet = require("helmet");
+_app_.use(helmet());
 // CORS
 const cors = require("cors");
 global.endpoint = _express_.Router();
@@ -64,12 +68,15 @@ _app_.use(expressSession({
 }));
 _app_.use(expressValidator());
 // Dev. activity
+global._requestTime_ = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
 _app_.use((req, res, next) => {
-  console.log("Request URL:", req.method, req.originalUrl);
-  var t0 = performance.now();
-  res.on("finish", () => {
-    var t1 = performance.now();
-    console.log(`Responded with status : ${res.statusCode} (${(t1 - t0).toFixed(2)}ms)`);
+  console.log(`[${_requestTime_}] : Request ${req.method} ${req.originalUrl}`);
+  const t0 = performance.now();
+  res.on('finish', () => {
+    const responseTime = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    const t1 = performance.now();
+    const duration = (t1 - t0).toFixed(0);
+    console.log(`[${responseTime}] : Response ${res.statusCode} (${duration}ms)`);
   });
   next();
 });
