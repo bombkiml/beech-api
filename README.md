@@ -280,7 +280,7 @@ const Fruit = Schema(sql.default_db).define("fruit", {
   updatedAt: {
     type: DataTypes.DATE,
     allowNull: true,
-  }
+  },
 });
 
 Fruit.options = {
