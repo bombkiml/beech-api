@@ -10,7 +10,7 @@
 
 The Beech API is API framework, It's help you with very easy to create API project under [Node.js](https://nodejs.org)
 
-- ✨ <b>Automation endpoints with CRUD</b>
+- ✨ <b>Automation Endpoints with CRUD</b>
   - Retrieving data with Query String
     - Conditions
     - Grouping
@@ -20,30 +20,31 @@ The Beech API is API framework, It's help you with very easy to create API proje
     - Organized transactions
     - Transactions set Isolation levels
 - 🔐 <b>System Management of Authentication</b>
-  - Authentication manegement
+  - Authentication Manegement
     - Request Token
     - Create Auth
     - Update Auth
-  - Verify identity management
-    - Two Factor
-- 🛠️ <b>Safe endpoints request</b>
+  - Verify Identity Management
+    - Two Factor (OTP, Pin, etc.)
+- 🛠️ <b>Safe Endpoints Request</b>
   - Rate Limit
-  - Block duplicate request per window
-  - Advance Guard (timimg)
+  - Block Duplicate Request per Window
+  - JWT Broken Role
+  - Advance Guard (Timimg)
 - 🙂 <b>Hight Security under passport-jwt, oauth2</b>
-- 🌐 <b>Supported Official strategy</b>
+- 🌐 <b>Supported Official Strategy</b>
   - Google
   - Facebook
 - 🖥️ <b>CORS Origin & Server Configuration</b>
-  - Config base public path `./`
+  - Config Base public path `./`
   - Allow origin whitelist
-- 📚 <b>Databases managements</b>
+- 📚 <b>Databases Managements</b>
   - Migrations
   - Seeder
 - ☕ <b>Testing</b>
 - 🏃 <b>Implementration</b>
-  - pm2
-  - docker
+  - PM2
+  - Docker
 
 # Environment
 
@@ -258,6 +259,12 @@ const Fruit = Schema(sql.default_db).define("fruit", {
     autoIncrement: true,
     primaryKey: true
   },
+  friut_uuid: {
+    field: "uuid",
+    type: DataTypes.STRING(100),
+    allowNull: true,
+    defaultValue: DataTypes.UUIDV4,
+  },
   fruitName: DataTypes.STRING,
   fruitQty: DataTypes.INTEGER,
   fruitPrice: {
@@ -265,11 +272,18 @@ const Fruit = Schema(sql.default_db).define("fruit", {
     allowNull: false, // Allow null feilds
   },
   sort: DataTypes.STRING,
-  createdAt: DataTypes.DATE,
-  updatedAt: DataTypes.DATE,
+  createdAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  }
 });
 
-Users.options = {
+Fruit.options = {
   // Choose one for Allow magic generate default Endpoint (CRUD), It's like magic creating The endpoints for you (CRUD) ✨
 
   // [1] Allow all methods
