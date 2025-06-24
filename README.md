@@ -312,9 +312,28 @@ const Fruit = Schema(sql.default_db).define("fruit", {
 });
 
 Users.options = {
-  // Allow magic generate default endpoint (CRUD)
-  defaultEndpoint: true, // boolean DEFAULT: true  👈 // It's like magic creating The endpoints for you (CRUD) ✨
+  // Choose one for Allow magic generate default Endpoint (CRUD), It's like magic creating The endpoints for you (CRUD) ✨
+
+  // [1] Allow all methods
+  defaultEndpoint: true,
+  // [2] Allow with specific per methods
+  defaultEndpoint: {
+    GET: true,
+    POST: false,
+    PATCH: {
+      allow: true, // allow Auto-Endpoint
+      jwt: {
+        allow: true, // allow JWT
+        broken_role: [
+          { role: [1, 2] },
+        ],
+      },
+    },
+    DELETE: false,
+  },
+
   limitRows: 100, // Limit rows default 100
+
 };
 
 // Example Finder by id (ORM), Learn more: https://sequelize.org/docs/v6/core-concepts/model-querying-finders/
@@ -499,6 +518,11 @@ module.exports = {
 
   // token expiry time (seconds), default 86400 sec. it's expired in 24 hr.
   token_expired: 86400,
+
+  // Allow for using global jwt broken role
+  jwt_broken_role: [
+    // { role: [1, 2, 9] },
+  ],
 
   model: {
     // Main sql connection name. You must make sure connection name like inside `app.config.js` file and choose one connection name.

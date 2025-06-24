@@ -37,7 +37,7 @@ function sign(req, res, whitelist, originSensitive, cb) {
     const origin = req.headers.origin;
     let doYouSignSomeOrigin = false;
     //var host = req.get("host");
-    console.log("Request from origin:", origin || "http://localhost");
+    console.log(`[${_requestTime_}] : From origin: ${origin || 'http://localhost'}`);
     // check whitelist length ?
     if (whitelist.length > 0) {
       whitelist.forEach((val, k) => {

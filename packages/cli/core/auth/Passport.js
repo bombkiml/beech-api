@@ -18,16 +18,15 @@ module.exports = {
            * 
            */
           if (fs.existsSync(passport_config_file)) {
-            const auth = require("./Credentials");
+            const { byPassCredentials, credentialsGuard } = require("./Credentials");
             passport_config = require(passport_config_file);
-
             // Check if the JWT is allow
             if (passport_config.jwt_allow === true) {
               // Check if the APP_KEY is allow
               if(passport_config.app_key_allow) {
-                global.Credentials = [ auth.credentials, auth.credentialsGuard ];
+                global.Credentials = (_options = {}, _res, _next) => [credentialsGuard, byPassCredentials(_options, _res, _next)];
               } else {
-                global.Credentials = auth.credentials;
+                global.Credentials = (_options = {}, _res, _next) => [byPassCredentials(_options, _res, _next)];
               }
               // loop check db connect is true
               fs.readFile("./app.config.js", "utf-8", (err, data) => {
@@ -53,16 +52,16 @@ module.exports = {
                 }
               });
             } else if (passport_config.app_key_allow === true) {
-              global.Credentials = auth.credentialsGuard;
+              global.Credentials = (_options = {}, _res, _next) => [credentialsGuard];
               resolve([true, false, null]);
             } else {
-              global.Credentials = [];
+              global.Credentials = (_options = {}, _res, _next) => [];
               resolve([true, false, null]);
             }
           } else {
-            global.Credentials = [];
+            global.Credentials = (_options = {}, _res, _next) => [];
             //const Requests = require("./_Request");
-            //global.Credentials = Requests.requests; ----> // [Closed] TODO check passport.config file if not exists show error when file src/ using the JWT (maybe for show JWT is ON/OFF)
+            //global.Credentials = (_options = {}, _res, _next) => [Requests.requests]; ----> // [Closed] TODO check passport.config file if not exists show error when file src/ using the JWT (maybe for show JWT is ON/OFF)
             resolve([false, null, null]);
           }
         });
@@ -175,7 +174,7 @@ module.exports = {
                                 return done(null, JSON.parse(JSON.stringify(result[ 0 ] || null)));
                               }).catch((error) => {
                                 if(pool.options.logging) {
-                                  return cb(error, null);
+                                  return done(error, null);
                                 } else {
                                   if(error.sql) {
                                     delete error.sql;
@@ -191,9 +190,9 @@ module.exports = {
                                     if(error.parameters) {
                                       delete error.parameters;
                                     }
-                                    return cb(error, null);
+                                    return done(error, null);
                                   } else {
-                                    return cb(String(error), null);
+                                    return done(String(error), null);
                                   }
                                 }
                               });

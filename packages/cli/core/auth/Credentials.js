@@ -1,96 +1,114 @@
 const passport = require("passport");
 const fs = require("fs");
+const { checkRoleMiddleware } = require("../middleware/express/jwtCheckAllow");
 const passport_config_file = appRoot + "/passport.config.js";
 var passport_config;
 if (fs.existsSync(passport_config_file)) {
   passport_config = require(passport_config_file);
 }
 
-module.exports = {
-  credentials: (req, res, next) => {
-    if (passport_config.jwt_allow) {
-      const auth_endpoint = (passport_config.auth_endpoint) ? (passport_config.auth_endpoint[ 0 ] === "/" ? passport_config.auth_endpoint : "/" + passport_config.auth_endpoint) : "/authentication";
-      if(auth_endpoint.split("/")[1] == req.params.hash) {
-        return next();
+const byPassCredentials = (options, _res = {}, _next = () => {}) => {
+  if(!options.length) {
+    if(passport_config.jwt_broken_role ? passport_config.jwt_broken_role.length > 0 : false) {
+      // CASE: jwt_broken_role DEFUALT is set
+      return [credentials, checkRoleMiddleware(passport_config.jwt_broken_role)(options, _res, _next)];
+    } else {
+      if(!Object.keys(options).length) {
+        return [credentials];
+      } else {
+        if("headers" in options) {
+          // CASE: Only Credentials
+          return [credentials(options, _res, _next)];
+        } else {
+          // CASE: jwt_broken_role DEFUALT is not set
+          return [credentials];
+        }
       }
     }
+  } else {
+    // CASE: options Credentials is set
+    return [credentials, checkRoleMiddleware(options)];
+  }
+}
 
-    return passport.authenticate("jwt", {
-      session: false,
-    }, (err, user, info) => {
-        // error check
-        if (err) {
-          console.log(err, info);
+const credentials = (req, res, next) => {
+  if (passport_config.jwt_allow === true) {
+    const auth_endpoint = (passport_config.auth_endpoint) ? (passport_config.auth_endpoint[ 0 ] === "/" ? passport_config.auth_endpoint : "/" + passport_config.auth_endpoint) : "/authentication";
+    if(auth_endpoint.split("/")[1] == req.params.hash) {
+      return next();
+    }
+  }
+
+  return passport.authenticate("jwt", {
+    session: false,
+  }, (err, user, info) => {
+    // error check
+    if (err) {
+      console.log(err, info);
+      return res.status(401).json({
+        code: 401,
+        error: "UNAUTHORIZED",
+        message: {
+          name: "WrongTokenError",
+          message: "token error.",
+        },
+        /* dev: { err, info }, */ // for dev info
+      });
+    }
+    // anything token check
+    if (!user) {
+      if (info) {
+        if (info.name == "TokenExpiredError") {
           return res.status(401).json({
             code: 401,
-            error: "UNAUTHORIZED",
+            status: "TOKEN_EXPIRED",
+            message: info,
+          });
+        }
+        if (info.name == "Error") {
+          return res.status(401).json({
+            code: 401,
+            status: "NO_AUTH_TOKEN",
             message: {
-              name: "WrongTokenError",
-              message: "token error.",
+              name: "NoTokenError",
+              message: "No auth token",
             },
-            /* dev: { err, info }, */ // for dev info
           });
         }
-        // anything token check
-        if (!user) {
-          if (info) {
-            if (info.name == "TokenExpiredError") {
-              return res.status(401).json({
-                code: 401,
-                status: "TOKEN_EXPIRED",
-                message: info,
-              });
-            }
-            if (info.name == "Error") {
-              return res.status(401).json({
-                code: 401,
-                status: "NO_AUTH_TOKEN",
-                message: {
-                  name: "NoTokenError",
-                  message: "No auth token",
-                },
-              });
-            }
-            if (info.name == "SyntaxError") {
-              return res.status(401).json({
-                code: 401,
-                status: "PAYLOAD_SYNTAX_ERROR",
-                message: {
-                  name: "SyntaxError",
-                  message: "Unexpected token < in JSON at position 0",
-                },
-              });
-            }
-          }
+        if (info.name == "SyntaxError") {
           return res.status(401).json({
             code: 401,
-            status: "UNAUTHORIZED_USER",
-            message: info || {
-              name: "TokenError",
-              message: "Unauthorized token."
+            status: "PAYLOAD_SYNTAX_ERROR",
+            message: {
+              name: "SyntaxError",
+              message: "Unexpected token < in JSON at position 0",
             },
           });
         }
-        // Check application key allow
-        checkAppKey(req, res, (checked) => {
-          if (checked) {
-            // Forward user information to the next middleware
-            req.user = user;
-            next();
-          }
-        });
       }
-    )(req, res, next);
-  },
-  credentialsGuard: (req, res, next) => {
-    checkAppKey(req, res, (checked) => {
-      if (checked) {
-        // Perfectly
-        next();
-      }
-    });
-  },
-};
+      return res.status(401).json({
+        code: 401,
+        status: "UNAUTHORIZED_USER",
+        message: info || {
+          name: "TokenError",
+          message: "Unauthorized token."
+        },
+      });
+    } else {
+      // Perfectly user jwt
+      return next();
+    }
+  })(req, res, next);
+}
+
+const credentialsGuard = (req, res, next) => {
+  checkAppKey(req, res, (checked) => {
+    if (checked) {
+      // Perfectly
+      next();
+    }
+  });
+}
 
 function checkAppKey(req, res, cb) {
   if (_passport_config_.app_key_allow) {
@@ -125,3 +143,5 @@ function checkAppKey(req, res, cb) {
     return cb(true);
   }
 }
+
+module.exports = { byPassCredentials, credentials, credentialsGuard };
