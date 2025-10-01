@@ -15,6 +15,7 @@ The Beech API is API framework, It's help you with very easy to create API proje
     - Conditions
     - Grouping
     - Ordering
+    - Timestamps (Add-on in Store and Update)
   - Transactions
     - Disorganized transactions
     - Organized transactions
@@ -178,7 +179,20 @@ database_config: [
     password: "FjgcgJPylkV7EeQJjea_EeifPwaHVO9onD3ATk3YYAyvjtMGu3dcDS0ejA",
     database: "my_store_db",
     port: "3306",
-    logging: console.log, // Shout log query call. Learn more: https://sequelize.org/docs/v6/getting-started/#logging
+
+    // Specify global options, which are used when Define is called.
+    define: {
+      charset: "utf8",
+      freezeTableName: true,
+      ...
+    },
+
+    timezone: "+07:00", // Example: GMT+2
+    // or use a named timezone supported by Intl.Locale
+    // timezone: 'America/Los_Angeles',
+
+    logging: console.log, // SQL trace logs. Learn more: https://sequelize.org/docs/v6/getting-started/#logging
+
     is_connect: true, // Boolean, Turn ON/OFF to connect
   },
 
@@ -281,14 +295,21 @@ const Fruit = Schema(sql.default_db).define("fruit", {
     type: DataTypes.DATE,
     allowNull: true,
   },
+}, {
+  // Enables timestamps with createdAt and updatedAt
+  timestamps: true,
+  // Custom field names createdAt and updatedAt
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
 });
 
 Fruit.options = {
   // Choose one for Allow magic generate default Endpoint (CRUD), It's like magic creating The endpoints for you (CRUD) ✨
 
-  // [1] Allow all methods
+  // Option 1: Allow all methods
   defaultEndpoint: true,
-  // [2] Allow with specific per methods
+
+   // Option 2: Allow with specific per methods
   defaultEndpoint: {
     GET: true,
     POST: false,
@@ -312,11 +333,6 @@ function exampleFindOneFruitById(id) {
   return Fruit.findOne({ where: { id: id } });
 }
 
-// Example Raw Query, Learn more: https://sequelize.org/docs/v6/core-concepts/raw-queries/
-function exampleGetAllFruit(id) {
-  return Fruit.query("SELECT * FROM fruit");
-}
-
 // Example Raw Query with Model Instances. This allows you to easily map a query to a predefined model
 function exampleGetAllFruitWithModelInstance(id) {
   return Fruit.query("SELECT * FROM fruit", {
@@ -325,14 +341,19 @@ function exampleGetAllFruitWithModelInstance(id) {
   });
 }
 
+// Example Raw Query, Learn more: https://sequelize.org/docs/v6/core-concepts/raw-queries/
+function exampleGetAllFruit(id) {
+  return Fruit.query("SELECT * FROM fruit");
+}
+
 ...
 
 // Export Schema, Function, ...
 module.exports = {
   Fruit,
-  exampleFindFruitById,
-  exampleGetAllFruit,
+  exampleFindOneFruitById,
   exampleGetAllFruitWithModelInstance,
+  exampleGetAllFruit,
   ...
 };
 ```
@@ -362,59 +383,68 @@ Retrieving `fruit` data with GET : `/fruit?someField=[eq,1]&groupby=[id]&orderby
 
 ```java
 // WHERE Conditions
-GET: /fruit?id=1                        // id = 1
-GET: /fruit?isActived=[eq,1]            // isActived = 1
-GET: /fruit?fruitName=[like,Banana%]    // fruitName LIKE 'Banana%'
-GET: /fruit?cost=[gt,50]&qty=[lt,10]    // cost > 50 AND qty < 10
-GET: /fruit/10/0?qty=[lt,10]            // qty < 10 LIMIT 0,10
+GET: /fruit?id=1                      // id = 1
+GET: /fruit?isActived=[eq,1]          // isActived = 1
+GET: /fruit?fruitName=[like,Banana%]  // fruitName LIKE 'Banana%' (Not allow with date, time)
+GET: /fruit?cost=[gt,50]&qty=[lt,10]  // cost > 50 AND qty < 10
+GET: /fruit/10/0?qty=[lt,10]          // qty < 10 LIMIT 0,10
 
 // Grouping
-GET: /fruit?groupby=id                  // GROUP BY id
-GET: /fruit?groupby=[id,fruitName]      // GROUP BY id, fruitName
+GET: /fruit?groupby=id                // GROUP BY id
+GET: /fruit?groupby=[id,fruitName]    // GROUP BY id, fruitName
 
 // Ordering
-GET: /fruit?oderby=id                   // ORDER BY id ASC
-GET: /fruit?oderby=[sort,desc]          // ORDER BY sort DESC
+GET: /fruit?oderby=id                 // ORDER BY id ASC
+GET: /fruit?oderby=[sort,desc]        // ORDER BY sort DESC
 ```
 
 For usage avariable:
 
 ```java
 // Basics conditions
-3                            // = 3
-[eq, 3]                      // = 3
-[ne, 20]                     // != 20
-[is, null]                   // IS NULL
-[not, null]                  // IS NOT NULL
-[or, [5, 6]]                 // (someField = 5) OR (someField = 6) // Not support NULL value
+3                                     // = 3
+[eq, 3]                               // = 3
+[ne, 20]                              // != 20
+[is, null]                            // IS NULL
+[not, null]                           // IS NOT NULL
+[or, [5, 6]]                          // (someField = 5) OR (someField = 6) // Not support NULL value
 
 // Number comparisons conditions
-[gt, 6]                      // > 6
-[gte, 6]                     // >= 6
-[lt, 10]                     // < 10
-[lte, 10]                    // <= 10
-[between, [6, 10]]           // BETWEEN 6 AND 10
-[notBetween, [11, 15]]       // NOT BETWEEN 11 AND 15
+[gt, 6]                               // > 6
+[gte, 6]                              // >= 6
+[lt, 10]                              // < 10
+[lte, 10]                             // <= 10
+[between, [6, 10]]                    // BETWEEN 6 AND 10
+[between, [2025-01-01, 2025-04-30]]   // BETWEEN '2025-01-01 00:00:00' AND '2025-04-30 23:59:59'
+                                      // When assign Datetime format will only support field datatype is `Date`, `Datetime`, `Time`
+
+// OR You can assign Datetime like this.
+[between, [2025-01-01 12:00:00, 2025-04-30 15:00:00]] // BETWEEN '2025-01-01 12:00:00' AND '2025-04-30 15:00:00'
+
+[notBetween, [11, 15]]                // NOT BETWEEN 11 AND 15
 
 // Other operators conditions
-[in, [1, 2, 3]],             // IN [1, 2, 3]
-[notIn, [1, 2, 3]],          // NOT IN [1, 2, 3]
-[like, %hat]                 // LIKE '%hat'
-[notLike, %hat]              // NOT LIKE '%hat'
-[startsWith, hat]            // LIKE 'hat%'
-[endsWith, hat]              // LIKE '%hat'
-[substring, hat]             // LIKE '%hat%'
+[in, [1, 2, 3]],                      // IN [1, 2, 3]
+[notIn, [1, 2, 3]],                   // NOT IN [1, 2, 3]
+[like, %hat]                          // LIKE '%hat' (Avoid use #, % and %<Number> between wording)
+                                      // Becuase URL will be decoded it, Reccommand use startsWith, endsWith and substring when you need assing Number value)
+                                      // And NOT SUPPORT field datatype is `date`, `datetime`, `time`. Should be use with datatype is `String` or `Number` it work!.
+
+[notLike, %hat]                       // NOT LIKE '%hat'
+[startsWith, hat]                     // LIKE 'hat%'
+[endsWith, hat]                       // LIKE '%hat'
+[substring, hat]                      // LIKE '%hat%'
 
 // Grouping
-id                           // GROUP BY id
-[id]                         // ORDER BY id
-[id, fruitName]              // ORDER BY id, fruitName
+groupby=id                            // GROUP BY id
+groupby=[id]                          // ORDER BY id
+groupby=[id, fruitName]               // ORDER BY id, fruitName
 
 // Ordering
-id                           // ORDER BY id ASC (Basic usage default Ascending)
-[id, asc]                    // ORDER BY id ASC
-[id, desc]                   // ORDER BY id ASC
-[[id, desc], [sort, asc]]    // ORDER BY id DESC, sort ASC
+oderby=id                             // ORDER BY id ASC (Basic usage default Ascending)
+oderby=[id, asc]                      // ORDER BY id ASC
+oderby=[id, desc]                     // ORDER BY id ASC
+oderby=[[id, desc], [sort, asc]]      // ORDER BY id DESC, sort ASC
 ```
 
 ## # Transactions

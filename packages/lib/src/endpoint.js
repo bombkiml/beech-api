@@ -1,5 +1,6 @@
 const walk = require("walk");
 const fs = require("fs");
+const moment = require("moment");
 const { checkRoleMiddlewareWithDefaultProject } = require("../../cli/core/middleware/express/jwtCheckAllow");
 
 function walkModel(cb) {
@@ -163,6 +164,29 @@ function whereCond(objectCond, cb) {
   }
 }
 
+function getValueType(value) {
+  if (typeof value === 'string') {
+    // Check for ISO-like date string with optional time part
+    const isoDateRegex = /^\d{4}-\d{2}-\d{2}(?:[ T]\d{2}:\d{2}:\d{2})?$/;
+    const date = new Date(value);
+    if (!isNaN(date.getTime()) && isoDateRegex.test(value)) {
+      return 'Date';
+    }
+    return 'String';
+  }
+  if (typeof value === 'number' && !isNaN(value)) return 'Number';
+  if (typeof value === 'boolean') return 'Boolean';
+  if (value instanceof Date && !isNaN(value)) return 'Date';
+  if (value === null) return 'Null';
+  if (typeof value === 'undefined') return 'Undefined';
+  if (Array.isArray(value)) return 'Array';
+  if (typeof value === 'function') return 'Function';
+  if (typeof value === 'symbol') return 'Symbol';
+  if (typeof value === 'bigint') return 'BigInt';
+  if (typeof value === 'object') return 'Object';
+  return 'Unknown';
+}
+
 async function recursiveWhereCond(keys, objectCond, where, groupBy, orderBy, cb) {
   if(keys.length > 0) {
     let k = keys.shift();
@@ -194,36 +218,51 @@ async function recursiveWhereCond(keys, objectCond, where, groupBy, orderBy, cb)
         }
       });
     } else {
-      let fieldValueItemFromQueryString = objectCond[k].replace(/\w+/g, '"$&"').replace(/\[\s*\]/g, '[]');
-      let valueItem = objectCond[k].replace(/[\[\]|\s']+/g, '').split(',');
+      let fieldValueItemFromQueryString = objectCond[k].replace(/([^[\],]+)/g, '"$1"');
+      let valueItem = objectCond[k].replace(/[\[\]']+/g, '').split(','); //replace(/[\[\]']+/g, '')
+      let cleanValueItem = valueItem.map((e) => e.trim()).filter((e) => e !== '');
       // Check Array syntax from Query String
       isValidArrayFormat(fieldValueItemFromQueryString, async (err) => {
-        if(err) {
+        if(err || cleanValueItem.length < 1) {
           cb(["SyntaxError: Unexpected end of Array or String input", ` (${k})`], null, null, null);
         } else {
-          let onlyValueItem = await valueItem.slice(0);
-          await onlyValueItem.shift();
-          where[k] = await (valueItem[1])
+          try {
+            where[k] = await (cleanValueItem[1])
                       ? {
-                          [Op[valueItem[0]]]: (valueItem[1] == 'null')
-                                              ? null  : (valueItem[1] == 'true')
-                                              ? true  : (valueItem[1] == 'false')
-                                              ? false : (valueItem[0] == 'between' || valueItem[0] == 'notBetween')
-                                              ? [valueItem[1],valueItem[2]] :
-                                                (
-                                                  valueItem[0] == 'or'
-                                                  || valueItem[0] == 'in'
-                                                  || valueItem[0] == 'notIn'
-                                                )
-                                              ? onlyValueItem : valueItem[1]
+                          [Op[cleanValueItem[0]]]: (cleanValueItem[1] == 'null') ? null :
+                                              (cleanValueItem[1] == 'true') ? true :
+                                              (cleanValueItem[1] == 'false') ? false :
+                                              (cleanValueItem[0] == 'between' || cleanValueItem[0] == 'notBetween') ? [
+                                                (getValueType(cleanValueItem[1]) == 'Date')
+                                                  ? cleanValueItem[1].split(' ').map(e => e.trim()).length > 1
+                                                    ? moment(new Date(cleanValueItem[1]).toISOString())
+                                                    : moment(new Date(cleanValueItem[1] + ' 00:00:00').toISOString())
+                                                  : cleanValueItem[1],
+                                                (getValueType(cleanValueItem[2]) == 'Date')
+                                                  ? cleanValueItem[2].split(' ').map(e => e.trim()).length > 1
+                                                    ? moment(new Date(cleanValueItem[2]).toISOString())
+                                                    : moment(new Date(cleanValueItem[2] + ' 23:59:59').toISOString())
+                                                  : cleanValueItem[2],
+                                              ] :
+                                              (cleanValueItem[0] == 'or' || cleanValueItem[0] == 'in' || cleanValueItem[0] == 'notIn') ? [...cleanValueItem.slice(1)] :
+                                              (cleanValueItem[0] == 'like') ? [cleanValueItem[1],cleanValueItem[2],cleanValueItem[3]].join("") :
+                                              (cleanValueItem[0] == 'notLike') ? [cleanValueItem[1],cleanValueItem[2],cleanValueItem[3]].join("") :
+                                              (cleanValueItem[0] == 'startsWith') ? cleanValueItem[1] :
+                                              (cleanValueItem[0] == 'endsWith') ? cleanValueItem[1] :
+                                              (cleanValueItem[0] == 'substring') ? cleanValueItem[1] :
+                                              [cleanValueItem[1]]
                         }
-                      : valueItem[0];
-          // Recursive re-call function
-          recursiveWhereCond(keys, objectCond, where, groupBy, orderBy, cb);
+                      : cleanValueItem[0];
+            // Recursive re-call function
+            recursiveWhereCond(keys, objectCond, where, groupBy, orderBy, cb);
+          } catch (error) {
+            return cb([`Error with (${k})`, error], null, null, null);
+          }
         }
       });
     }
   } else {
+    // End of recursive function
     cb(null, where, groupBy, orderBy);
   }
 }
@@ -237,16 +276,35 @@ function isValidArrayFormat(str, cb) {
   }
 }
 
+// function parseRawQuery(search) {
+//   const rawParams = {};
+//   if (search.startsWith('?')) {
+//     const queryString = search.slice(1); // Remove '?'
+//     const pairs = queryString.split('&');
+
+//     for (const pair of pairs) {
+//       const [key, value = ''] = pair.split('=');
+//       if (key) {
+//         rawParams[key] = value;
+//       }
+//     }
+//   }
+//   return rawParams;
+// }
+
 async function findAll(Project, where, offset, group, order, limitRow, cb) {
   try {
-    const results = await Project.findAll({
+    await Project.findAll({
       where,
       group: (group.groupby) ? group.groupby : [],
       order: (order.orderby) ? [order.orderby] : [],
       offset: offset,
       limit: limitRow,
+    }).then((results) => {
+      cb(null, results)
+    }).catch((error) => {
+      cb(error, null);
     });
-    await cb(null, results)
   } catch (error) {
     cb(error, null);
   }
@@ -290,42 +348,38 @@ async function retrieving(authEndpoint, Projects, req, res, next) {
        */
       await filterProject(leaveMeAlone, reqUrl, "/".concat(mergeDuoVar), "", req, res, async (err, Project, params) => {
         if (!err) {
-          if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
-            try {
-              // declare default limit offset
-              let offset = 0;
-              let limitRow = await (Project.options.limitRows) ? Project.options.limitRows : 100;
-              // check assign limit, offset ?
-              if ((params[0] && params[0]  != 'undefined') && ((params[1] && params[1] != 'undefined') || parseInt(params[1]) === 0)) {
-                // Only case: /limit/offset
-                limitRow = parseInt(params[0]);
-                offset = parseInt(params[1]);
-              }
-              // findAll data
-              await findAll(Project, where, offset, groupBy, orderBy, limitRow, (err, results) => {
-                if(err) {
-                  res.status(500).json({
-                    code: 500,
-                    status: "READ_CATCH",
-                    err: String(err),
-                  });
-                } else {
-                  // @ return findAll
-                  res.json({
-                    code: 200,
-                    status: "SUCCESS",
-                    results,
-                    length: results.length,
-                    limitRow,
-                  });
-                }
-              });
-            } catch (error) {
-              // @return
-              return errMessage(error, res);
+          try {
+            // declare default limit offset
+            let offset = 0;
+            let limitRow = await (Project.options.limitRows) ? Project.options.limitRows : 100;
+            // check assign limit, offset ?
+            if ((params[0] && params[0]  != 'undefined') && ((params[1] && params[1] != 'undefined') || parseInt(params[1]) === 0)) {
+              // Only case: /limit/offset
+              limitRow = parseInt(params[0]);
+              offset = parseInt(params[1]);
             }
-          } else {
-            next();
+            // findAll data
+            await findAll(Project, where, offset, groupBy, orderBy, limitRow, (err, results) => {
+              if(err) {
+                res.status(500).json({
+                  code: 500,
+                  status: "READ_CATCH",
+                  err: String(err),
+                });
+              } else {
+                // @ return findAll
+                res.json({
+                  code: 200,
+                  status: "SUCCESS",
+                  results,
+                  length: results.length,
+                  limitRow,
+                });
+              }
+            });
+          } catch (error) {
+            // @return
+            return errMessage(error, res);
           }
         } else {
           // @return
@@ -364,13 +418,17 @@ const byPassCheckRole = (Projects, method, passport_config) => {
                       });
                     }
                   } else {
+                    // METHOD.allow is false || METHOD.allow is undefined
                     return notfound(res);
                   }
-                } else {
+                } else if(Project.options.defaultEndpoint[method] === true || Project.options.defaultEndpoint[method] === undefined) {
                   // Method is not set
                   return Credentials(req, res, () => {
                     return checkRoleMiddlewareWithDefaultProject(null)(req, res, next);
                   });
+                } else {
+                  // METHOD is false || METHOD is not undefined
+                  return notfound(res);
                 }
               }
             } else {
