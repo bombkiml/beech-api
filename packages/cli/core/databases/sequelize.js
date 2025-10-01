@@ -57,6 +57,9 @@ connectInProcess = async (database_config, headDbShow, cb) => {
           password: final[0][1],
           database: val.database,
           port: val.port,
+
+          // set connection timezone
+          timezone: val.timezone || "+00:00",
   
           // the storage engine for sqlite
           // - default ':memory:'

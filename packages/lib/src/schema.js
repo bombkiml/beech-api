@@ -2,9 +2,9 @@ const { Transaction } = require("sequelize");
 let isolationLevel = { isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE };
 function Schema(Sequelize) {
   return {
-    define: (table, schemaProps = {}) => {
+    define: (table, schemaProps = {}, elementProps = {}) => {
       try {
-        let Project = Sequelize.define(table, schemaProps);
+        let Project = Sequelize.define(table, schemaProps, elementProps);
         return Object.assign(Project, {
           query: (
             rawSql,
