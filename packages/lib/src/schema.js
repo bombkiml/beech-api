@@ -2,9 +2,9 @@ const { Transaction } = require("sequelize");
 let isolationLevel = { isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE };
 function Schema(Sequelize) {
   return {
-    define: (table, schemaProps = {}) => {
+    define: (table, schemaProps = {}, elementProps = {}) => {
       try {
-        let Project = Sequelize.define(table, schemaProps);
+        let Project = Sequelize.define(table, schemaProps, elementProps);
         //Sequelize.options.charset = "utf8";
         //Sequelize.options.define.charset = "utf8";
         //Sequelize.options.define.dialectOptions.collate = "utf8_unicode_ci";

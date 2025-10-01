@@ -15,6 +15,7 @@ The Beech API is API framework, It's help you with very easy to create API proje
     - Conditions
     - Grouping
     - Ordering
+    - Timestamps (Add-on in Store and Update)
   - Transactions
     - Disorganized transactions
     - Organized transactions
@@ -178,7 +179,20 @@ database_config: [
     password: "FjgcgJPylkV7EeQJjea_EeifPwaHVO9onD3ATk3YYAyvjtMGu3dcDS0ejA",
     database: "my_store_db",
     port: "3306",
-    logging: console.log, // Shout log query call. Learn more: https://sequelize.org/docs/v6/getting-started/#logging
+
+    // Specify global options, which are used when Define is called.
+    define: {
+      charset: "utf8",
+      freezeTableName: true,
+      ...
+    },
+
+    timezone: "+07:00", // Example: GMT+2
+    // or use a named timezone supported by Intl.Locale
+    // timezone: 'America/Los_Angeles',
+
+    logging: console.log, // SQL trace logs. Learn more: https://sequelize.org/docs/v6/getting-started/#logging
+
     is_connect: true, // Boolean, Turn ON/OFF to connect
   },
 
@@ -281,14 +295,21 @@ const Fruit = Schema(sql.default_db).define("fruit", {
     type: DataTypes.DATE,
     allowNull: true,
   },
+}, {
+  // Enables timestamps with createdAt and updatedAt
+  timestamps: true,
+  // Custom field names createdAt and updatedAt
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
 });
 
 Fruit.options = {
   // Choose one for Allow magic generate default Endpoint (CRUD), It's like magic creating The endpoints for you (CRUD) ✨
 
-  // [1] Allow all methods
+  // Option 1: Allow all methods
   defaultEndpoint: true,
-  // [2] Allow with specific per methods
+
+   // Option 2: Allow with specific per methods
   defaultEndpoint: {
     GET: true,
     POST: false,
@@ -312,11 +333,6 @@ function exampleFindOneFruitById(id) {
   return Fruit.findOne({ where: { id: id } });
 }
 
-// Example Raw Query, Learn more: https://sequelize.org/docs/v6/core-concepts/raw-queries/
-function exampleGetAllFruit(id) {
-  return Fruit.query("SELECT * FROM fruit");
-}
-
 // Example Raw Query with Model Instances. This allows you to easily map a query to a predefined model
 function exampleGetAllFruitWithModelInstance(id) {
   return Fruit.query("SELECT * FROM fruit", {
@@ -325,14 +341,19 @@ function exampleGetAllFruitWithModelInstance(id) {
   });
 }
 
+// Example Raw Query, Learn more: https://sequelize.org/docs/v6/core-concepts/raw-queries/
+function exampleGetAllFruit(id) {
+  return Fruit.query("SELECT * FROM fruit");
+}
+
 ...
 
 // Export Schema, Function, ...
 module.exports = {
   Fruit,
-  exampleFindFruitById,
-  exampleGetAllFruit,
+  exampleFindOneFruitById,
   exampleGetAllFruitWithModelInstance,
+  exampleGetAllFruit,
   ...
 };
 ```
