@@ -10,42 +10,55 @@
 
 The Beech API is API framework, It's help you with very easy to create API project under [Node.js](https://nodejs.org)
 
+## Let's go
+- <b>[Installation](#installation)</b>
+- <b>[Creating a project](#creating-a-project)</b>
+- <b>[Upgrade to latest version](#upgrade-to-latest-version)</b>
+- <b>[Beech CLI tool available](#beech-cli-tool-available)</b>
 - ✨ <b>Automation Endpoints with CRUD</b>
-  - Retrieving data with Query String
+  - [Database Connection](#database-connection)
+    - [Model](#model)
+  - [Retrieving data with Query String](#retrieving-data-with-query-string)
     - Conditions
     - Grouping
     - Ordering
     - Timestamps (Add-on in Store and Update)
-  - Transactions
-    - Disorganized transactions
-    - Organized transactions
-    - Transactions set Isolation levels
+  - [Transactions](#transactions)
+    - [Disorganized transactions](#way-1---disorganized-transactions-)
+    - [Organized transactions](#way-2---organized-transactions-)
+    - [Transactions set Isolation levels](#way-3---transactions-set-isolation-levels-)
+  - [Endpoints](#endpoints)
+  - [Helpers](#helpers)
 - 🔐 <b>System Management of Authentication</b>
-  - Authentication Manegement
-    - Request Token
-    - Create Auth
-    - Update Auth
-  - Verify Identity Management
-    - Two Factor (OTP, Pin, etc.)
+  - [Authentication Manegement](#authentication-passport-jwt)
+    - [Request Token](#request-token)
+    - [Beech Guard](#beech-guard)
+      - Verify Identity Management
+      - Two Factor (2fa, OTP, etc.)
+    - [Beech User Authentication Managements](#-beech-user-authentication-managements)
+      - Create Auth
+      - Update Auth
 - 🛠️ <b>Safe Endpoints Request</b>
-  - Rate Limit
-  - Block Duplicate Request per Window
-  - JWT Broken Role
-  - Advance Guard (Timimg)
+  - [Rate Limit](#-custom-endpoint-specific-rate-limit)
+  - [Slow Down](#-custom-endpoint-specific-slow-down)
+  - [Block Duplicate Request per Window](#-custom-endpoint-specific-duplicate-request)
+  - [JWT Broken Role](#jwt-broken-role)
+  - [Advance Guard (Timimg)](#-beech-advanced-guard-timing)
 - 🙂 <b>Hight Security under passport-jwt, oauth2</b>
 - 🌐 <b>Supported Official Strategy</b>
-  - Google
-  - Facebook
+  - [Google](#-google-strategy)
+  - [Facebook](#-facebook-strategy)
 - 🖥️ <b>CORS Origin & Server Configuration</b>
-  - Config Base public path `./`
-  - Allow origin whitelist
+  - [Config Base public path `./`](#cors-origin--server-configuration)
+  - [Allow origin whitelist](#cors-origin--server-configuration)
 - 📚 <b>Databases Managements</b>
-  - Migrations
-  - Seeder
+  - [Migrations](#databases-managements)
+  - [Seeder](#-creating-first-seeder)
 - ☕ <b>Testing</b>
+  - [Jest](#testing)
 - 🏃 <b>Implementration</b>
-  - PM2
-  - Docker
+  - [Docker](#implementation)
+  - [PM2](#-implement-with-pm2)
 
 # Environment
 
@@ -357,9 +370,14 @@ module.exports = {
   ...
 };
 ```
+
+## Retrieving data with Query String
+
+Now you can add Query String with Conditional, Grouping and Ordering (Now Support Readonly for GET method)
+
 ### ✨ That's cool! It's like magic Creating The Endpoints for you (CRUD) ✨
 
-<b style="font-size:12pt">Now!</b>, You can request to `/fruit` with methods GET, POST, PATCH and DELETE like this.
+<b style="font-size:12pt">For Example, Now!</b>, You can request to `/fruit` with methods GET, POST, PATCH and DELETE like this.
 
 | Efficacy |  Method  |        Endpoint        |    Body    |
 |:---------|:---------|:-----------------------|:-----------|
@@ -372,9 +390,6 @@ module.exports = {
 |  Update  |  PATCH   | /fruit/:id             |     { }    |
 |  Delete  |  DELETE  | /fruit/:id             |     No     |
 
-### # Retrieving data with Query String
-
-Now you can add Query String with Conditional, Grouping and Ordering (Now Support Readonly for GET method)<br/>
 Add some Basic Conditions, Grouping and Ordering with `QUERY STRING` under GET methods<br/>
 
 Retrieving `fruit` data with GET : `/fruit?someField=[eq,1]&groupby=[id]&orderby=[id,desc]`
@@ -606,6 +621,233 @@ exports.init = () => {
 }
 ```
 
+# JWT Broken Role
+
+The **JWT Broken Role** mechanism provides a flexible way to bypass or override role-based authorization rules when using JWT.
+
+#### It can be applied in three different levels, depending on your use case.
+
+| Level 	                        | Scope                   | Best For                        |
+|:--------------------------------|:------------------------|:--------------------------------|
+| Global (``passport.config.js``)	| All endpoints           |	Common authorization exceptions |
+| Model-level options             |	Per model & HTTP method |	Structured, reusable rules      |
+| Endpoint middleware             |	Single endpoint	        | Custom or special cases         |
+
+This multi-layer approach allows you to design **secure, flexible, and maintainable JWT authorization flows**.
+
+### 1. Global Configuration (passport.config.js)
+
+You can define global JWT Broken Role rules that apply to all endpoints by configuring them in ``passport.config.js``.
+```js
+module.exports = {
+  // Enable JWT authentication
+  jwt_allow: true,
+
+  ...
+
+  // Global JWT broken role configuration
+  jwt_broken_role: [
+    {
+      role: [0, 2, 4],
+      email: "john.doe@company.com",
+    }, // Basic role matching
+
+    {
+      role: { $in: [0, 2, 4] },
+      email: { $regex: /@company\.com$/ },
+    }, // Advanced matching using operators
+  ],
+
+  ...
+};
+```
+
+**Use cases**
+
+- Apply common authorization exceptions across the entire application
+- Support both simple role arrays and advanced operators (``$in``, ``$regex``, etc.)
+
+### 2. Model-Level Configuration (Per HTTP Method)
+
+You can configure JWT and Broken Role rules per model and per HTTP method using model options.
+
+📂 src/models/Fruit.js
+```js
+Fruit.options = {
+  ...
+
+  // Auto-endpoint configuration by HTTP method
+  defaultEndpoint: {
+    GET: true, // Enable auto-generated GET endpoint
+
+    POST: {
+      allow: true,
+      jwt: {
+        allow: true,
+        broken_role: [
+          { role: [5, 6] },
+        ],
+      },
+    },
+
+    PATCH: {
+      allow: true,
+      jwt: {
+        allow: true,
+        broken_role: [
+          { role: [5, 6, 9] },
+          { department: "IT" },
+        ],
+      },
+    },
+
+    DELETE: false, // Disable auto-generated DELETE endpoint
+  },
+
+  ...
+};
+```
+
+**Use cases**
+
+- Fine-grained access control per HTTP method
+- Different role requirements for POST, PATCH, etc.
+- Combine role-based and attribute-based conditions
+
+### 3. Endpoint-Level Configuration (Credentials Middleware)
+
+For maximum flexibility, you can define Broken Role rules directly on a specific endpoint using the Credentials middleware.
+
+📂 endpoints/custom-fruit-endpoints.js
+```js
+const { Fruit } = require("@/models/Fruit");
+
+endpoint.delete(
+  "/destroy-fruit-by-id/:id",
+  Credentials([{ role: [5, 9] }]),
+  async (req, res) => {
+
+    // Only JWT tokens with role level 5 or 9 are allowed
+
+    const deleted = await Fruit.destroy({
+      where: {
+        id: req.params.id,
+      },
+    });
+
+    console.log("result:", deleted);
+
+    // @response
+  }
+);
+```
+
+**Use cases**
+
+- One-off or custom endpoints
+- Highly specific authorization rules
+- Override global or model-level behavior when necessary
+
+## Supported Basic & Operators Usage
+
+The JWT Broken Role system supports both basic value matching and advanced operators for flexible authorization rules.
+
+| Operator | Meaning            | Description                                                   |
+|:---------|:-------------------|:--------------------------------------------------------------|
+| $eq      | equal              | Matches when the value is equal                               |
+| $ne      | not equal          | Matches when the value is not equal                           |
+| $in      | value IN array     | Matches when the value exists in the specified array          |
+| $not     | value NOT IN array | Matches when the value does not exist in the specified array  |
+| $regex   | regex match        | Matches using a regular expression                            |
+| $fn      | custom function    | Matches using a custom evaluation function                    |
+
+## Evaluation Logic (Very Important !)
+```js
+[
+  { rule1 AND rule1 },
+  { rule2 AND rule2 }
+]
+        ⬇
+        OR
+```
+
+## Basic Usage for Examples :
+
+```js
+Credentials([
+  { role: [9] },         // Only role check
+  { email: 'a@b.com' },  // OR email
+])
+
+// Common Matching Patterns
+{ role: [1, 2, 3] }     // IN
+{ role: 1 }             // Equal
+{ email: 'a@b.com' }
+{ department: 'IT' }
+{ status: ['active'] }  // Dynamic key
+```
+
+## Operators Usage for Examples :
+
+```js
+// Equal with Role
+Credentials([
+  {
+    role: { $eq: [1, 2, 5] }
+  }
+])
+
+// Not Equal with Role
+Credentials([
+  {
+    role: { $ne: [0, 3] }
+  }
+])
+
+// Regex with Email domain
+Credentials([
+  {
+    email: { $regex: /@company\.com$/ }
+  }
+])
+
+// IN with Role
+Credentials([
+  {
+    role: { $in: [1, 2, 4] }
+  }
+])
+
+// NOT IN with Role
+Credentials([
+  {
+    role: { $not: [0, 3] }
+  }
+])
+
+// Multiple OR rules
+Credentials([
+  {
+    role: { $in: [1] },
+    email: 'john.doe@company.com'
+  },
+  // OR
+  {
+    role: { $in: [4] },
+    email: { $regex: /@company\.com$/ }
+  },
+])
+
+// Custom Function
+Credentials([
+  {
+    role: {
+      $fn: (value, user) => value >= 4 && user.department === 'IT'
+    }
+  }
+])
+```
+
 # Helpers
 
 The `helpers` keep the files of functions for process specific something in the project. So, you might create the `helpers` in path `src/helpers` folder.
@@ -704,7 +946,7 @@ module.exports = {
 
 };
 ```
-
+### Request Token
 **Authentication structure :** Simple ``users`` table:
 ```
 ==============================================================
@@ -753,7 +995,7 @@ headers: Authorization: Bearer <your_token>
 }
 ```
 
-# Beech Two Factor (2FA)
+# Beech Guard
 You can easy using 2 Factor authenticate with ```guard_field``` inside ```passport.config.js``` file and add your Guard field ex: ```2fa``` field for Authenticate Conditions.
 
 ## # Guard (2FA, Other)
@@ -850,7 +1092,7 @@ Auth0(unix_time, 'your_advance_guard_secret', (error, hashing) => {
 
 ```
 
-## # Beech User auth managements ###
+## # Beech User Authentication Managements ###
 You can easy management `users` data with Beech, Only ```Store, Update``` NO ```Delete```, Anything you can make DELETE endpoint by yourself
 
 ```js
@@ -1170,6 +1412,7 @@ Before continuing further we will need to tell CLI how to connect to database. T
     "password": null,
     "database": "database_development",
     "host": "127.0.0.1",
+    "port": 3306, // IF your another port
     "dialect": "mysql"
   },
   "test": {
@@ -1218,7 +1461,12 @@ Until this step, we haven't inserted anything into the database. We have just cr
 
 - **Migrate Down** : you can use `db:migrate:undo`, this command will revert most recent migration.
   ```sh
+  // Step to undo
   $ npx sequelize-cli db:migrate:undo
+
+  // All to undo
+  $ npx sequelize-cli db:migrate:undo:all
+
   ```
 
 ## # Creating First Seeder
@@ -1289,19 +1537,6 @@ describe("Test endpoint : " + endpoint, () => {
 
 
 # Implementation
-  
-## # Implement with [PM2](https://pm2.keymetrics.io/)
-[PM2](https://pm2.keymetrics.io/) is a daemon process manager that will help you manage and keep your application online. Getting started with PM2 is straightforward, it is offered as a simple and intuitive CLI, installable via [NPM](https://www.npmjs.com/).
-
-```sh
-# Start service as standalone
-$ pm2 start ./node_modules/beech-api/packages/cli/beech --name <serviceName>
-
-# OR
-
-# Start service as cluster mode
-$ pm2 start ./node_modules/beech-api/packages/cli/beech --name <serviceName> -i <instances>
-```
 
 ## # Implement with [Docker](https://www.docker.com)
 
@@ -1350,6 +1585,19 @@ $ docker build -t <imageName> .
   # Run docker service
   $ docker service create --replicas <instances> --name <containerName> --publish 9000:9000 <imageName>
   ```
+
+## # Implement with [PM2](https://pm2.keymetrics.io/)
+[PM2](https://pm2.keymetrics.io/) is a daemon process manager that will help you manage and keep your application online. Getting started with PM2 is straightforward, it is offered as a simple and intuitive CLI, installable via [NPM](https://www.npmjs.com/).
+
+```sh
+# Start service as standalone
+$ pm2 start ./node_modules/beech-api/packages/cli/beech --name <serviceName>
+
+# OR
+
+# Start service as cluster mode
+$ pm2 start ./node_modules/beech-api/packages/cli/beech --name <serviceName> -i <instances>
+```
 
 # Development
 
