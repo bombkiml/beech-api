@@ -191,21 +191,42 @@ class Generator {
           this.generateKeyConfigFile()
             .then(resGenKey => resolve(resGenKey))
             .catch(err => reject(err));
-        } else if (this.option && this.option.slice(0, 5) == 'hash:') {
+        } else if (this.option && this.option.slice(0, 5) == "hash:") {
+          const { HashIt, Z } = require(__dirname + "/../helpers/math");
           if(this.option.length > 5) {
-            const { HashIt, Z } = require(__dirname + "/../helpers/math");
             Z((err, ak) => {
               if(err) {
                 logUpdate(err);
               } else {
                 let txt = this.option.split(":");
                 HashIt(txt, ak, null, (5).toString().length, (hashed) => {
-                  logUpdate(hashed);
+                  logUpdate("\n" + hashed);
                 });
               }
             });
           } else {
-            resolve("\n[103m[90m Info. [0m[0m No text to hash.");
+            inquirer.prompt([ {
+              type: "confirm",
+              name: "confirmHashNoText",
+              message: "[93mNo text to hash, Do you want to continue ?:[0m",
+            } ]).then(confirm => {
+              if(confirm.confirmHashNoText) {
+                Z((err, ak) => {
+                  if(err) {
+                    logUpdate(err);
+                  } else {
+                    let txt = this.option.split(":");
+                    HashIt(txt, ak, null, (5).toString().length, (hashed) => {
+                      logUpdate("\n" + hashed);
+                    });
+                  }
+                });
+              } else {
+                // no text to hash say no.
+                resolve(": Say no.");
+              }
+            });
+
           }
         } else if (this.option == "skd") {
           if (this.argument == "init") {

@@ -17,13 +17,13 @@ The Beech API is API framework, It's help you with very easy to create API proje
 - <b>[Beech CLI tool available](#beech-cli-tool-available)</b>
 - ✨ <b>Automation Endpoints with CRUD</b>
   - [Database Connection](#database-connection)
-    - [Model](#model)
+    - [Model](#models)
   - [Retrieving data with Query String](#retrieving-data-with-query-string)
     - Conditions
     - Grouping
     - Ordering
     - Timestamps (Add-on in Store and Update)
-  - [Transactions](#transactions)
+  - [Transactions](#-transactions)
     - [Disorganized transactions](#way-1---disorganized-transactions-)
     - [Organized transactions](#way-2---organized-transactions-)
     - [Transactions set Isolation levels](#way-3---transactions-set-isolation-levels-)
@@ -80,8 +80,11 @@ $ yarn global add beech-api
 
 Installation demo:
 
-[Demo](https://i.ibb.co/hySFxy3/install-beech720-1.gif)
-![Alt Text](https://i.ibb.co/hySFxy3/install-beech720-1.gif)
+[Demo 1](https://i.ibb.co/TBjNgVrF/1-11.gif)
+![Alt Text](https://i.ibb.co/TBjNgVrF/1-11.gif)
+
+[Demo 2](https://i.ibb.co/wrdgyzDP/ezgif-8539024298ec62a9.gif)
+![Alt Text](https://i.ibb.co/wrdgyzDP/ezgif-8539024298ec62a9.gif)
 
 After installation, you will have access to the `beech-app` binary in your command line.
 You can check you have the right version with this command:
@@ -179,7 +182,7 @@ Output: FjgcgJPylkV7EeQJjea_EeifPwaHVO9onD3ATk3YYAyvjtMGu3dcDS0ejA
 
 📂 app.config.js
 ```js
-// basic & sequelize (needed Hash)
+// Database configuration Only Basic & Sequelize (needed Hash)
 
 ...
 
@@ -216,6 +219,8 @@ database_config: [
 ...
 ```
 ❓ **Caution! :**  Every re-new generate `app_key`. Must to new Hash your Access and change to ALL Database connections.
+
+❓ **Development** : You can add ```dev: true``` in ```main_config``` for a better experience.
 
 # Models
 
@@ -334,6 +339,17 @@ Fruit.options = {
           { role: [1, 2] },
         ],
       },
+      // Rate Limit for GET
+      rate_limit: {
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
+        // store: ... , // Redis, Memcached, etc.
+        // See more: https://www.npmjs.com/package/express-rate-limit#Configuration
+      },
+      // Duplicate Request for GET
+      duplicate_request: {
+        expiration: 500, // Can't duplicate request for 5 milliseconds each IP requests per `window` (Disabled for Set expiration to 0 zero.)
+      },
     },
     DELETE: false,
   },
@@ -379,16 +395,17 @@ Now you can add Query String with Conditional, Grouping and Ordering (Now Suppor
 
 <b style="font-size:12pt">For Example, Now!</b>, You can request to `/fruit` with methods GET, POST, PATCH and DELETE like this.
 
-| Efficacy |  Method  |        Endpoint        |    Body    |
-|:---------|:---------|:-----------------------|:-----------|
-|  Create  |  POST    | /fruit                 |     { }    |
-|  Read    |  GET     | /fruit                 |     No     |
-|  Read    |  GET     | /fruit/:limit/:offset  |     No     |
-|  Read    |  GET     | /fruit?someField=1     |     No     |
-|  Read    |  GET     | /fruit?orderby=sort    |     No     |
-|  Read    |  GET     | /fruit?groupby=id      |     No     |
-|  Update  |  PATCH   | /fruit/:id             |     { }    |
-|  Delete  |  DELETE  | /fruit/:id             |     No     |
+| Efficacy |  Method  |        Endpoint        |    Body      | Mode    |
+|:---------|:---------|:-----------------------|:-------------|:--------|
+|  Create  |  POST    | /fruit                 |     { }      | Single  |
+|  Create  |  POST    | /fruit                 |     [ ]      | Bulk    |
+|  Read    |  GET     | /fruit                 |     No       | Fetch   |
+|  Read    |  GET     | /fruit/:limit/:offset  |     No       | Fetch   |
+|  Read    |  GET     | /fruit?someField=1     |     No       | Fetch   |
+|  Read    |  GET     | /fruit?orderby=sort    |     No       | Fetch   |
+|  Read    |  GET     | /fruit?groupby=id      |     No       | Fetch   |
+|  Update  |  PATCH   | /fruit/:id             |     { }      | Single  |
+|  Delete  |  DELETE  | /fruit/:id             |     No       | Single  |
 
 Add some Basic Conditions, Grouping and Ordering with `QUERY STRING` under GET methods<br/>
 
@@ -627,15 +644,15 @@ The **JWT Broken Role** mechanism provides a flexible way to bypass or override 
 
 #### It can be applied in three different levels, depending on your use case.
 
-| Level 	                        | Scope                   | Best For                        |
-|:--------------------------------|:------------------------|:--------------------------------|
-| Global (``passport.config.js``)	| All endpoints           |	Common authorization exceptions |
-| Model-level options             |	Per model & HTTP method |	Structured, reusable rules      |
-| Endpoint middleware             |	Single endpoint	        | Custom or special cases         |
+| Priority | Level 	                         | Scope                    | Best For                        |
+|:---------|:--------------------------------|:-------------------------|:--------------------------------|
+| 3rd      | Global (``passport.config.js``) | All endpoints            |	Common authorization exceptions |
+| 2nd      | Model-level options             |	Per model & HTTP method |	Structured, reusable rules      |
+| 1st      | Endpoint middleware             |	Single endpoint	        | Custom or special cases         |
 
 This multi-layer approach allows you to design **secure, flexible, and maintainable JWT authorization flows**.
 
-### 1. Global Configuration (passport.config.js)
+### 1. Global Configuration (passport.config.js) - Priority 3
 
 You can define global JWT Broken Role rules that apply to all endpoints by configuring them in ``passport.config.js``.
 ```js
@@ -667,7 +684,7 @@ module.exports = {
 - Apply common authorization exceptions across the entire application
 - Support both simple role arrays and advanced operators (``$in``, ``$regex``, etc.)
 
-### 2. Model-Level Configuration (Per HTTP Method)
+### 2. Model-Level Configuration (Per HTTP Method) - Priority 2
 
 You can configure JWT and Broken Role rules per model and per HTTP method using model options.
 
@@ -714,7 +731,7 @@ Fruit.options = {
 - Different role requirements for POST, PATCH, etc.
 - Combine role-based and attribute-based conditions
 
-### 3. Endpoint-Level Configuration (Credentials Middleware)
+### 3. Endpoint-Level Configuration (Credentials Middleware) - Priority 1
 
 For maximum flexibility, you can define Broken Role rules directly on a specific endpoint using the Credentials middleware.
 
@@ -782,8 +799,8 @@ Credentials([
 // Common Matching Patterns
 { role: [1, 2, 3] }     // IN
 { role: 1 }             // Equal
-{ email: 'a@b.com' }
-{ department: 'IT' }
+{ email: 'a@b.com' }    // Equal
+{ department: 'IT' }    // Equal
 { status: ['active'] }  // Dynamic key
 ```
 
@@ -959,8 +976,9 @@ module.exports = {
 When you config passport with ```users``` table already. You will got Auth endpoint in available.
 ```js
 POST:  "/authentication"               // Request token
+POST:  "/authentication/refresh"       // Request refresh token
 POST:  "/authentication/create"        // Create new Auth data
-PATCH: "/authentication/update/:id"    // Update old Auth data (needed id)
+PATCH: "/authentication/update/:id"    // Update old Auth data (needed user id)
 ```
 
 ***XHR Example :***
@@ -968,26 +986,28 @@ PATCH: "/authentication/update/:id"    // Update old Auth data (needed id)
 ```js
 // Request with body for gether Token
 POST: "/authentication"
-{
+payload: {
   username: "bombkiml",
   password: "secret"
 }
 
+// Request with header for refresh token
+POST: "/authentication/refresh"
+headers: Authorization: Bearer <your_token>
 
 // Request with body for Create Auth data
 POST: "/authentication/create"
-{
+payload: {
   username: "add_new_username",
   password: "add_new_secret",
   name: "add_new_my_name",
   email: "add_new_email"
 }
 
-
 // Request with body for Update Auth data
 PATCH: "/authentication/update/1"
 headers: Authorization: Bearer <your_token>
-{
+payload: {
   username: "update_bombkiml",
   password: "update_secret",
   name: "update_my_name",
@@ -1293,6 +1313,23 @@ module.exports = {
       duplicateRequest: {
         expiration: 500, // Can't duplicate request for 5 milliseconds each IP requests per `window`
       },
+
+      payload: {
+        // The limit of request body size, json default "100KB", urlencoded default "100KB". Learn more: https://expressjs.com/en/4x/api.html#express.json
+        json: {
+          limit: "100KB", // default: "100KB"
+        },
+        urlencoded: {
+          limit: "100KB", // default: "100KB"
+          extended: true, // default: true (reccomended: true)
+        },
+        file: {
+          uploadAllowMethod: ["POST", "PATCH", "PUT"], // Only apply file upload limit for POST, PATCH, PUT method.
+          allowedTypes: ["image/jpeg", "image/png", "application/pdf"], // Example: Allow only JPEG, PNG, and PDF files. Learn more: https://www.digipres.org/formats/mime-types/
+          limit: 5 * 1024 * 1024, // 5MB (default: Infinity)
+        },
+      },
+
     },
   },
 }

@@ -34,7 +34,19 @@ function getAppKey(cb) {
 
 function HashIt(txt, app_key, iteration = 10000, len = 10, cb) {
   const crypIt = new Cryptr(secret.toString().concat(app_key.toString()), { encoding: "base64url", pbkdf2Iterations: iteration, saltLength: len, });
-  cb(crypIt.encrypt(txt.concat(md5(secret).toString().slice(0,len+1))));
+  let result = "";
+  let loop = 0;
+  const maxLoop = 10;
+  do {
+    const payload = txt.concat(md5(secret).toString().slice(0, len + 1));
+    result = crypIt.encrypt(payload);
+    loop++;
+    if (loop >= maxLoop) {
+      console.log("\n[101m FAIL [0m Hash loop limit exceeded, Try again.");
+      return;
+    }
+  } while (/[+-]/.test(result)); // reject -, +
+  cb(result);
 }
 
 function DeHashIt(txtHashed, iteration = 10000, len = 10, cb) {
@@ -43,7 +55,7 @@ function DeHashIt(txtHashed, iteration = 10000, len = 10, cb) {
       if(err) {
         cb(err, null);
       } else {
-        const crypIt = new Cryptr(secret.toString().concat(app_key.toString()), { encoding: "base64url", pbkdf2Iterations: iteration, saltLength: len, });
+        const crypIt = new Cryptr(secret.toString().concat(app_key.toString()), { encoding: "base64", pbkdf2Iterations: iteration, saltLength: len, });
         let decryped = crypIt.decrypt(txtHashed);
         cb(false, decryped.concat(md5(secret).toString()));
       }

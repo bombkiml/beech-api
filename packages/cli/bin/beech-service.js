@@ -48,13 +48,13 @@ class Beech {
                   setTimeout(() => {
                     clearInterval(refreshCompileIntervalId);
                     logUpdate("\n[36m[OK] Running...[0m");
-                  }, 2500);
+                  }, 1500);
                 } else {
                   setTimeout(() => {
                     clearInterval(refreshCompileIntervalId);
                     logUpdate("\n[101m[ERR] Failed... [0m", err);
                     reject();
-                  }, 2500);
+                  }, 1000);
                 }
               });
             }).on('error', (err) => {
@@ -91,6 +91,7 @@ class Beech {
       const spawnData = new Promise((resolve) => {
         // check Dev. run service
         if(argument == "-D" || argument == "--dev") {
+          console.log("\n[101m  Starting Beech service in Development mode  [0m");
           promise = this.spawn('npx', ['nodemon', '-q', './cli/beech']); // For Dev.
         } else {
           promise = this.spawn('npx', ['nodemon', '-q', './node_modules/beech-api/packages/cli/beech']); // For Prd.

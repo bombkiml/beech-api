@@ -2,6 +2,7 @@ const walk = require("walk");
 const fs = require("fs");
 const moment = require("moment");
 const { checkRoleMiddlewareWithDefaultProject } = require("../../cli/core/middleware/express/jwtCheckAllow");
+const { Limiter, Duplicater } = require("../../cli/core/middleware/index");
 
 function walkModel(cb) {
   try {
@@ -390,56 +391,109 @@ async function retrieving(authEndpoint, Projects, req, res, next) {
   });
 }
 
+// Duplicater cache for each config, avoid create new instance with same config
+const duplicaterCache = new Map();
+function getDuplicaterInstance(dupConfig = {}) {
+  const key = JSON.stringify(dupConfig || {});
+  if (!duplicaterCache.has(key)) {
+    duplicaterCache.set(key, Duplicater(dupConfig || {}));
+  }
+  return duplicaterCache.get(key);
+}
+
+// Limiter cache for each config, avoid create new instance with same config
+const limiterCache = new Map();
+function getLimiterInstance(rateConfig = {}) {
+  const key = JSON.stringify(rateConfig);
+  if (!limiterCache.has(key)) {
+    limiterCache.set(key, Limiter(rateConfig));
+  }
+  return limiterCache.get(key);
+}
+
 const byPassCheckRole = (Projects, method, passport_config) => {
   return async function (req, res, next) {
-    if(passport_config[0] !== undefined) {
-      if(req.params.hash == passport_config[0].replace(/^\/|\/$/g, "")) {
-        return next();
-      } else {
-        if(passport_config[1].jwt_allow === true) {
-          let leaveMeAlone = await Projects.slice(0);
-          await filterProjectForByPass(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
-            if(!err) {
-              if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
-                // Project is not use options
-                return Credentials(req, res, () => {
-                  return checkRoleMiddlewareWithDefaultProject(null)(req, res, next);
+    try {
+      if(passport_config[0] !== undefined) {
+        if(req.params.hash == passport_config[0].replace(/^\/|\/$/g, "")) {
+          return next();
+        } else {
+          if(passport_config[1].jwt_allow === true) {
+            let leaveMeAlone = await Projects.slice(0);
+            await filterProjectForByPass(leaveMeAlone, req.originalUrl.replace(_publicPath_, '/'), req, res, async (err, Project) => {
+              if(!err) {
+                // Set Duplicater and Limiter for each project with method
+                const dupConfig = (Project.options?.defaultEndpoint?.[method]?.duplicate_request) ? Project.options.defaultEndpoint[method].duplicate_request : {};
+                const duplicaterMiddleware = getDuplicaterInstance(dupConfig);
+                return duplicaterMiddleware(req, res, (err) => {
+                  if (!err) {
+                    const rateConfig = (Project.options?.defaultEndpoint?.[method]?.rate_limit) ? Project.options.defaultEndpoint[method].rate_limit : {};
+                    const limiterMiddleware = getLimiterInstance(rateConfig);
+                    limiterMiddleware(req, res, (err) => {
+                      if (!err) {
+                        if(Project.options.defaultEndpoint === undefined || Project.options.defaultEndpoint === true) {
+                          // Project is not use options
+                          return Credentials(req, res, () => {
+                            return checkRoleMiddlewareWithDefaultProject(null)(req, res, next);
+                          });
+                        } else {
+                          // Method is set
+                          if(Project.options.defaultEndpoint[method]) {
+                            if(Project.options.defaultEndpoint[method]["allow"] === undefined || Project.options.defaultEndpoint[method]["allow"] === true) {
+                              if(Project.options.defaultEndpoint[method]["jwt"]?.allow === false) {
+                                // by project jwt_allow is false
+                                return checkRoleMiddlewareWithDefaultProject(null)(req, res, next);
+                              } else {
+                                //return Credentials(req, res, () => {
+                                //  return checkRoleMiddlewareWithDefaultProject(Project.options.defaultEndpoint[method].jwt?.broken_role)(req, res, next);
+                                //});
+                                return Credentials(req, res, () => checkRoleMiddlewareWithDefaultProject(Project.options.defaultEndpoint[method].jwt?.broken_role || null)(req, res, next));
+                              }
+                            } else {
+                              // METHOD.allow is false || METHOD.allow is undefined
+                              return notfound(res);
+                            }
+                          } else if(Project.options.defaultEndpoint[method] === true || Project.options.defaultEndpoint[method] === undefined) {
+                            // Method is not set
+                            return Credentials(req, res, () => {
+                              return checkRoleMiddlewareWithDefaultProject(null)(req, res, next);
+                            });
+                          } else {
+                            // METHOD is false || METHOD is not undefined
+                            return notfound(res);
+                          }
+                        }
+                      } else {
+                        return res.status(429).json({
+                          code: 429,
+                          status: "TOO_MANY_REQUEST",
+                          message: "Too Many Requests.",
+                        });
+                      }
+                    });
+                  } else {
+                    return res.status(409).json({
+                      code: 409,
+                      status: "DUPLICATE_REQUEST",
+                      message: "Duplicate request detected.",
+                    });
+                  }
                 });
               } else {
-                // Method is set
-                if(Project.options.defaultEndpoint[method]) {
-                  if(Project.options.defaultEndpoint[method]["allow"] === undefined || Project.options.defaultEndpoint[method]["allow"] === true) {
-                    if(Project.options.defaultEndpoint[method]["jwt"]?.allow === false) {
-                      // by project jwt_allow is false
-                      return checkRoleMiddlewareWithDefaultProject(null)(req, res, next);
-                    } else {
-                      return Credentials(req, res, () => {
-                        return checkRoleMiddlewareWithDefaultProject(Project.options.defaultEndpoint[method].jwt?.broken_role)(req, res, next);
-                      });
-                    }
-                  } else {
-                    // METHOD.allow is false || METHOD.allow is undefined
-                    return notfound(res);
-                  }
-                } else if(Project.options.defaultEndpoint[method] === true || Project.options.defaultEndpoint[method] === undefined) {
-                  // Method is not set
-                  return Credentials(req, res, () => {
-                    return checkRoleMiddlewareWithDefaultProject(null)(req, res, next);
-                  });
-                } else {
-                  // METHOD is false || METHOD is not undefined
-                  return notfound(res);
-                }
+                return errMessage(err, res);
               }
-            } else {
-              return errMessage(err, res);
-            }
-          });
-        } else {
-          // global jwt_allow is false
-          return next();
+            });
+          } else {
+            // global jwt_allow is false
+            return next();
+          }
         }
+      } else {
+        // passport config not found
+        return next();
       }
+    } catch (error) {
+      return errMessage(error, res);
     }
   }
 }
@@ -459,7 +513,7 @@ function Base() {
               resolve([_passport_config_.auth_endpoint || "/authentication", _passport_config_]);
             } else {
               // passport config not found
-              resolve([passport_config_auth, _passport_config_]);
+              resolve([passport_config_auth, {}]);
             }
           });
           // passport conifg promise
@@ -486,58 +540,102 @@ function Base() {
                 // When lost IF
                 let leaveMeAlone = await Projects.slice(0);
                 let reqUrl = req.originalUrl.replace(_publicPath_, '/');
+                let bodyIsArray = Array.isArray(req.body);
                 await filterProject(leaveMeAlone, reqUrl, "", "", req, res, async (err, Project) => {
                   if (!err) {
                     try {
                       // Leave pool by project for check pool error
                       let pool = Project.sequelize;
-                      // Store with body
-                      await Project.create(req.body).then((created) => {
-                        // @return
-                        res.status(201).json({
-                          code: 201,
-                          status: "CREATE_SUCCESS",
-                          createdId: (created.id) ? created.id : created[Project.primaryKeyAttributes[0]],
-                        });
-                      }).catch((error) => {
-                        if(pool.options.logging) {
-                          // @return with all error
-                          res.status(501).json({
-                            code: 501,
-                            status: "CREATE_FAILED",
-                            error: error,
-                          });
-                        } else {
-                          if(error.sql) {
-                            delete error.sql;
-                            if(error.errors) {
-                              delete error.errors;
-                            }
-                            if(error.parent) {
-                              delete error.parent;
-                            }
-                            if(error.original) {
-                              delete error.original.sql;
-                              if(error.original.parameters) {
-                                delete error.original.parameters;
-                              }
-                            }
-                            if(error.parameters) {
-                              delete error.parameters;
-                            }
-                            // @return with some error
+                      // Transaction create
+                      Project.transaction(async t => {
+                        try {
+                          if (bodyIsArray) {
+                            // Store with bulk body
+                            const bulkCreated = await Project.bulkCreate(req.body, { transaction: t });
+                            await t.commit();
+                            // @return
+                            res.status(201).json({
+                              code: 201,
+                              status: "CREATE_SUCCESS",
+                              mode: {
+                                type: "BULK",
+                                affectedRows: bulkCreated.length,
+                              },
+                              createdId: [
+                                ...bulkCreated.map(item => (item.id) ? item.id : item[Project.primaryKeyAttributes[0]]),
+                              ],
+                            });
+                          } else {
+                            // Store with single body
+                            const singleCreated = await Project.create(req.body, { transaction: t });
+                            await t.commit();
+                            // @return
+                            res.status(201).json({
+                              code: 201,
+                              status: "CREATE_SUCCESS",
+                              mode: {
+                                type: "SINGLE",
+                                affectedRows: 1,
+                              },
+                              createdId: (singleCreated.id) ? singleCreated.id : singleCreated[Project.primaryKeyAttributes[0]],
+                            });
+                          }
+                        } catch (error) {
+                          await t.rollback();
+                          if(pool.options.logging) {
+                            // @return with all error
                             res.status(501).json({
                               code: 501,
                               status: "CREATE_FAILED",
+                              mode: {
+                                debug: true,
+                                type: (bodyIsArray) ? "BULK" : "SINGLE",
+                                affectedRows: 0,
+                              },
                               error: error,
                             });
                           } else {
-                            // @return with some string error
-                            res.status(501).json({
-                              code: 501,
-                              status: "CREATE_FAILED",
-                              error: String(error),
-                            });
+                            if(error.sql) {
+                              delete error.sql;
+                              if(error.errors) {
+                                delete error.errors;
+                              }
+                              if(error.parent) {
+                                delete error.parent;
+                              }
+                              if(error.original) {
+                                delete error.original.sql;
+                                if(error.original.parameters) {
+                                  delete error.original.parameters;
+                                }
+                              }
+                              if(error.parameters) {
+                                delete error.parameters;
+                              }
+                              // @return with some error
+                              res.status(501).json({
+                                code: 501,
+                                status: "CREATE_FAILED",
+                                mode: {
+                                  debug: false,
+                                  type: (bodyIsArray) ? "BULK" : "SINGLE",
+                                  affectedRows: 0,
+                                },
+                                error: error,
+                              });
+                            } else {
+                              // @return with some string error
+                              res.status(501).json({
+                                code: 501,
+                                status: "CREATE_FAILED",
+                                mode: {
+                                  debug: false,
+                                  type: (bodyIsArray) ? "BULK" : "SINGLE",
+                                  affectedRows: 0,
+                                },
+                                error: String(error),
+                              });
+                            }
                           }
                         }
                       });
@@ -559,62 +657,103 @@ function Base() {
                 await filterProject(leaveMeAlone, reqUrl, "", "PATCH", req, res, async (err, Project) => {
                   if (!err) {
                     try {
-                      // Leave pool by project for check pool error
-                      let pool = Project.sequelize;
-                      // Assign update pk
-                      let updatePk = { [Project.primaryKeyAttributes[0]]: req.params.id };
-                      // Patch with body
-                      await Project.update(req.body, {
-                        where: updatePk,
-                      }).then((updated) => {
-                        // @return
-                        res.status(200).json({
-                          code: 200,
-                          status: "UPDATE_SUCCESS",
-                          result: {
-                            updateId: req.params.id,
-                            affectedRows: updated[0],
+                      // Check body is empty
+                      if(Object.keys(req.body).length === 0) {
+                        return res.status(400).json({
+                          code: 400,
+                          status: "BAD_REQUEST",
+                          message: "Bad request.",
+                          info: {
+                            status: "BAD_ENTIRY",
+                            message: "Unprocessable Entity.",
                           },
                         });
-                      }).catch((error) => {
-                        if(pool.options.logging) {
-                          // @return with all error
-                          res.status(501).json({
-                            code: 501,
-                            status: "UPDATE_FAILED",
-                            error: error,
-                          });
-                        } else {
-                          if(error.sql) {
-                            delete error.sql;
-                            if(error.parent) {
-                              delete error.parent;
-                            }
-                            if(error.original) {
-                              delete error.original.sql;
-                              if(error.original.parameters) {
-                                delete error.original.parameters;
-                              }
-                            }
-                            if(error.parameters) {
-                              delete error.parameters;
-                            }
-                            if(error.errors) {
-                              delete error.errors;
-                            }
-                            // @return with some error
+                      }
+                      // Leave pool by project for check pool error
+                      let pool = Project.sequelize;
+                      // Transaction update|patch
+                      Project.transaction(async t => {
+                        try {
+                          // Assign update pk
+                          let updatePk = { [Project.primaryKeyAttributes[0]]: req.params.id };
+                          // Patch with body
+                          const updated = await Project.update(req.body, {
+                            where: updatePk,
+                          }, { transaction: t });
+                          if(updated[0]) {
+                            await t.commit();
+                            // @return
+                            res.status(200).json({
+                              code: 200,
+                              status: "UPDATE_SUCCESS",
+                              mode: {
+                                debug: true,
+                              },
+                              result: {
+                                updateId: req.params.id,
+                                affectedRows: updated[0],
+                              },
+                            });
+                          } else {
+                            await t.rollback();
+                            res.status(406).json({
+                              code: 406,
+                              status: "NOT_ACCEPTABLE",
+                              result: {
+                                affectedRows: updated[0],
+                              },
+                            });
+                          }
+                        } catch (error) {
+                          await t.rollback();
+                          if(pool.options.logging) {
+                            // @return with all error
                             res.status(501).json({
                               code: 501,
                               status: "UPDATE_FAILED",
+                              mode: {
+                                debug: false,
+                              },
                               error: error,
                             });
                           } else {
-                            // @return with some string error
-                            res.status(501).json({
-                              code: 501,
-                              status: "UPDATE_FAILED",
-                              error: String(error),
-                            });
+                            if(error.sql) {
+                              delete error.sql;
+                              if(error.parent) {
+                                delete error.parent;
+                              }
+                              if(error.original) {
+                                delete error.original.sql;
+                                if(error.original.parameters) {
+                                  delete error.original.parameters;
+                                }
+                              }
+                              if(error.parameters) {
+                                delete error.parameters;
+                              }
+                              if(error.errors) {
+                                delete error.errors;
+                              }
+                              // @return with some error
+                              res.status(501).json({
+                                code: 501,
+                                status: "UPDATE_FAILED",
+                                mode: {
+                                  debug: false,
+                                },
+                                error: error,
+                              });
+                            } else {
+                              // @return with some string error
+                              res.status(501).json({
+                                code: 501,
+                                status: "UPDATE_FAILED",
+                                mode: {
+                                  debug: false,
+                                },
+                                error: String(error),
+                              });
+                            }
                           }
                         }
                       });
@@ -637,71 +776,85 @@ function Base() {
                     try {
                       // Leave pool by project for check pool error
                       let pool = Project.sequelize;
-                      // Assign delete pk
-                      let deletePk = { [Project.primaryKeyAttributes[0]]: req.params.id };
-                      // Delete with params
-                      await Project.destroy({
-                        where: deletePk,
-                      }).then((deleted) => {
-                        if (deleted) {
-                          // @return
-                          res.status(200).json({
-                            code: 200,
-                            status: "DELETE_SUCCESS",
-                            result: {
-                              deleteId: req.params.id,
-                              affectedRows: deleted,
-                            },
-                          });
-                        } else {
-                          res.status(406).json({
-                            code: 406,
-                            status: "NOT_ACCEPTABLE",
-                            result: {
-                              deleteId: req.params.id,
-                              affectedRows: deleted,
-                            },
-                          });
-                        }
-                      }).catch((error) => {
-                        if(pool.options.logging) {
-                          // @return with all error
-                          res.status(501).json({
-                            code: 501,
-                            status: "DELETE_FAILED",
-                            error: error,
-                          });
-                        } else {
-                          if(error.sql) {
-                            delete error.sql;
-                            if(error.parent) {
-                              delete error.parent;
-                            }
-                            if(error.original) {
-                              delete error.original.sql;
-                              if(error.original.parameters) {
-                                delete error.original.parameters;
-                              }
-                            }
-                            if(error.parameters) {
-                              delete error.parameters;
-                            }
-                            if(error.errors) {
-                              delete error.errors;
-                            }
-                            // @return with some error
+                      // Transaction update|patch
+                      Project.transaction(async t => {
+                        try {
+                          // Assign delete pk
+                          let deletePk = { [Project.primaryKeyAttributes[0]]: req.params.id };
+                          // Delete with params
+                          const deleted = await Project.destroy({
+                            where: deletePk,
+                          }, { transaction: t });
+                          if (deleted) {
+                            await t.commit();
+                            // @return
+                            res.status(200).json({
+                              code: 200,
+                              status: "DELETE_SUCCESS",
+                              result: {
+                                deleteId: req.params.id,
+                                affectedRows: deleted,
+                              },
+                            });
+                          } else {
+                            await t.rollback();
+                            res.status(406).json({
+                              code: 406,
+                              status: "NOT_ACCEPTABLE",
+                              result: {
+                                affectedRows: deleted,
+                              },
+                            });
+                          }
+                        } catch (error) {
+                          if(pool.options.logging) {
+                            // @return with all error
                             res.status(501).json({
                               code: 501,
                               status: "DELETE_FAILED",
+                              mode: {
+                                debug: true,
+                              },
                               error: error,
                             });
                           } else {
-                            // @return with some string error
-                            res.status(501).json({
-                              code: 501,
-                              status: "DELETE_FAILED",
-                              error: String(error),
-                            });
+                            if(error.sql) {
+                              delete error.sql;
+                              if(error.parent) {
+                                delete error.parent;
+                              }
+                              if(error.original) {
+                                delete error.original.sql;
+                                if(error.original.parameters) {
+                                  delete error.original.parameters;
+                                }
+                              }
+                              if(error.parameters) {
+                                delete error.parameters;
+                              }
+                              if(error.errors) {
+                                delete error.errors;
+                              }
+                              // @return with some error
+                              res.status(501).json({
+                                code: 501,
+                                status: "DELETE_FAILED",
+                                mode: {
+                                  debug: false,
+                                },
+                                error: error,
+                              });
+                            } else {
+                              // @return with some string error
+                              res.status(501).json({
+                                code: 501,
+                                status: "DELETE_FAILED",
+                                mode: {
+                                  debug: false,
+                                },
+                                error: String(error),
+                              });
+                            }
                           }
                         }
                       });

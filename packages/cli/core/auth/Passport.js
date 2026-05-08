@@ -24,9 +24,38 @@ module.exports = {
             if (passport_config.jwt_allow === true) {
               // Check if the APP_KEY is allow
               if(passport_config.app_key_allow) {
-                global.Credentials = (_options = {}, _res, _next) => [credentialsGuard, byPassCredentials(_options, _res, _next)];
+                // All allow JWT & APP_KEY
+                //global.Credentials = [credentialsGuard, byPassCredentials]; // perfect
+                global.Credentials = (..._options) => {
+                  const [option_or_req, res, next] = _options;
+                  if (_options.length === 3) {
+                    // Used as: app.use(Credentials)
+                    return credentialsGuard(option_or_req, res, () => {
+                      return byPassCredentials(option_or_req, res, next);
+                    });
+                  } else if (_options.length === 0) {
+                    // Used as: app.use(Credentials())
+                    return [credentialsGuard, byPassCredentials];
+                  } else {
+                    // Used as: app.use(Credentials([...] ))
+                    return [credentialsGuard, byPassCredentials(option_or_req)];
+                  }
+                };
               } else {
-                global.Credentials = (_options = {}, _res, _next) => [byPassCredentials(_options, _res, _next)];
+                // Only allow JWT
+                global.Credentials = (..._options) => {
+                  const [option_or_req, res, next] = _options;
+                  if (_options.length === 3) {
+                    // Used as: app.use(Credentials)
+                    return byPassCredentials(option_or_req, res, next);
+                  } else if (_options.length === 0) {
+                    // Used as: app.use(Credentials())
+                    return byPassCredentials;
+                  } else {
+                    // Used as: app.use(Credentials([...]))
+                    return byPassCredentials(option_or_req);
+                  }
+                };
               }
               // loop check db connect is true
               fs.readFile("./app.config.js", "utf-8", (err, data) => {
@@ -52,16 +81,61 @@ module.exports = {
                 }
               });
             } else if (passport_config.app_key_allow === true) {
-              global.Credentials = (_options = {}, _res, _next) => [credentialsGuard];
+              // Only allow APP_KEY
+              global.Credentials = (..._options) => {
+                const [option_or_req, res, next] = _options;
+                if (_options.length === 3) {
+                  // Used as: app.use(Credentials)
+                  return credentialsGuard(option_or_req, res, () => {
+                    return next();
+                  });
+                } else if (_options.length === 0) {
+                  // Used as: app.use(Credentials())
+                  return [credentialsGuard];
+
+                } else {
+                  // Used as: app.use(Credentials([...] ))
+                  return [credentialsGuard];
+                }
+              };
+              // Resolve it
               resolve([true, false, null]);
             } else {
-              global.Credentials = (_options = {}, _res, _next) => [];
+              // Neither APP_KEY nor JWT allow
+              global.Credentials = (..._options) => {
+                const [option_or_req, res, next] = _options;
+                if (_options.length === 3) {
+                  // Used as: app.use(Credentials)
+                  return next();
+                } else if (_options.length === 0) {
+                  // Used as: app.use(Credentials())
+                  return [];
+                } else {
+                  // Used as: app.use(Credentials([...] ))
+                  return [];
+                }
+              };
+              // Resolve it
               resolve([true, false, null]);
             }
           } else {
-            global.Credentials = (_options = {}, _res, _next) => [];
+            // Passport config file not found
+            global.Credentials = (..._options) => {
+              const [option_or_req, res, next] = _options;
+              if (_options.length === 3) {
+                // Used as: app.use(Credentials)
+                return next();
+              } else {
+                // Used as: app.use(Credentials() or Credentials([...] ))
+                return [];
+              }
+            };
+
+            // Old logic
             //const Requests = require("./_Request");
-            //global.Credentials = (_options = {}, _res, _next) => [Requests.requests]; ----> // [Closed] TODO check passport.config file if not exists show error when file src/ using the JWT (maybe for show JWT is ON/OFF)
+            //global.Credentials = (_options = {}, _res, _next) => [Requests.requests]; // ---->  [Closed] TODO check passport.config file if not exists show error when file src/ using the JWT (maybe for show JWT is ON/OFF)
+
+            // Resolve it
             resolve([false, null, null]);
           }
         });
@@ -83,8 +157,9 @@ module.exports = {
             // Check your assign auth fields
             checkAuthFields(pool_base, pool, passportTable, passport_config.model.fields, (err, msg) => {
               if(err) {
-                console.error("\n[101m Error [0m", err);
+                console.log("\n[101m Error [0m", err);
                 return;
+                //throw err;
               } else {
                 // find passport primary key
                 findPassportPk(pool_base, pool, passportTable, passport_config.model.fields, (err, passportFields) => {

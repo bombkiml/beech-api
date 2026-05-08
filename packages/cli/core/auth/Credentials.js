@@ -11,7 +11,9 @@ const byPassCredentials = (options, _res = {}, _next = () => {}) => {
   if(!options.length) {
     if(passport_config.jwt_broken_role ? passport_config.jwt_broken_role.length > 0 : false) {
       // CASE: jwt_broken_role DEFUALT is set
-      return [credentials, checkRoleMiddleware(passport_config.jwt_broken_role)(options, _res, _next)];
+      return credentials(options, _res, () => {
+        return checkRoleMiddleware(passport_config.jwt_broken_role)(options, _res, _next);
+      });
     } else {
       if(!Object.keys(options).length) {
         return [credentials];
@@ -31,83 +33,120 @@ const byPassCredentials = (options, _res = {}, _next = () => {}) => {
   }
 }
 
-
 const credentials = (req, res, next) => {
   if (passport_config.jwt_allow === true) {
     const auth_endpoint = (passport_config.auth_endpoint) ? (passport_config.auth_endpoint[ 0 ] === "/" ? passport_config.auth_endpoint : "/" + passport_config.auth_endpoint) : "/authentication";
-    if(auth_endpoint.split("/")[1] == req.params.hash) {
-      return next();
-    }
-  }
-
-  return passport.authenticate("jwt", {
-    session: false,
-  }, (err, user, info) => {
-      // error check
-      if (err) {
-        console.log(err, info);
-        return res.status(401).json({
-          code: 401,
-          error: "UNAUTHORIZED",
-          message: {
-            name: "WrongTokenError",
-            message: "token error.",
-          },
-          /* dev: { err, info }, */ // for dev info
-        });
-      }
-      // anything token check
-      if (!user) {
-        if (info) {
-          if (info.name == "TokenExpiredError") {
-            return res.status(401).json({
-              code: 401,
-              status: "TOKEN_EXPIRED",
-              message: info,
-            });
-          }
-          if (info.name == "Error") {
-            return res.status(401).json({
-              code: 401,
-              status: "NO_AUTH_TOKEN",
-              message: {
-                name: "NoTokenError",
-                message: "No auth token",
-              },
-            });
-          }
-          if (info.name == "SyntaxError") {
-            return res.status(401).json({
-              code: 401,
-              status: "PAYLOAD_SYNTAX_ERROR",
-              message: {
-                name: "SyntaxError",
-                message: "Unexpected token < in JSON at position 0",
-              },
-            });
-          }
-        }
-        return res.status(401).json({
-          code: 401,
-          status: "UNAUTHORIZED_USER",
-          message: info || {
-            name: "TokenError",
-            message: "Unauthorized token."
-          },
-        });
-      } else {
-        // Perfectly user jwt
+    const slashOneIsHash = auth_endpoint.split("/")[1];
+    if(req.params === undefined) {
+      // Request is not valid
+      console.log("\n[101m REQUEST|OPTION [0m Error: Request is not valid, missing params.");
+      return;
+    } else {
+      // Check first HASH equal Authentication
+      if(slashOneIsHash == req.params.hash) {
+        // Bypass authentication for auth endpoint
         return next();
+      } else {
+        return passport.authenticate("jwt", {
+          session: false,
+        }, (err, user, info) => {
+            // error check
+            if (err) {
+              console.log(err, info);
+              return res.status(401).json({
+                code: 401,
+                error: "UNAUTHORIZED",
+                message: {
+                  name: "WrongTokenError",
+                  message: "token error.",
+                },
+                /* dev: { err, info }, */ // for dev info
+              });
+            } else {
+              // anything token check
+              if (!user) {
+                if (info) {
+                  if (info.name == "TokenExpiredError") {
+                    return res.status(401).json({
+                      code: 401,
+                      status: "TOKEN_EXPIRED",
+                      message: info,
+                    });
+                  } else if (info.name == "Error") {
+                    return res.status(401).json({
+                      code: 401,
+                      status: "NO_AUTH_TOKEN",
+                      message: {
+                        name: "NoTokenError",
+                        message: "No auth token",
+                      },
+                    });
+                  } else if (info.name == "SyntaxError") {
+                    return res.status(401).json({
+                      code: 401,
+                      status: "PAYLOAD_SYNTAX_ERROR",
+                      message: {
+                        name: "SyntaxError",
+                        message: "Unexpected token < in JSON at position 0",
+                      },
+                    });
+                  } else if (info.name == "JsonWebTokenError") {
+                    return res.status(401).json({
+                      code: 401,
+                      status: "INVALID_TOKEN",
+                      message: {
+                        name: "JsonWebTokenError",
+                        message: "invalid token.",
+                      },
+                    });
+                  } else {
+                    return res.status(401).json({
+                      code: 401,
+                      status: "OTHER_TOKEN_ERR",
+                      message: {
+                        name: "OtherTokenError",
+                        message: String(info),
+                      },
+                    });
+                  }
+                } else {
+                  return res.status(401).json({
+                    code: 401,
+                    status: "UNAUTHORIZED_USER",
+                    message: info || {
+                      name: "TokenError",
+                      message: String(info),
+                    },
+                  });
+                }
+              } else {
+                // Perfectly user jwt
+                return next();
+              }
+            }
+          }
+        )(req, res, next);
       }
     }
-  )(req, res, next);
+  } else {
+    // Bypass authentication
+    return next();
+  }
 }
 
 const credentialsGuard = (req, res, next) => {
-  checkAppKey(req, res, (checked) => {
-    if (checked) {
+  checkAppKey(req, res, (err) => {
+    if (!err) {
       // Perfectly
       next();
+    } else {
+      // Bad Request
+      return res.status(400).json({
+        code: 400,
+        status: 'BAD_REQUEST',
+        message: "Bad request.",
+        info: err,
+      });
     }
   });
 }
@@ -116,33 +155,19 @@ function checkAppKey(req, res, cb) {
   if (_passport_config_.app_key_allow) {
     if (req.headers.app_key) {
       if (_config_.main_config.app_key == req.headers.app_key) {
-        return cb(true);
+        // Perfectly
+        cb(null, true);
       } else {
-        res.status(400).json({
-          code: 400,
-          status: 'BAD_REQUEST',
-          message: "Bad request.",
-          info: {
-            status: "BAD_VALUE",
-            message: "Bad with wrong key."
-          },
-        });
-        return cb(false);
+        // Wrong App key
+        cb({ status: "BAD_VALUE", message: "Bad with wrong key." }, false);
       }
     } else {
-      res.status(400).json({
-        code: 400,
-        status: 'BAD_REQUEST',
-        message: "Bad request.",
-        info: {
-          status: "BAD_ENTITY",
-          message: "Bad with app entity key.",
-        },
-      });
-      return cb(false);
+      // No App key
+      cb({ status: "BAD_ENTITY", message: "Bad with app entity key." }, false);
     }
   } else {
-    return cb(true);
+    // App key not allow, bypass
+    cb(null, true);
   }
 }
 
