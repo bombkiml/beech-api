@@ -18,7 +18,7 @@ function filterDbIsTrue(dbConfig, cb) {
         }
         setTimeout(() => {
           cb(null, dbIsTrue);
-        }, 300);
+        }, 200);
       }
     });
   } catch (error) {
@@ -33,28 +33,29 @@ function testConnectInProcess(database_config, dbConnTotal, cb) {
     if (val) {
       initSequelize(val, true, async (err, sq) => {
         if (err) {
-          //console.error("[101m Failed [0m Can't connect to connection name:[36m", val.name, "[0m\n", err);
+          //console.log("[101m Failed [0m Can't connect to connection name:[36m", val.name, "[0m\n", err);
           return cb(err, null, null);
-        }
-        // Test connection
-        await sq.authenticate()
-          .then(() => {
-            // Database some is true perfectly.
-            if (database_config.length == 0) {
-              if (sq) {
+        } else {
+          // Test connection
+          await sq.authenticate()
+            .then(() => {
+              // Database some is true perfectly.
+              if (database_config.length == 0) {
+                if (sq) {
+                  testSql[ val.name ] = sq;
+                  //console.log("DB true, Perfectly.", val.name);
+                  return cb(null, true, testSql);
+                }
+              } else {
                 testSql[ val.name ] = sq;
-                //console.log("DB true, Perfectly.", val.name);
-                return cb(null, true, testSql);
+                testConnectInProcess(database_config, dbConnTotal, cb);
               }
-            } else {
-              testSql[ val.name ] = sq;
-              testConnectInProcess(database_config, dbConnTotal, cb);
-            }
-          })
-          .catch(err => {
-            console.error("[101m Failed [0m Unable to connect to the database:[36m", val.name, "[0m\n", err);
-            return cb(err, null, null);
-          });
+            })
+            .catch(err => {
+              console.log("[101m Failed [0m Unable to connect to the database:[36m", val.name, "[0m\n", err);
+              return cb(err, null, null);
+            });
+        }
       });
     } else if (!dbConnTotal) {
       // All Database is falsly perfectly.

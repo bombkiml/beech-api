@@ -3,6 +3,7 @@ const fs = require("fs");
 const passport_config_file = "/passport.config.js";
 const auth = require("../auth/Credentials");
 const { TwoFactor } = require("../helpers/2fa");
+const { Limiter, Duplicater } = require("../middleware");
 
 module.exports = {
   expressStart() {
@@ -142,7 +143,7 @@ module.exports = {
                   // declare authentication endpoint name with publicPath
                   let auth_endpoint = (passport_config.auth_endpoint) ? (passport_config.auth_endpoint[ 0 ] === "/" ? passport_config.auth_endpoint : "/" + passport_config.auth_endpoint) : "/authentication";
                   // authentication endpoints
-                  endpoint.post(auth_endpoint, auth.credentialsGuard, (req, res, next) => {
+                  endpoint.post(auth_endpoint, Duplicater(), Limiter(), auth.credentialsGuard, (req, res, next) => {
                     passport.authenticate('local', { session: false }, (err, user, opt) => {
                       if (err) {
                         res.status(502).json({ code: 502, status: "BAD_GATEWAY", message: String(err) });
@@ -194,8 +195,49 @@ module.exports = {
                       }
                     })(req, res, next);
                   });
+                  // refresh token endpoints
+                  endpoint.post(auth_endpoint + '/refresh', Duplicater(), Limiter(), auth.credentials, (req, res) => {
+                    const refreshToken = req.headers.authorization.split("Bearer ")[1] || null;
+                    if (!refreshToken) {
+                      return res.status(400).json({
+                        code: 400,
+                        status: "BAD_REQUEST",
+                        message: "Bad request.",
+                        info: {
+                          status: "BAD_ENTITY",
+                          message: "Refresh token is required.",
+                        }
+                      });
+                    } else {
+                      jwt.verify(refreshToken, passport_config.secret, (err, user) => {
+                        if (err) {
+                          return res.status(401).json({
+                            code: 401,
+                            status: "UNAUTHORIZED",
+                            message: "Unauthorized user.",
+                            info: {
+                              status: "TOKEN_INVALID_ERR",
+                              message: "Invalid refresh token.",
+                            }
+                          });
+                        } else {
+                          delete user.iat;
+                          delete user.exp;
+                          const newAccessToken = jwt.sign(user, passport_config.secret, {
+                            expiresIn: passport_config.token_expired
+                          });
+                          res.status(200).json({
+                            code: 200,
+                            status: "TOKEN_REFRESHED",
+                            user: user,
+                            accessToken: newAccessToken,
+                          });
+                        }
+                      });
+                    }
+                  });
                   // create auth data endpoints
-                  endpoint.post(auth_endpoint + '/create', auth.credentialsGuard, (req, res) => {
+                  endpoint.post(auth_endpoint + '/create', Duplicater(), Limiter(), auth.credentialsGuard, (req, res) => {
                     const promise = new Promise((resolve) => {
                       /**
                        * 
@@ -249,7 +291,7 @@ module.exports = {
                     });
                   });
                   // patch auth data endpoints
-                  endpoint.patch(auth_endpoint + '/update/:id', auth.credentials, (req, res) => {
+                  endpoint.patch(auth_endpoint + '/update/:id', Duplicater(), Limiter(), auth.credentials, (req, res) => {
                     const promise = new Promise((resolve) => {
                       if (passport_config.app_key_allow) {
                         if (req.headers.app_key) {
@@ -303,7 +345,7 @@ module.exports = {
                    *  
                    */
                   if (passport_config.strategy.google.allow) {
-                    endpoint.get(auth_endpoint + '/google', passport.authenticate('google', {
+                    endpoint.get(auth_endpoint + '/google', Limiter(), passport.authenticate('google', {
                       scope: [
                         'https://www.googleapis.com/auth/userinfo.email',
                         'https://www.googleapis.com/auth/plus.login'
@@ -311,7 +353,7 @@ module.exports = {
                     }));
                     // google auth callback
                     const googleCallback = (passport_config.strategy.google.callbackURL) ? (passport_config.strategy.google.callbackURL[ 0 ] === "/" ? passport_config.strategy.google.callbackURL : "/" + passport_config.strategy.google.callbackURL) : "/google/callback";
-                    endpoint.get(auth_endpoint + googleCallback, passport.authenticate('google', { failureRedirect: passport_config.strategy.google.failureRedirect, failureMessage: true }), (req, res) => {
+                    endpoint.get(auth_endpoint + googleCallback, Limiter(), passport.authenticate('google', { failureRedirect: passport_config.strategy.google.failureRedirect, failureMessage: true }), (req, res) => {
                       if (typeof req.user.user !== 'undefined') {
                         // declare user for sign JWT
                         let user = JSON.parse(JSON.stringify(req.user.user));
@@ -360,10 +402,10 @@ module.exports = {
                    * 
                    */
                   if (passport_config.strategy.facebook.allow) {
-                    endpoint.get(auth_endpoint + '/facebook', passport.authenticate('facebook', { scope: [ 'email', 'public_profile' ] }));
+                    endpoint.get(auth_endpoint + '/facebook', Limiter(), passport.authenticate('facebook', { scope: [ 'email', 'public_profile' ] }));
                     // facebook callback
                     const facebookCallback = (passport_config.strategy.facebook.callbackURL) ? (passport_config.strategy.facebook.callbackURL[ 0 ] === "/" ? passport_config.strategy.facebook.callbackURL : "/" + passport_config.strategy.facebook.callbackURL) : "/facebook/callback";
-                    endpoint.get(auth_endpoint + facebookCallback, passport.authenticate('facebook', { failureRedirect: passport_config.strategy.facebook.failureRedirect, failureMessage: true }), (req, res) => {
+                    endpoint.get(auth_endpoint + facebookCallback, Limiter(), passport.authenticate('facebook', { failureRedirect: passport_config.strategy.facebook.failureRedirect, failureMessage: true }), (req, res) => {
                       if (typeof req.user.user !== 'undefined') {
                         // declare user for sign JWT
                         let user = JSON.parse(JSON.stringify(req.user.user));

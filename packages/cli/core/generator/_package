@@ -5,15 +5,14 @@
   "license": "MIT",
   "main": "index.js",
   "scripts": {
-    "prod": "set NODE_ENV=production&& npm start",
-    "production": "set NODE_ENV=production&& npm start",
-    "dev": "set NODE_ENV=development&& npm start",
-    "development": "set NODE_ENV=development&& npm start",
-    "start": "beech-service serve",
+    "predev": "node ./node_modules/beech-api/packages/cli/core/test/check-node.js",
+    "prebuild": "node ./node_modules/beech-api/packages/cli/core/test/check-node.js",
+    "build": "set NODE_ENV=production&& beech-service build",
+    "dev": "beech-service serve",
     "test": "node ./node_modules/jest/bin/jest __tests__ -o --watch --config"
   },
   "dependencies": {
-    "beech-api": "~3.9.0"
+    "beech-api": "^3.9.0"
   },
   "devDependencies": {
     "jest": "^29.7.0"

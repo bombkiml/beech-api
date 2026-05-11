@@ -169,7 +169,8 @@ connectInProcess = async (database_config, headDbShow, cb) => {
             }
           })
           .catch(err => {
-            console.error('Unable to connect to the database:', err);
+            console.log("Unable to connect to the database:", err);
+            cb(err, null);
           });
       });
     } else {

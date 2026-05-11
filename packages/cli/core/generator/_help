@@ -11,7 +11,15 @@ The following commands are available:
   $ beech make <endpoint>             Create a new Endpoints and unit test file,
                                       You might using [special] `-R, --require`
                                       for choose Model(s) used to endpoint file.
-  $ beech make <model> -M, --model    Create a new Models file.
+
+  $ beech make <model> -M, --model    Create a new Models file, You might using
+                                      [special] `--no-comment` for ignore comment
+                                      Table Property in your Schema.
+
+  $ beech update model <model_name>   Update new Table Structure for latest, You
+                                      might using [special] `--no-comment` for 
+                                      ignore comment Table Property in your Schema.
+
   $ beech make <helper> --helper      Create a new Helpers file.
   $ beech passport init               Initialize authentication with passport-jwt.
   $ beech skd init                    Initialize Job Scheduler file.

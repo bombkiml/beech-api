@@ -231,7 +231,7 @@ class Beech {
   successfully() {
     clear();
     console.log("[94mBeech CLI v" + require(__dirname + "/../../../package.json").version);
-    console.log('\n[102m[90m Passed [0m[0m The project has been successfully created.\n\n  [37m$[0m [36mcd ' + this.argument + '[0m\n  [37m$[0m [36mnpm start[0m or [36myarn start[0m');
+    console.log('\n[102m[90m Passed [0m[0m The project has been successfully created.\n\n  [37m$[0m [36mcd ' + this.argument + '[0m\n  [37m$[0m [36mnpm run dev[0m or [36myarn dev[0m');
   }
 
   async contentReplace(pathFile, textCondition) {
