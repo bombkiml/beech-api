@@ -104,9 +104,9 @@ Run your project:
 ```sh
 $ cd hello-world
 
-$ npm start
+$ npm run dev
 # OR
-$ yarn start
+$ yarn dev
 ```
 
 ❓ **Note:** The Beech API it's start server at [http://localhost:9000](http://localhost:9000) you can change new a port in `app.config.js` file.
