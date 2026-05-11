@@ -43,7 +43,7 @@ const uploadStrategy = multer({
     }
   }
 }).any();
-const jsonLimitSize = _beech_?.payload.json?.limit || "100KB"; // json payload
+const jsonLimitSize = _beech_?.payload?.json?.limit || "100KB"; // json payload
 const urlencodedLimitSize = _beech_?.payload?.urlencoded?.limit || "100KB"; // urlencoded payload (multipart/form-data)
 const urlencodedExtended = !!(_beech_?.payload?.urlencoded?.extended ?? true);
 _app_.use(_express_.urlencoded({ limit: urlencodedLimitSize, extended: urlencodedExtended })); // application/x-www-form-urlencoded payload

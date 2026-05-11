@@ -146,7 +146,15 @@ The following commands are available:
   $ beech make <endpoint>             Create a new Endpoints and unit test file,
                                       You might using [special] `-R, --require`
                                       for choose Model(s) used to endpoint file.
-  $ beech make <model> -M, --model    Create a new Models file.
+
+  $ beech make <model> -M, --model    Create a new Models file, You might using
+                                      [special] `--no-comment` for ignore comment
+                                      Table Property in your Schema.
+
+  $ beech update model <model_name>   Update new Table Structure for latest, You
+                                      might using [special] `--no-comment` for 
+                                      ignore comment Table Property in your Schema.
+
   $ beech make <helper> --helper      Create a new Helpers file.
   $ beech passport init               Initialize authentication with passport-jwt.
   $ beech skd init                    Initialize Job Scheduler file.
@@ -330,8 +338,7 @@ Fruit.options = {
    // Option 2: Allow with specific per methods
   defaultEndpoint: {
     GET: true,
-    POST: false,
-    PATCH: {
+    POST: {
       allow: true, // allow Auto-Endpoint
       jwt: {
         allow: true, // allow JWT
@@ -339,18 +346,19 @@ Fruit.options = {
           { role: [1, 2] },
         ],
       },
-      // Rate Limit for GET
+      // Rate Limit for POST
       rate_limit: {
         windowMs: 15 * 60 * 1000, // 15 minutes
         limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
         // store: ... , // Redis, Memcached, etc.
         // See more: https://www.npmjs.com/package/express-rate-limit#Configuration
       },
-      // Duplicate Request for GET
+      // Duplicate Request for POST
       duplicate_request: {
         expiration: 500, // Can't duplicate request for 5 milliseconds each IP requests per `window` (Disabled for Set expiration to 0 zero.)
       },
     },
+    PATCH: false,
     DELETE: false,
   },
 

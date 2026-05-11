@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "app-root-path": "^3.0.0",
+    "ast-types": "^0.14.2",
     "axios": "^1.8.4",
     "child-process-promise": "^2.2.1",
     "cli-clear": "^1.0.4",
@@ -64,6 +65,7 @@
     "passport-local": "^1.0.0",
     "passport-oauth": "^1.0.0",
     "path": "^0.12.7",
+    "recast": "^0.23.11",
     "sequelize": "^6.21.3",
     "walk": "^2.3.14"
   },

@@ -2,6 +2,8 @@
 const logUpdate = require("log-update");
 const inquirer = require('inquirer');
 const walk = require("walk");
+const recast = require("recast");
+const { builders } = require("ast-types");
 const { connectForGenerateModel } = require("../databases/test");
 
 class Generator {
@@ -178,6 +180,24 @@ class Generator {
             } else {
               resolve("\n[101m Faltal [0m commnad it's not available.");
             }
+          }
+        } else if (this.option == 'update') {
+          if(this.argument == 'model') {
+            if(this.special) {
+              if (!this.special) {
+                resolve("\n[103m[90m Warning [0m[0m Please specify model name to update.");
+              } else {
+                this.updateModel()
+                  .then(res => resolve(res))
+                  .catch(err => reject(err));
+              }
+            } else {
+              resolve("\n[103m[90m Warning [0m[0m Please specify model name to update.");
+            }
+          } else if(this.argument != 'model') {
+            resolve("\n[101m Faltal [0m commnad it's not available.");
+          } else {
+            resolve("\n[103m[90m Warning [0m[0m Please specify what you want to update.");
           }
         } else if (this.option == 'passport') {
           if (this.argument == "init") {
@@ -451,6 +471,150 @@ class Generator {
     });
   }
 
+  updateModel() {
+    return new Promise((resolve, reject) => {
+      try {
+        this.fs.readFile("./global.config.js", 'utf8', (err, globalData) => {
+          if (err) return resolve("\n[101m Faltal [0m Can't read `global.config.js` file.");
+          this.fs.readFile("./app.config.js", 'utf8', (appErr, appData) => {
+            if (appErr) return resolve("\n[101m Faltal [0m Can't read `app.config.js` file.");
+            const appConfig = eval(appData);
+            const modelName = this.special; // <table_name>
+            const modelFileName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
+            const modelPath = `./src/models/${modelFileName}.js`;
+            if (!this.fs.existsSync(modelPath)) {
+              return resolve(`\n[103m[90m Warning [0m[0m Model file \`${modelFileName}\` not found.`);
+            }
+            // Choose connection for new schema
+            inquirer.prompt([{
+              type: "list",
+              name: "selectDbConnect",
+              message: " [93mSelect database connection to sync schema: [0m",
+              choices: appConfig.database_config.map(e => e.name),
+            }]).then(dbSelected => {
+              const { connectForGenerateModel } = require("../databases/test");
+              // pull new schema from database
+              connectForGenerateModel(dbSelected.selectDbConnect, modelName, appConfig.database_config, (dbErr, tableSchema, tableName) => {
+                if (dbErr) return reject(dbErr);
+                // read current model file for AST
+                this.fs.readFile(modelPath, 'utf8', (readErr, code) => {
+                  if (readErr) return reject(readErr);
+                  const ast = recast.parse(code);
+                  let isUpdated = false;
+                  // Function for map raw database type to Sequelize DataTypes AST Node
+                  const getDataTypeNode = (rawType) => {
+                    const type = rawType.toUpperCase();
+                    if (type.includes('INT')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('INTEGER'));
+                    if (type.includes('BIGINT')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('BIGINT'));
+                    if (type.includes('FLOAT')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('FLOAT'));
+                    if (type.includes('DOUBLE')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('DOUBLE'));
+                    if (type.includes('DECIMAL')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('DECIMAL'));
+                    if (type.includes('BOOLEAN') || type === 'TINYINT(1)') return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('BOOLEAN'));
+                    if (type.includes('CHAR') || type.includes('VARCHAR')) {
+                      const match = type.match(/\((\d+)\)/);
+                      const length = match ? match[1] : '255';
+                      return builders.callExpression(
+                        builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('STRING')),
+                        [builders.literal(parseInt(length))]
+                      );
+                    }
+                    if (type.includes('TEXT')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('TEXT'));
+                    if (type.includes('DATE')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('DATE'));
+                    if (type.includes('TIME')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('TIME'));
+                    if (type.includes('JSON')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('JSON'));
+                    if (type.includes('UUID')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('UUID'));
+                    if (type.includes('BLOB')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('BLOB'));
+                    if (type.includes('ENUM')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('ENUM'));
+                    if (type.includes('GEOMETRY')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('GEOMETRY'));
+                    return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('STRING'));
+                  };
+                  // recast.visit for find position of Schema(...).define() and update fields
+                  recast.visit(ast, {
+                    visitCallExpression(path) {
+                      const node = path.node;
+                      if (node.callee.property && node.callee.property.name === 'define' && node.arguments[1] && node.arguments[1].type === 'ObjectExpression') {
+                        const fieldsObject = node.arguments[1];
+                        const newFieldNames = Object.keys(tableSchema);
+                        const updatedProperties = [];
+                        newFieldNames.forEach(dbFieldName => {
+                          const dbFieldData = tableSchema[dbFieldName];
+                          let existingProperty = fieldsObject.properties.find(p => {
+                            const propName = p.key.name || p.key.value;
+                            if (propName === dbFieldName) return true;
+                            if (p.value && p.value.properties) {
+                              const hasFieldMapping = p.value.properties.find(
+                                innerP => (innerP.key.name === 'field' || innerP.key.value === 'field') &&
+                                          (innerP.value.value === dbFieldName)
+                              );
+                              if (hasFieldMapping) return true;
+                            }
+                            return false;
+                          });
+                          const latestFieldProps = [];
+                          // Prepare properties from Table DB (Type, PK, AI, Default, etc.)
+                          latestFieldProps.push(builders.property('init', builders.identifier('type'), getDataTypeNode(dbFieldData.type)));
+                          latestFieldProps.push(builders.property('init', builders.identifier('allowNull'), builders.literal(dbFieldData.allowNull === 'YES' || dbFieldData.allowNull === true)));
+                          if (dbFieldData.primaryKey) latestFieldProps.push(builders.property('init', builders.identifier('primaryKey'), builders.literal(true)));
+                          if (dbFieldData.autoIncrement) latestFieldProps.push(builders.property('init', builders.identifier('autoIncrement'), builders.literal(true)));
+                          if (dbFieldData.unique) latestFieldProps.push(builders.property('init', builders.identifier('unique'), builders.literal(true)));
+                          if(this.extra != '--no-comment') {
+                            if (dbFieldData.comment) latestFieldProps.push(builders.property('init', builders.identifier('comment'), builders.literal(dbFieldData.comment)));
+                          }
+                          if (dbFieldData.defaultValue !== null && dbFieldData.defaultValue !== undefined) {
+                            const dVal = String(dbFieldData.defaultValue).toUpperCase();
+                            const defaultNode = (dVal === 'CURRENT_TIMESTAMP' || dVal === 'NOW()') 
+                              ? builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('NOW'))
+                              : builders.literal(dbFieldData.defaultValue);
+                            latestFieldProps.push(builders.property('init', builders.identifier('defaultValue'), defaultNode));
+                          }
+                          if (!existingProperty) {
+                            existingProperty = builders.property('init', builders.identifier(dbFieldName), builders.objectExpression(latestFieldProps));
+                            isUpdated = true;
+                          } else {
+                            const currentProps = existingProperty.value.properties;
+                            latestFieldProps.forEach(newProp => {
+                              const oldProp = currentProps.find(p => p.key.name === newProp.key.name);
+                              if (!oldProp || recast.print(oldProp.value).code !== recast.print(newProp.value).code) {
+                                isUpdated = true;
+                                if (!oldProp) currentProps.push(newProp); else oldProp.value = newProp.value;
+                              }
+                            });
+                            const latestPropNames = latestFieldProps.map(p => p.key.name);
+                            latestPropNames.push('field');
+                            existingProperty.value.properties = currentProps.filter(p => latestPropNames.includes(p.key.name));
+                          }
+                          updatedProperties.push(existingProperty);
+                        });
+                        const currentOrder = fieldsObject.properties.map(p => p.key.name || p.key.value).join(',');
+                        const newOrder = updatedProperties.map(p => p.key.name || p.key.value).join(',');
+                        if (currentOrder !== newOrder || fieldsObject.properties.length !== updatedProperties.length) isUpdated = true;
+                        fieldsObject.properties = updatedProperties;
+                      }
+                      return false;
+                    }
+                  });
+                  // Write back updated AST, Shout updated
+                  if (isUpdated) {
+                    // Write updated AST back to file
+                    const output = recast.print(ast).code;
+                    this.fs.writeFile(modelPath, output, 'utf8', (writeErr) => {
+                      if (writeErr) return reject(writeErr);
+                      resolve(`\n[102m[90m Updated [0m[0m The model \`${modelFileName}\` has been updated via AST.`);
+                    });
+                  } else {
+                    resolve(`\n[103m[90m Warning [0m[0m No new fields found to update for \`${modelFileName}\`.`);
+                  }
+                });
+              });
+            });
+          });
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
   generateModel(tmpModelsPath, dbSelected, appBuf2eval, pool_base) {
     return new Promise((resolve, reject) => {
       try {
@@ -611,21 +775,19 @@ class Generator {
         // Check is primary key
         if (props.primaryKey) lines.push(`    primaryKey: true,`);
         if (props.autoIncrement) lines.push(`    autoIncrement: true,`);
-        //if (props.comment) lines.push(`    comment: '${props.comment}',`);
-
+        // Check <extra> for comment, because some database have extra comment in field but it's not comment for field, so we need to check it first before assign to comment
+        if(this.extra != '--no-comment') {
+          if (props.comment) lines.push(`    comment: "${props.comment}",`);
+        }
         // Handle defaultValue
         if (props.defaultValue !== null && props.defaultValue !== undefined) {
           const defaultVal = String(props.defaultValue).toUpperCase();
-          if (
-            defaultVal === 'CURRENT_TIMESTAMP' ||
-            defaultVal === 'NOW()' ||
-            defaultVal.includes('CURRENT_TIMESTAMP')
-          ) {
+          if (defaultVal === 'CURRENT_TIMESTAMP' || defaultVal === 'NOW()' || defaultVal.includes('CURRENT_TIMESTAMP')) {
             lines.push(`    defaultValue: DataTypes.NOW,`);
           } else if (defaultVal === 'UUID()' || defaultVal === 'uuid()' || defaultVal === 'UUID') {
             lines.push(`    defaultValue: DataTypes.UUIDV4,`);
           } else if (typeof props.defaultValue === 'string') {
-            lines.push(`    defaultValue: '${props.defaultValue}',`);
+            lines.push(`    defaultValue: "${props.defaultValue}",`);
           } else {
             lines.push(`    defaultValue: ${props.defaultValue},`);
           }
