@@ -580,6 +580,8 @@ The `endpoints` keep the endpoints basic request files currently support `GET`, 
 
 So, you might create new endpoints with constant `endpoint` object variable in `src/endpoints/` folder and file neme must be end with `-endpoints.js`
 
+❓ **Note:** If you generate Endpoint Name same Auto-Endpoint it's Override to main Auto-Endpoint to you, (You always have priority).
+
 ```sh
 $ beech make endpointName
 ```
