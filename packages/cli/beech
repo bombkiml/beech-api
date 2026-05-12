@@ -1,11 +1,10 @@
 #!/usr/bin/env node
-
 /**
  * The beech api (cli) package generator and server (bash for developer and production build)
  *
  * @author bombkiml
- * @version 3.8
- * @built Apr 30, 2024 at 16:53:09
+ * @version 3.9
+ * @update Apr 25, 2026 at 18:19:09
  *
  */
-(process.argv[2]) ? require('./core/generator/index') : require('./core/index')
+require('./node_modules/beech-api/packages/cli/core/index')

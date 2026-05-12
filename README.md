@@ -57,16 +57,17 @@ The Beech API is API framework, It's help you with very easy to create API proje
 - ☕ <b>Testing</b>
   - [Jest](#testing)
 - 🏃 <b>Implementration</b>
+  - [Building for Production](#building-for-production)
   - [Docker](#implementation)
   - [PM2](#-implement-with-pm2)
 
 # Environment
 
-- [`Node.js`](https://nodejs.org) >= 18.17.1+ (recommended)
+- [`Node.js`](https://nodejs.org) >= 18.18.0+ (recommended)
 
 # Installation
 
-Beech API needed Node.js version 18.17.1 or above. You can management multiple versions on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows).
+Beech API needed Node.js version 18.18.0 or above. You can management multiple versions on the same machine with [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows).
 
 <b>So, Let's go to install</b> `beech-api`
 
@@ -586,6 +587,8 @@ So, you might create new endpoints with constant `endpoint` object variable in `
 $ beech make endpointName
 ```
 You might using [special] `-R, --require` for choose Model(s) used for that endpoint.
+
+❓ **Note:** If you generate Endpoint Name same Auto-Endpoint it's Override to main Auto-Endpoint to you, (You always have priority).
 
 ***For Example :***
 
@@ -1582,6 +1585,63 @@ describe("Test endpoint : " + endpoint, () => {
 });
 ```
 
+# Building for Production
+
+The Beech API build system is designed to secure your source code without sacrificing performance.
+
+To start the build process, run the following command from your project root
+
+```sh
+$ npm run build
+# OR
+$ yarn build
+```
+
+❓ **Note:** This command triggers ```beech-service build``` as defined in your package.json.
+
+### # What happens during Build ?
+The build engine performs the following automated steps:
+
+- **Scanning**: It scans for all .js files in src/ (endpoints, models, helpers) and configuration files.
+
+- **Entry Point Generation**: It retrieves the core engine template (beech.txt) and converts it into a secured server.js in the output folder.
+
+- **Compilation**: Files are minified to reduce size.
+
+- **Obfuscation**:
+
+  - Variables and function names are renamed.
+  - Strings are Base64 encoded.
+  - Performance remains 100% because control-flow logic is preserved.
+
+- **Distribution**: All protected files are placed in the ```./dist``` directory.
+
+### # Deployment Structure ?
+After the build is complete, your ./dist folder will look like this:
+
+```sh
+dist/
+├── src/
+│   ├── endpoints/    (Obfuscated)
+│   ├── models/       (Obfuscated)
+│   ├── helpers/      (Obfuscated)
+│   └── etc/          (Obfuscated)
+├── server.js         (Main entry point)
+├── app.config.js     (Obfuscated)
+├── beech.config.js   (Obfuscated)
+├── global.config.js  (Obfuscated)
+└── package.json      (Copied for dependency management)
+```
+
+## # Starting the Production Server ?
+To run your application in production:
+
+- Upload the contents of the dist folder to your server.
+
+- Install only production dependencies:
+  ```sh
+  npm install --production
+  ```
 
 # Implementation
 
@@ -1602,7 +1662,7 @@ COPY ["package.json", "package-lock.json*", "./"]
 RUN npm install --production --silent && mv node_modules .
 COPY . .
 EXPOSE 9000
-CMD ["node", "./node_modules/beech-api/packages/cli/beech"]
+CMD ["node", "server.js"]
 ```
 
 - ### **Docker build image**
@@ -1638,12 +1698,12 @@ $ docker build -t <imageName> .
 
 ```sh
 # Start service as standalone
-$ pm2 start ./node_modules/beech-api/packages/cli/beech --name <serviceName>
+$ pm2 start server.js --name <serviceName>
 
 # OR
 
 # Start service as cluster mode
-$ pm2 start ./node_modules/beech-api/packages/cli/beech --name <serviceName> -i <instances>
+$ pm2 start server.js --name <serviceName> -i <instances>
 ```
 
 # Development

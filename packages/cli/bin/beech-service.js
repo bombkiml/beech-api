@@ -72,7 +72,10 @@ class Beech {
             .then(help => resolve(help))
             .catch(err => reject(err));
         } else if (this.option == "build") {
-          resolve("\n[101m Notic. [0m The commnad it's not supported, Please wait for next version.");
+          //resolve("\n[101m Notic. [0m The commnad it's not supported, Please wait for next version.");
+          this.runBuild()
+            .then(() => resolve("\n[32m[OK] Build completed successfully. [0m"))
+            .catch(err => reject(`\n[101m[ERR] Build failed [0m: ${err}`));
         } else {
           // help for see avaliable command
           this.help()
@@ -118,6 +121,84 @@ class Beech {
       });
     } catch (error) {
       cb(error, false);
+    }
+  }
+
+  async runBuild() {
+    const esbuild = require("esbuild");
+    const { glob } = require("glob");
+    const JavaScriptObfuscator = require("javascript-obfuscator");
+    const fs = require("fs");
+    const path = require("path");
+    const appRoot = require("app-root-path");
+    const _config_ = require(appRoot + "/app.config");
+    const beechTxtPath = path.join("./node_modules/beech-api/packages/cli/beech");
+    console.log("\n[33m[Obf] Starting Beech Secure Build... [0m\n");
+    try {
+      const projectFiles = glob.sync("{src/**/*.js,*.config.js}", {
+        ignore: ["node_modules/**", "dist/**", "cli/**"],
+        posix: true
+      });
+      // Check file exists to build
+      if (fs.existsSync(beechTxtPath)) {
+        projectFiles.push(beechTxtPath);
+      } else {
+        console.log("[101m[!] Warning: Beech build not found at: [0m", beechTxtPath);
+      }
+      if (projectFiles.length === 0) {
+        console.log("[101m[!] No files found to build. [0m");
+        return true;
+      }
+      const MY_BUILD_SEED = _config_.main_config.app_key;
+      for (const file of projectFiles) {
+        let codeToObfuscate = "";
+        let fileName = file;
+        if (file === beechTxtPath) {
+          codeToObfuscate = fs.readFileSync(file, "utf8");
+          fileName = "server.js";
+        } else {
+          // Log file being processed
+          console.log(`[36m[+] dist/${file} [0m`);
+          const result = await esbuild.build({
+            entryPoints: [file],
+            bundle: false,
+            minify: true,
+            platform: "node",
+            format: "cjs",
+            write: false,
+          });
+          codeToObfuscate = result.outputFiles[0].text;
+          fileName = file;
+        }
+        const obfuscatedResult = JavaScriptObfuscator.obfuscate(codeToObfuscate, {
+          compact: true,
+          seed: MY_BUILD_SEED,
+          identifierNamesGenerator: 'hexadecimal',
+          renameGlobals: false,
+          stringArray: true,
+          stringArrayEncoding: ['base64'],
+          stringArrayThreshold: 0.8,
+          unicodeEscapeSequence: true,
+          controlFlowFlattening: false,
+          deadCodeInjection: false,
+          numbersToExpressions: false,
+          splitStrings: false,
+          selfDefending: false,
+          simplify: true,
+        });
+        const outPath = path.join("dist", fileName);
+        const outDir = path.dirname(outPath);
+        if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+        fs.writeFileSync(outPath, obfuscatedResult.getObfuscatedCode());
+      }
+      // Copy package.json
+      if (fs.existsSync("./package.json")) {
+        fs.copyFileSync("./package.json", "./dist/package.json");
+      }
+      return true;
+    } catch (error) {
+      console.log("\n[101m[ERR] Build Error [0m", error.message);
+      throw error;
     }
   }
 

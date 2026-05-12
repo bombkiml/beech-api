@@ -22,6 +22,7 @@ packages/beech
 packages/passport.config.js
 packages/beech.config.js
 build.bat
+dist*
 
 # sequelize-cli migration & seeder
 packages/databases
