@@ -1,7 +1,7 @@
 const current = process.versions.node;
 
 const required = {
-  min16: "16.20.0",
+  min18: "18.18.0",
   min22: "22.18.0",
 };
 
@@ -15,7 +15,7 @@ const semver = (a, b) => {
   return 0;
 };
 
-if (semver(current, required.min16) < 0 && semver(current, required.min22) < 0) {
-  console.error(`\n❌ You are using Node.js ${current}.\n` + `Beech requires Node.js version ${required.min16}+ or ${required.min22}+.\n` + `Please upgrade your Node.js version.\n`);
+if (semver(current, required.min18) < 0 && semver(current, required.min22) < 0) {
+  console.error(`\n❌ You are using Node.js ${current}.\n` + `Beech requires Node.js version ${required.min18}+ or ${required.min22}+.\n` + `Please upgrade your Node.js version.\n`);
   process.exit(1);
 }

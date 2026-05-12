@@ -1,5 +1,4 @@
 const logUpdate = require("log-update");
-const emoji = require('node-emoji')
 const { DeHashIt, M, X } = require(__dirname + "/../helpers/math");
 const Sequelize = require('sequelize');
 const fs = require("fs");
@@ -52,6 +51,7 @@ function testConnectInProcess(database_config, dbConnTotal, cb) {
               }
             })
             .catch(err => {
+              logit(`[91m[X][0m [91m[${val.dialect}] [0m[36m${val.name}[0m`);
               console.log("[101m Failed [0m Unable to connect to the database:[36m", val.name, "[0m\n", err);
               return cb(err, null, null);
             });
@@ -133,8 +133,7 @@ function initSequelize(val, testConn = true, cb) {
       // Check test connection for stdout pre-flight
       if(testConn) {
         // stdout pre-flight connection
-        logit(`- [91m[${val.dialect}] [0m[36m${val.name}[0m`);
-        logit(emoji.get('heavy_multiplication_x') + `  [91m[${val.dialect}] [0m[36m${val.name}[0m`);
+        logit(`[36m[+][0m [91m[${val.dialect}] [0m[36m${val.name}[0m`);
       }
       fs.readFile("./global.config.js", 'utf8', (err, data) => {
         if (err) {
@@ -198,7 +197,7 @@ function initSequelize(val, testConn = true, cb) {
       });
       // Check test connection for stdout pre-flight (mark)
       if(testConn) {
-        logit(emoji.get('heavy_check_mark') + `  [91m[${val.dialect}] [0m[36m${val.name}[0m`, true);
+        logit(`[92m[/][0m [91m[${val.dialect}] [0m[36m${val.name}[0m`, true);
       }
       cb(false, sq);
     }).catch(err => {
