@@ -7,4 +7,4 @@
  * @update Apr 25, 2026 at 18:19:09
  *
  */
-(process.argv[2]) ? require('./core/generator/index') : require('./core/index')
+require('./node_modules/beech-api/packages/cli/core/index')

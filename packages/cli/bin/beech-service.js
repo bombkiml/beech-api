@@ -72,7 +72,6 @@ class Beech {
             .then(help => resolve(help))
             .catch(err => reject(err));
         } else if (this.option == "build") {
-          //resolve("\n[101m Notic. [0m The commnad it's not supported, Please wait for next version.");
           this.runBuild()
             .then(() => resolve("\n[32m[OK] Build completed successfully. [0m"))
             .catch(err => reject(`\n[101m[ERR] Build failed [0m: ${err}`));
@@ -89,6 +88,13 @@ class Beech {
   }
 
   serviceDevStart(argument, cb) {
+
+
+
+//TODO run app ubuntu shout not show
+
+
+
     let promise = null;
     try {
       const spawnData = new Promise((resolve) => {
@@ -132,7 +138,7 @@ class Beech {
     const path = require("path");
     const appRoot = require("app-root-path");
     const _config_ = require(appRoot + "/app.config");
-    const beechTxtPath = path.join("./node_modules/beech-api/packages/cli/beech");
+    const beechTxtPath = path.join("./node_modules/beech-api/packages/cli/entry");
     console.log("\n[33m[Obf] Starting Beech Secure Build... [0m\n");
     try {
       const projectFiles = glob.sync("{src/**/*.js,*.config.js}", {
@@ -143,7 +149,7 @@ class Beech {
       if (fs.existsSync(beechTxtPath)) {
         projectFiles.push(beechTxtPath);
       } else {
-        console.log("[101m[!] Warning: Beech build not found at: [0m", beechTxtPath);
+        console.log("[101m[!] Warning: Beech entry not found at: [0m", beechTxtPath);
       }
       if (projectFiles.length === 0) {
         console.log("[101m[!] No files found to build. [0m");
