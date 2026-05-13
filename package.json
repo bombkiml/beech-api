@@ -69,6 +69,7 @@
     "recast": "^0.23.11",
     "sequelize": "^6.21.3",
     "sequelize-cli": "^5.5.1",
+    "uuid": "^14.0.0",
     "walk": "^2.3.14"
   },
   "devDependencies": {
@@ -76,13 +77,8 @@
     "nodemon": "^3.1.0"
   },
   "overrides": {
-    "lru.min": "1.1.1",
-    "node-notifier": {
-      "uuid": "^11.0.0"
-    }
-  },
-  "resolutions": {
-    "node-notifier/uuid": "^11.0.0"
+    "cross-spawn": "^7.0.5",
+    "lru.min": "1.1.1"
   },
   "jest": {
     "prdFile": "./node_modules/beech-api/packages/cli/core/test/utils.js",

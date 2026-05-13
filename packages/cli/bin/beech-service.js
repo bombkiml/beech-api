@@ -36,35 +36,30 @@ class Beech {
           if (this.fs.existsSync(this.configFile)) {
             let testServ = require("http").createServer(_app_);
             testServ.listen(this._config_.main_config.app_port, async () => {
-              await testServ.close();
+              testServ.close();
               // Start real service.
-              this.serviceDevStart(this.argument, (err, run) => {
+              this.serviceDevStart(this.argument, refreshCompileIntervalId, (err, run) => {
                 if(!err && run) {
                   // Check turn on noti
                   if (turnNoti) {
                     this.notiCompile();
                   }
-                  // Delay for new replace Compiling msg to Running
-                  setTimeout(() => {
-                    clearInterval(refreshCompileIntervalId);
-                    logUpdate("\n[36m[OK] Running...[0m");
-                  }, 1500);
                 } else {
                   setTimeout(() => {
-                    clearInterval(refreshCompileIntervalId);
+                    if(refreshCompileIntervalId) clearInterval(refreshCompileIntervalId);
                     logUpdate("\n[101m[ERR] Failed... [0m", err);
                     reject();
                   }, 1000);
                 }
               });
             }).on('error', (err) => {
-              clearInterval(refreshCompileIntervalId);
-              console.log("\n[101m Faltal [0m", err);
+              if(refreshCompileIntervalId) clearInterval(refreshCompileIntervalId);
+              console.log("\n[101m Fatal [0m", err);
               reject();
             })
           } else {
-            clearInterval(refreshCompileIntervalId);
-            resolve("\n[101m Faltal [0m The app.conifg.js file is not found.");
+            if(refreshCompileIntervalId) clearInterval(refreshCompileIntervalId);
+            resolve("\n[101m Fatal [0m The app.conifg.js file is not found.");
           }
         } else if (!this.option || this.option == "-h" || this.option == "?" || this.option == "--help") {
           // help for see avaliable command
@@ -73,7 +68,7 @@ class Beech {
             .catch(err => reject(err));
         } else if (this.option == "build") {
           this.runBuild()
-            .then(() => resolve("\n[32m[OK] Build completed successfully. [0m"))
+            .then((builded) => (builded) ? resolve("\n[32m[OK] Build completed successfully.\n[0m") : resolve('[33m[X] Build rejected.[0m\n'))
             .catch(err => reject(`\n[101m[ERR] Build failed [0m: ${err}`));
         } else {
           // help for see avaliable command
@@ -87,14 +82,8 @@ class Beech {
     });
   }
 
-  serviceDevStart(argument, cb) {
-
-
-
-//TODO run app ubuntu shout not show
-
-
-
+  serviceDevStart(argument, refreshCompileIntervalId, cb) {
+    if(refreshCompileIntervalId) clearInterval(refreshCompileIntervalId);
     let promise = null;
     try {
       const spawnData = new Promise((resolve) => {
@@ -131,6 +120,11 @@ class Beech {
   }
 
   async runBuild() {
+    // detect if current working directory is 'dist' to prevent build inside dist folder
+    if (process.cwd().endsWith('dist')) {
+      console.log("\n[101m[ERR] Fatal: Cannot run build command inside 'dist' folder.[0m\n");
+      return false;
+    }
     const esbuild = require("esbuild");
     const { glob } = require("glob");
     const JavaScriptObfuscator = require("javascript-obfuscator");
@@ -197,9 +191,21 @@ class Beech {
         if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
         fs.writeFileSync(outPath, obfuscatedResult.getObfuscatedCode());
       }
-      // Copy package.json
+      // Copy package.json & Modify for Production
       if (fs.existsSync("./package.json")) {
-        fs.copyFileSync("./package.json", "./dist/package.json");
+        const pkg = JSON.parse(fs.readFileSync("./package.json", "utf8"));
+        // set new start script for production
+        pkg.scripts = {
+          "prod-start": "node server.js",
+          "prod-pm2": "pm2 start server.js --name " + (pkg.name || "beech-api")
+        };
+        // delete devDependencies for production
+        delete pkg.devDependencies;
+        // write new package.json to dist
+        fs.writeFileSync(
+          path.join("dist", "package.json"), 
+          JSON.stringify(pkg, null, 2)
+        );
       }
       return true;
     } catch (error) {

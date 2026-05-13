@@ -99,7 +99,7 @@ class Generator {
                       // Check global config for prepare tmp endpoint
                       this.fs.readFile("./global.config.js", 'utf8', (err, data) => {
                         if (err) {
-                          console.log("\n[101m Faltal [0m Can't read `global.config.js` file.\n", err);
+                          console.log("\n[101m Fatal [0m Can't read `global.config.js` file.\n", err);
                           return; // break;
                         } else {
                           let buffer = Buffer.from(data);
@@ -148,10 +148,10 @@ class Generator {
                                 resolve([[]]);
                               }
                             } else {
-                              console.log("\n[101m Faltal [0m The pool_base in `global.config.js` file does not match the specific.");
+                              console.log("\n[101m Fatal [0m The pool_base in `global.config.js` file does not match the specific.");
                             }
                           } else {
-                            console.log("\n[101m Faltal [0m The pool_base in `global.config.js` file is not found.");
+                            console.log("\n[101m Fatal [0m The pool_base in `global.config.js` file is not found.");
                           }
                         }
                       });
@@ -178,7 +178,7 @@ class Generator {
                 .then(make => resolve(make))
                 .catch(err => reject(err));
             } else {
-              resolve("\n[101m Faltal [0m commnad it's not available.");
+              resolve("\n[101m Fatal [0m commnad it's not available.");
             }
           }
         } else if (this.option == 'update') {
@@ -195,7 +195,7 @@ class Generator {
               resolve("\n[103m[90m Warning [0m[0m Please specify model name to update.");
             }
           } else if(this.argument != 'model') {
-            resolve("\n[101m Faltal [0m commnad it's not available.");
+            resolve("\n[101m Fatal [0m commnad it's not available.");
           } else {
             resolve("\n[103m[90m Warning [0m[0m Please specify what you want to update.");
           }
@@ -293,7 +293,7 @@ class Generator {
           const promise0 = new Promise((resolve) => {
             this.fs.readFile("./global.config.js", 'utf8', (err, data) => {
               if (err) {
-                console.log("\n[101m Faltal [0m Can't read `global.config.js` file.", err);
+                console.log("\n[101m Fatal [0m Can't read `global.config.js` file.", err);
                 resolve([false, null, null]);
               } else {
                 let buffer = Buffer.from(data);
@@ -306,11 +306,11 @@ class Generator {
                   } else if (pool_base[ 1 ] == "sequelize") {
                     resolve([true, tmpEndpointsPath += '/_endpoints', pool_base[ 1 ]]);
                   } else {
-                    console.log("\n[101m Faltal [0m The pool_base in `global.config.js` file does not match the specific.");
+                    console.log("\n[101m Fatal [0m The pool_base in `global.config.js` file does not match the specific.");
                     resolve([false, null, null]);
                   }
                 } else {
-                  console.log("\n[101m Faltal [0m The pool_base in `global.config.js` file is not found.");
+                  console.log("\n[101m Fatal [0m The pool_base in `global.config.js` file is not found.");
                   resolve([false, null, null]);
                 }
               }
@@ -420,7 +420,7 @@ class Generator {
         // read global.config.js file for check pool_base for generate model file
         this.fs.readFile("./global.config.js", 'utf8', (err, data) => {
           if (err) {
-            resolve("\n[101m Faltal [0m Can't read `global.config.js` file.", err);
+            resolve("\n[101m Fatal [0m Can't read `global.config.js` file.", err);
           } else {
             let buffer = Buffer.from(data);
             let buf2str = buffer.toString();
@@ -430,7 +430,7 @@ class Generator {
               // read app.config.js file for get db connect name
               this.fs.readFile("./app.config.js", 'utf8', (appErr, appData) => {
                 if (appErr) {
-                  resolve("\n[101m Faltal [0m Can't read `app.config.js` file.", appErr);
+                  resolve("\n[101m Fatal [0m Can't read `app.config.js` file.", appErr);
                 } else {
                   let appBuffer = Buffer.from(appData);
                   let appBuf2str = appBuffer.toString();
@@ -455,13 +455,13 @@ class Generator {
                         .then(console.log)
                         .catch(console.log);
                     } else {
-                      resolve("\n[101m Faltal [0m The pool_base in `global.config.js` file does not match the specific.");
+                      resolve("\n[101m Fatal [0m The pool_base in `global.config.js` file does not match the specific.");
                     }
                   });
                 }
               });
             } else {
-              resolve("\n[101m Faltal [0m The pool_base in `global.config.js` file is not found.");
+              resolve("\n[101m Fatal [0m The pool_base in `global.config.js` file is not found.");
             }
           }
         });
@@ -475,9 +475,9 @@ class Generator {
     return new Promise((resolve, reject) => {
       try {
         this.fs.readFile("./global.config.js", 'utf8', (err, globalData) => {
-          if (err) return resolve("\n[101m Faltal [0m Can't read `global.config.js` file.");
+          if (err) return resolve("\n[101m Fatal [0m Can't read `global.config.js` file.");
           this.fs.readFile("./app.config.js", 'utf8', (appErr, appData) => {
-            if (appErr) return resolve("\n[101m Faltal [0m Can't read `app.config.js` file.");
+            if (appErr) return resolve("\n[101m Fatal [0m Can't read `app.config.js` file.");
             const appConfig = eval(appData);
             const modelName = this.special; // <table_name>
             const modelFileName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
@@ -687,12 +687,12 @@ class Generator {
             // Gether table schema
             connectForGenerateModel(dbSelected, oriModelsName, appBuf2eval.database_config, (err, tableSchema, tableName) => {
               if(err) {
-                throw logUpdate("\n[101m Faltal [0m", String(err), "\n");
+                throw logUpdate("\n[101m Fatal [0m", String(err), "\n");
               } else {
                 // Raw model schema
                 this.rawSchemaTable(dbSelected, newModel, tableName, tableSchema, (SchemaErr, rawSchema) => {
                   if(err) {
-                    throw logUpdate("\n[101m Faltal [0m RAW Schema ERR:", String(SchemaErr), "\n");
+                    throw logUpdate("\n[101m Fatal [0m RAW Schema ERR:", String(SchemaErr), "\n");
                   } else {
                     // Generate sequelize model
                     this.makeFolder(modelPath + subFolder)
@@ -721,7 +721,7 @@ class Generator {
             });
           } else {
             // Fallback (When Accident)
-            resolve("\n[101m Faltal [0m The pool_base in `global.config.js` file does not match the specific.");
+            resolve("\n[101m Fatal [0m The pool_base in `global.config.js` file does not match the specific.");
           }
         } else {
           resolve("\n[103m[90m Warning [0m[0m The model `" + models + "` it's duplicated.");

@@ -139,7 +139,7 @@ class Beech {
                   }
                 });
               } else {
-                logUpdate("\n[101m Faltal [0m Catch update package. Try again...");
+                logUpdate("\n[101m Fatal [0m Catch update package. Try again...");
                 return;
               }
             }, 1000);
@@ -164,7 +164,7 @@ class Beech {
           .then(res => {
             if (res) {
               let lineStdout = "";
-              let processYarn = this.cmd.get('cd ' + argument + ' && yarn install', (err, data) => {
+              let processYarn = this.cmd.get('cd ' + argument + ' && npm install yarn -g && yarn install && npm install', (err, data) => {
                 if (err) {
                   this.cmd.get('cd ' + argument + ' && npm install', (err, data) => {
                     if (err) { throw err }
@@ -184,7 +184,7 @@ class Beech {
                 }
               });
             } else {
-              logUpdate("\n[101m Faltal [0m Can't install freature. Try again...");
+              logUpdate("\n[101m Fatal [0m Can't install freature. Try again...");
             }
           })
           .catch(err => reject(err));
@@ -231,7 +231,7 @@ class Beech {
   successfully() {
     clear();
     console.log("[94mBeech CLI v" + require(__dirname + "/../../../package.json").version);
-    console.log('\n[102m[90m Passed [0m[0m The project has been successfully created.\n\n  [37m$[0m [36mcd ' + this.argument + '[0m\n  [37m$[0m [36mnpm run dev[0m or [36myarn dev[0m');
+    console.log('\n[102m[90m Passed [0m[0m The project has been successfully created.\n\n  [37m$[0m [36mcd ' + this.argument + '[0m\n  [37m$[0m [36mnpm run dev[0m or [36myarn dev[0m\n');
   }
 
   async contentReplace(pathFile, textCondition) {
