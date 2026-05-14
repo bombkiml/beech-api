@@ -30,15 +30,14 @@ connectInProcess = async (database_config, headDbShow, cb) => {
             return cb("Error: Incorrect Hash access for connect to database.\n", null);
           }
           let accessDb = [];
-          [val.username, val.password].map((e, k) => {
-            DeHashIt(e.toString(), null, (17).toString().slice(0,-1).length, (err, d) => {
-              if(!err) {
-                accessDb.push(d.split("sh,")[1].split(M(X).toString().slice(0,2)+M(X).toString())[0].slice(0,-1));
+          [val.username, val.password].forEach((e, k) => {
+            DeHashIt(e.toString(), null, (17).toString().slice(0, -1).length, (err, d) => {
+              if (err) return reject(err);
+              accessDb[k] = d.split("sh,")[1].split(M(X).toString().slice(0, 2) + M(X).toString())[0].slice(0, -1);
+              if (accessDb[0] !== undefined && accessDb[1] !== undefined) {
+                resolve(accessDb);
               }
             });
-            if(k+1==2) {
-              resolve(accessDb);
-            }
           });
         } else {
           resolve([null, null]);
