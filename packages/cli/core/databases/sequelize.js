@@ -147,10 +147,10 @@ connectInProcess = async (database_config, headDbShow, cb) => {
         // checking shout by dialect sql
         if (val.dialect == "sqlite") {
           // shout for sqlite
-          console.log('[/] [91m[' + val.dialect + '] [0m[36m' + val.name + ' [0m->[93m ' + sq.options.storage + '[0m');
+          console.log('[92m[/][0m [91m[' + val.dialect + '] [0m[36m' + val.name + ' [0m->[93m ' + sq.options.storage + '[0m');
         } else {
           // shuout for other sql
-          console.log('[/] [91m[' + val.dialect + '] [0m[36m' + val.name + ' [0m->[93m ' + sq.config.database + ':' + sq.config.port + '[0m');
+          console.log('[92m[/][0m [91m[' + val.dialect + '] [0m[36m' + val.name + ' [0m->[93m ' + sq.config.database + ':' + sq.config.port + '[0m');
         }
 
         // connection

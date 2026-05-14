@@ -17,7 +17,6 @@ global.endpoint = _express_.Router();
 const cookieParser = require("cookie-parser");
 const methodOverride = require("method-override");
 const expressSession = require("express-session");
-const expressValidator = require("express-validator");
 const globalVariable = require(appRoot + "/global.config.js");
 globalVariable.init();
 // Local environments
@@ -139,7 +138,6 @@ _app_.use(expressSession({
   resave: true,
   saveUninitialized: true,
 }));
-_app_.use(expressValidator());
 // Dev. activity
 global._requestTime_ = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
 _app_.use((req, res, next) => {

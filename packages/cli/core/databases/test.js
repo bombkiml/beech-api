@@ -137,7 +137,7 @@ function initSequelize(val, testConn = true, cb) {
       }
       fs.readFile("./global.config.js", 'utf8', (err, data) => {
         if (err) {
-          console.log("\n[101m Faltal [0m Can't read `global.config.js` file.\n", err);
+          console.log("\n[101m Fatal [0m Can't read `global.config.js` file.\n", err);
           return; // break;
         } else {
           let buffer = Buffer.from(data);
