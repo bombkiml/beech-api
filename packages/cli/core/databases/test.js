@@ -191,7 +191,7 @@ function initSequelize(val, testConn = true, cb) {
       });
       // Check test connection for stdout pre-flight (mark)
       if(testConn) {
-        logit(`[92m[/][0m [91m[${val.dialect}] [0m[36m${val.name}[0m`, true);
+        logit(`[92m[/][0m [91m[${val.dialect}] [0m[36m${val.name}[0m`, true);
       }
       cb(false, sq);
     }).catch(err => {
