@@ -198,6 +198,7 @@ async function recursiveWhereCond(keys, objectCond, where, groupBy, orderBy, cb)
       isValidArrayFormat(oderByValueItemFromQueryString, (err, isArray, strArr) => {
         if(err) {
           cb(["SyntaxError: Unexpected end of Array or String input", ` (${k})`], null, null, null);
+          return;
         } else {
           let order = JSON.parse(strArr);
           orderBy[k] = order.length ? order : null;
@@ -211,6 +212,7 @@ async function recursiveWhereCond(keys, objectCond, where, groupBy, orderBy, cb)
       isValidArrayFormat(groupByValueItemFromQueryString, (err, isArray, strArr) => {
         if(err) {
           cb(["SyntaxError: Unexpected end of Array or String input", ` (${k})`], null, null, null);
+          return;
         } else {
           let group = JSON.parse(strArr);
           groupBy[k] = group.length ? group : null;
@@ -219,41 +221,101 @@ async function recursiveWhereCond(keys, objectCond, where, groupBy, orderBy, cb)
         }
       });
     } else {
-      let fieldValueItemFromQueryString = objectCond[k].replace(/([^[\],]+)/g, '"$1"');
-      let valueItem = objectCond[k].replace(/[\[\]']+/g, '').split(','); //replace(/[\[\]']+/g, '')
+      // 1. Get raw value, force to String and replace %22 to double quote "
+      let rawInput = objectCond[k];
+      if (Array.isArray(rawInput)) {
+        rawInput = rawInput.join(",");
+      }
+      let decodedQueryString = String(rawInput).replace(/%22/g, '"').replace(/'/g, '"');
+      // 2. Advanced decoding logic (works for all operations like LIKE, EQUAL, IN, BETWEEN)
+      // Force to look for groups of language codes (% followed by two hexadecimal digits like %E0, %B8)
+      // It will capture consecutive codes as a single group and decode them together for accuracy
+      decodedQueryString = decodedQueryString.replace(/(?:%[0-9A-F]{2})+/gi, (match) => {
+        try {
+          return decodeURIComponent(match);
+        } catch (e) {
+          // This fallback will attempt to decode each %XX sequence individually, which can help recover partial decoding even if the full group is malformed
+          return match.replace(/%([0-9A-F]{2})/gi, (subMatch) => {
+            try { return decodeURIComponent(subMatch); } catch { return subMatch; }
+          });
+        }
+      });
+      // 3. Special handling for BETWEEN and NOT BETWEEN operations to ensure date formats are preserved correctly
+      let isBetweenOp = decodedQueryString.toLowerCase().includes('between') || decodedQueryString.toLowerCase().includes('notbetween');
+      if (isBetweenOp) {
+        try {
+          let arrayMatch = decodedQueryString.match(/\[\s*(between|notbetween)\s*,\s*(\[.*\])\s*\]/i);
+          if (arrayMatch && arrayMatch[2]) {
+            let op = arrayMatch[1];
+            let dateArrayStr = arrayMatch[2];
+            if (!dateArrayStr.includes('"')) {
+              dateArrayStr = dateArrayStr.replace(/([^\[\],]+)/g, '"$1"');
+            }
+            let parsedDates = JSON.parse(dateArrayStr);
+            if (Array.isArray(parsedDates) && parsedDates.length >= 2) {
+              // Trim and remove any extraneous quotes from the parsed date strings
+              let dateStart = parsedDates[0].trim().replace(/"/g, '');
+              let dateEnd = parsedDates[1].trim().replace(/"/g, '');
+              // Ensure that if the date string is in a format like "2026-05-17 00:00:00", it is converted to "2026-05-17T00:00:00" for proper Date parsing
+              dateStart = dateStart.replace(' ', 'T');
+              dateEnd = dateEnd.replace(' ', 'T');
+              decodedQueryString = `[${op},${dateStart},${dateEnd}]`;
+            }
+          }
+        } catch (err) {
+          cb(["SyntaxError: Invalid format for BETWEEN/NOT BETWEEN operation", ` (${k})`], null, null, null);
+          return;
+        }
+      }
+      // 4. Format the decoded query string to prepare for Sequelize operators
+      let fieldValueItemFromQueryString = decodedQueryString.replace(/([^[\]," ]+)/g, '"$1"').replace(/""/g, '"');
+      let valueItem = decodedQueryString.replace(/[\[\]']+/g, '').replace(/"/g, '').split(',');
       let cleanValueItem = valueItem.map((e) => e.trim()).filter((e) => e !== '');
       // Check Array syntax from Query String
       isValidArrayFormat(fieldValueItemFromQueryString, async (err) => {
         if(err || cleanValueItem.length < 1) {
           cb(["SyntaxError: Unexpected end of Array or String input", ` (${k})`], null, null, null);
+          return;
         } else {
           try {
-            where[k] = await (cleanValueItem[1])
-                      ? {
-                          [Op[cleanValueItem[0]]]: (cleanValueItem[1] == 'null') ? null :
-                                              (cleanValueItem[1] == 'true') ? true :
-                                              (cleanValueItem[1] == 'false') ? false :
-                                              (cleanValueItem[0] == 'between' || cleanValueItem[0] == 'notBetween') ? [
-                                                (getValueType(cleanValueItem[1]) == 'Date')
-                                                  ? cleanValueItem[1].split(' ').map(e => e.trim()).length > 1
-                                                    ? moment(new Date(cleanValueItem[1]).toISOString())
-                                                    : moment(new Date(cleanValueItem[1] + ' 00:00:00').toISOString())
-                                                  : cleanValueItem[1],
-                                                (getValueType(cleanValueItem[2]) == 'Date')
-                                                  ? cleanValueItem[2].split(' ').map(e => e.trim()).length > 1
-                                                    ? moment(new Date(cleanValueItem[2]).toISOString())
-                                                    : moment(new Date(cleanValueItem[2] + ' 23:59:59').toISOString())
-                                                  : cleanValueItem[2],
-                                              ] :
-                                              (cleanValueItem[0] == 'or' || cleanValueItem[0] == 'in' || cleanValueItem[0] == 'notIn') ? [...cleanValueItem.slice(1)] :
-                                              (cleanValueItem[0] == 'like') ? [cleanValueItem[1],cleanValueItem[2],cleanValueItem[3]].join("") :
-                                              (cleanValueItem[0] == 'notLike') ? [cleanValueItem[1],cleanValueItem[2],cleanValueItem[3]].join("") :
-                                              (cleanValueItem[0] == 'startsWith') ? cleanValueItem[1] :
-                                              (cleanValueItem[0] == 'endsWith') ? cleanValueItem[1] :
-                                              (cleanValueItem[0] == 'substring') ? cleanValueItem[1] :
-                                              [cleanValueItem[1]]
-                        }
-                      : cleanValueItem[0];
+            let targetValue = cleanValueItem[1];
+            if (cleanValueItem[0] === 'like' || cleanValueItem[0] === 'notLike') {
+              targetValue = cleanValueItem.slice(1).join("");
+            }
+            where[k] = (cleanValueItem[1])
+                        ? {
+                            [Op[cleanValueItem[0]]]: (cleanValueItem[1] == 'null') ? null :
+                                                (cleanValueItem[1] == 'true') ? true :
+                                                (cleanValueItem[1] == 'false') ? false :
+                                                (cleanValueItem[0] == 'between' || cleanValueItem[0] == 'notBetween') ? [
+                                                  (getValueType(cleanValueItem[1]) == 'Date')
+                                                    ? (() => {
+                                                        let mDate = moment(cleanValueItem[1]);
+                                                        if (cleanValueItem[1].length <= 10 && !cleanValueItem[1].includes(':')) {
+                                                          mDate.startOf('day');
+                                                        }
+                                                        return mDate.format('YYYY-MM-DD HH:mm:ss');
+                                                      })()
+                                                    : cleanValueItem[1],
+                                                  (getValueType(cleanValueItem[2]) == 'Date')
+                                                    ? (() => {
+                                                        let mDate = moment(cleanValueItem[2]);
+                                                        if (cleanValueItem[2].length <= 10 && !cleanValueItem[2].includes(':')) {
+                                                          mDate.endOf('day');
+                                                        }
+                                                        return mDate.format('YYYY-MM-DD HH:mm:ss');
+                                                      })()
+                                                    : cleanValueItem[2],
+                                                ] :
+                                                (cleanValueItem[0] == 'or' || cleanValueItem[0] == 'in' || cleanValueItem[0] == 'notIn') ? [...cleanValueItem.slice(1)] :
+                                                (cleanValueItem[0] == 'like') ? targetValue :
+                                                (cleanValueItem[0] == 'notLike') ? targetValue :
+                                                (cleanValueItem[0] == 'startsWith') ? cleanValueItem[1] :
+                                                (cleanValueItem[0] == 'endsWith') ? cleanValueItem[1] :
+                                                (cleanValueItem[0] == 'substring') ? cleanValueItem[1] :
+                                                [cleanValueItem[1]]
+                          }
+                        : cleanValueItem[0];
             // Recursive re-call function
             recursiveWhereCond(keys, objectCond, where, groupBy, orderBy, cb);
           } catch (error) {
