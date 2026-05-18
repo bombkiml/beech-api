@@ -489,7 +489,7 @@ class Generator {
             inquirer.prompt([{
               type: "list",
               name: "selectDbConnect",
-              message: " [93mSelect database connection to sync schema: [0m",
+              message: "[33mSelect database connection to sync schema:[0m",
               choices: appConfig.database_config.map(e => e.name),
             }]).then(dbSelected => {
               const { connectForGenerateModel } = require("../databases/test");

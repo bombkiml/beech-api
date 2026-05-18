@@ -100,18 +100,12 @@ function initSequelize(val, testConn = true, cb) {
           return cb("[91mERR:[0m Incorrect Hash access for connect to database, Please Hashing your access by command `beech hash:<your_access>`\n", null);
         }
         let accessDb = [];
-        [val.username, val.password].map(async (e, k) => {
-          await DeHashIt(e.toString(), null, (17).toString().slice(0,-1).length, async (err, d) => {
-            if(err) {
-              cb("[91mERR:[0m Hash access error,", err);
-              throw err;
-            }
-            accessDb.push(d.split("sh,")[1].split(M(X).toString().slice(0,2)+M(X).toString())[0].slice(0,-1));
-            // Finally username & password
-            if(k+1==2) {
-              // Last push dialect connection
-              accessDb.push(val.dialect);
-              // resolve it
+        [val.username, val.password].forEach((e, k) => {
+          DeHashIt(e.toString(), null, (17).toString().slice(0,-1).length, (err, d) => {
+            if (err) return cb("Hash access error", err);
+            accessDb[k] = d.split("sh,")[1].split(M(X).toString().slice(0,2) + M(X).toString())[0].slice(0,-1);
+            if (accessDb[0] && accessDb[1]) {
+              accessDb[2] = val.dialect;
               resolve(accessDb);
             }
           });
@@ -197,7 +191,7 @@ function initSequelize(val, testConn = true, cb) {
       });
       // Check test connection for stdout pre-flight (mark)
       if(testConn) {
-        logit(`[92m[/][0m [91m[${val.dialect}] [0m[36m${val.name}[0m`, true);
+        logit(`[92m[/][0m [91m[${val.dialect}] [0m[36m${val.name}[0m`, true);
       }
       cb(false, sq);
     }).catch(err => {
@@ -217,7 +211,7 @@ function connectForGenerateModel(dbConnectName, tableName, databaseConfig, cb) {
    * tableName String : table name
    * 
    */
-  const connectionChoose = databaseConfig.filter((e) => e.name == dbConnectName)[0];
+  const connectionChoose = databaseConfig.find(e => e.name === dbConnectName);
   initSequelize(connectionChoose, false, async (err, sq) => {
     if (err) {
       cb(err, null, null);

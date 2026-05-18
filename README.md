@@ -424,68 +424,66 @@ Retrieving `fruit` data with GET : `/fruit?someField=[eq,1]&groupby=[id]&orderby
 
 ```java
 // WHERE Conditions
-GET: /fruit?id=1                      // id = 1
-GET: /fruit?isActived=[eq,1]          // isActived = 1
-GET: /fruit?fruitName=[like,Banana%]  // fruitName LIKE 'Banana%' (Not allow with date, time)
-GET: /fruit?cost=[gt,50]&qty=[lt,10]  // cost > 50 AND qty < 10
-GET: /fruit/10/0?qty=[lt,10]          // qty < 10 LIMIT 0,10
+GET: /fruit?id=1                       // id = 1
+GET: /fruit?isActived=[eq,1]           // isActived = 1
+GET: /fruit?fruitName=[like,Banana%]   // fruitName LIKE 'Banana%' (Not allow with date, time)
+GET: /fruit?cost=[gt,50]&qty=[lt,10]   // cost > 50 AND qty < 10
+GET: /fruit/10/0?qty=[lt,10]           // qty < 10 LIMIT 0,10
 
 // Grouping
-GET: /fruit?groupby=id                // GROUP BY id
-GET: /fruit?groupby=[id,fruitName]    // GROUP BY id, fruitName
+GET: /fruit?groupby=id                 // GROUP BY id
+GET: /fruit?groupby=[id,fruitName]     // GROUP BY id, fruitName
 
 // Ordering
-GET: /fruit?oderby=id                 // ORDER BY id ASC
-GET: /fruit?oderby=[sort,desc]        // ORDER BY sort DESC
+GET: /fruit?oderby=id                  // ORDER BY id ASC
+GET: /fruit?oderby=[sort,desc]         // ORDER BY sort DESC
 ```
 
 For usage avariable:
 
 ```java
 // Basics conditions
-3                                     // = 3
-[eq, 3]                               // = 3
-[ne, 20]                              // != 20
-[is, null]                            // IS NULL
-[not, null]                           // IS NOT NULL
-[or, [5, 6]]                          // (someField = 5) OR (someField = 6) // Not support NULL value
+=3                                      // = 3
+=[eq,3]                                 // = 3
+=[ne,20]                                // != 20
+=[is,null]                              // IS NULL
+=[not,null]                             // IS NOT NULL
+=[or,[5,6]]                             // (someField = 5) OR (someField = 6) // Not support NULL value
 
 // Number comparisons conditions
-[gt, 6]                               // > 6
-[gte, 6]                              // >= 6
-[lt, 10]                              // < 10
-[lte, 10]                             // <= 10
-[between, [6, 10]]                    // BETWEEN 6 AND 10
-[between, [2025-01-01, 2025-04-30]]   // BETWEEN '2025-01-01 00:00:00' AND '2025-04-30 23:59:59'
-                                      // When assign Datetime format will only support field datatype is `Date`, `Datetime`, `Time`
+=[gt,6]                                 // > 6
+=[gte,6]                                // >= 6
+=[lt,10]                                // < 10
+=[lte,10]                               // <= 10
+=[between,[6,10]]                       // BETWEEN 6 AND 10
+=[between,["2025-01-01","2025-04-30"]]  // BETWEEN "2025-01-01" AND "2025-04-30"
+                                        // When assign Datetime format will only support field datatype is `Date`, `Datetime`, `Time`
 
 // OR You can assign Datetime like this.
-[between, [2025-01-01 12:00:00, 2025-04-30 15:00:00]] // BETWEEN '2025-01-01 12:00:00' AND '2025-04-30 15:00:00'
+=[between,["2025-01-01 12:00:00","2025-04-30 15:00:00"]] // BETWEEN "2025-01-01 12:00:00" AND "2025-04-30 15:00:00"
 
-[notBetween, [11, 15]]                // NOT BETWEEN 11 AND 15
+=[notBetween,[11,15]]                   // NOT BETWEEN 11 AND 15
 
 // Other operators conditions
-[in, [1, 2, 3]],                      // IN [1, 2, 3]
-[notIn, [1, 2, 3]],                   // NOT IN [1, 2, 3]
-[like, %hat]                          // LIKE '%hat' (Avoid use #, % and %<Number> between wording)
-                                      // Becuase URL will be decoded it, Reccommand use startsWith, endsWith and substring when you need assing Number value)
-                                      // And NOT SUPPORT field datatype is `date`, `datetime`, `time`. Should be use with datatype is `String` or `Number` it work!.
+=[in,[1,2,3]],                          // IN [1, 2, 3]
+=[notIn,[1,2,3]],                       // NOT IN [1, 2, 3]
+=[like,"%Banana"]                       // LIKE '%Banana' (Freestyle LIKE)
 
-[notLike, %hat]                       // NOT LIKE '%hat'
-[startsWith, hat]                     // LIKE 'hat%'
-[endsWith, hat]                       // LIKE '%hat'
-[substring, hat]                      // LIKE '%hat%'
+=[notLike,"Banana"]                     // NOT LIKE 'Banana'
+=[startsWith,"Banana"]                  // LIKE 'Banana%'
+=[endsWith,"Banana"]                    // LIKE '%Banana'
+=[substring,"Banana"]                   // LIKE '%Banana%'
 
 // Grouping
-groupby=id                            // GROUP BY id
-groupby=[id]                          // ORDER BY id
-groupby=[id, fruitName]               // ORDER BY id, fruitName
+groupby=id                              // GROUP BY id
+groupby=[id]                            // ORDER BY id
+groupby=[id,fruitName]                  // ORDER BY id, fruitName
 
 // Ordering
-oderby=id                             // ORDER BY id ASC (Basic usage default Ascending)
-oderby=[id, asc]                      // ORDER BY id ASC
-oderby=[id, desc]                     // ORDER BY id ASC
-oderby=[[id, desc], [sort, asc]]      // ORDER BY id DESC, sort ASC
+oderby=id                               // ORDER BY id ASC (Basic usage default Ascending)
+oderby=[id,asc]                         // ORDER BY id ASC
+oderby=[id,desc]                        // ORDER BY id ASC
+oderby=[[id,desc],[sort,asc]]           // ORDER BY id DESC, sort ASC
 ```
 
 ## # Transactions
