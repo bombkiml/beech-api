@@ -187,7 +187,8 @@ class Generator {
               if (!this.special) {
                 resolve("\n[103m[90m Warning [0m[0m Please specify model name to update.");
               } else {
-                this.updateModel()
+                let extra = this.extra || undefined;
+                this.updateModel(extra)
                   .then(res => resolve(res))
                   .catch(err => reject(err));
               }
@@ -471,7 +472,7 @@ class Generator {
     });
   }
 
-  updateModel() {
+  updateModel(extra) {
     return new Promise((resolve, reject) => {
       try {
         this.fs.readFile("./global.config.js", 'utf8', (err, globalData) => {
@@ -479,9 +480,13 @@ class Generator {
           this.fs.readFile("./app.config.js", 'utf8', (appErr, appData) => {
             if (appErr) return resolve("\n[101m Fatal [0m Can't read `app.config.js` file.");
             const appConfig = eval(appData);
-            const modelName = this.special; // <table_name>
+            const rawSpecial = this.special; // "fruit/tropical/banana"
+            const pathParts = rawSpecial.split('/');
+            const modelName = pathParts[pathParts.length - 1];
+            const subFolder = pathParts.slice(0, pathParts.length - 1).join('/');
+            const folderPrefix = subFolder ? `${subFolder}/` : '';
             const modelFileName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
-            const modelPath = `./src/models/${modelFileName}.js`;
+            const modelPath = `./src/models/${folderPrefix}${modelFileName}.js`;
             if (!this.fs.existsSync(modelPath)) {
               return resolve(`\n[103m[90m Warning [0m[0m Model file \`${modelFileName}\` not found.`);
             }
@@ -557,7 +562,8 @@ class Generator {
                           if (dbFieldData.primaryKey) latestFieldProps.push(builders.property('init', builders.identifier('primaryKey'), builders.literal(true)));
                           if (dbFieldData.autoIncrement) latestFieldProps.push(builders.property('init', builders.identifier('autoIncrement'), builders.literal(true)));
                           if (dbFieldData.unique) latestFieldProps.push(builders.property('init', builders.identifier('unique'), builders.literal(true)));
-                          if(this.extra != '--no-comment') {
+                          // Check if not have variable extra '--no-comment' to raw add comment
+                          if (extra !== '--no-comment') {
                             if (dbFieldData.comment) latestFieldProps.push(builders.property('init', builders.identifier('comment'), builders.literal(dbFieldData.comment)));
                           }
                           if (dbFieldData.defaultValue !== null && dbFieldData.defaultValue !== undefined) {
@@ -690,7 +696,7 @@ class Generator {
                 throw logUpdate("\n[101m Fatal [0m", String(err), "\n");
               } else {
                 // Raw model schema
-                this.rawSchemaTable(dbSelected, newModel, tableName, tableSchema, (SchemaErr, rawSchema) => {
+                this.rawSchemaTable(dbSelected, newModel, tableName, tableSchema, this.extra || undefined, (SchemaErr, rawSchema) => {
                   if(err) {
                     throw logUpdate("\n[101m Fatal [0m RAW Schema ERR:", String(SchemaErr), "\n");
                   } else {
@@ -732,7 +738,7 @@ class Generator {
     });
   }
 
-  rawSchemaTable(dbNameSelected, newModelName, tableName, modelSchema, cb) {
+  rawSchemaTable(dbNameSelected, newModelName, tableName, modelSchema, extra, cb) {
     try {
       // Function map type
       const mapToSequelizeType = (rawType) => {
@@ -776,7 +782,7 @@ class Generator {
         if (props.primaryKey) lines.push(`    primaryKey: true,`);
         if (props.autoIncrement) lines.push(`    autoIncrement: true,`);
         // Check <extra> for comment, because some database have extra comment in field but it's not comment for field, so we need to check it first before assign to comment
-        if(this.extra != '--no-comment') {
+        if(extra != '--no-comment') {
           if (props.comment) lines.push(`    comment: "${props.comment}",`);
         }
         // Handle defaultValue
@@ -1064,6 +1070,7 @@ class Generator {
         this.argument = argv[ 3 ];
         this.special = argv[ 4 ];
         this.extra = argv[ 5 ];
+        this.more = argv[ 6 ];
         resolve(this);
       } catch (error) {
         reject(err);

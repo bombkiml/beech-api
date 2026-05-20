@@ -102,7 +102,9 @@ function initSequelize(val, testConn = true, cb) {
         let accessDb = [];
         [val.username, val.password].forEach((e, k) => {
           DeHashIt(e.toString(), null, (17).toString().slice(0,-1).length, (err, d) => {
-            if (err) return cb("Hash access error", err);
+            if (err) {
+              return cb("Hash access error", err);
+            }
             accessDb[k] = d.split("sh,")[1].split(M(X).toString().slice(0,2) + M(X).toString())[0].slice(0,-1);
             if (accessDb[0] && accessDb[1]) {
               accessDb[2] = val.dialect;
@@ -214,7 +216,7 @@ function connectForGenerateModel(dbConnectName, tableName, databaseConfig, cb) {
   const connectionChoose = databaseConfig.find(e => e.name === dbConnectName);
   initSequelize(connectionChoose, false, async (err, sq) => {
     if (err) {
-      cb(err, null, null);
+      return cb(err, null, null);
     }
     // Connection
     await sq.authenticate()
