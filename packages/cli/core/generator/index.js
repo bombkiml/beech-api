@@ -10,14 +10,12 @@ class Generator {
   constructor() {
     this.embed(process.argv)
       .then(() => this.init()
-        .then(status => console.log(status))
-        .catch(err => {
+        .then((status) => console.log(status))
+        .catch((err) => {
           throw err;
         })
       )
-      .catch(err => {
-        throw err
-      });
+      .catch(console.log);
   }
 
   init() {
@@ -77,7 +75,8 @@ class Generator {
                         inquirer.prompt([ {
                           type: "confirm",
                           name: "confirmModelNF",
-                          message: "[93mModel is not found, Do you only create Endpoint ?:[0m",
+                          message: "[93mNo model found from your selection! Do you want to create the endpoint without requiring any model ?:[0m",
+                          default: false,
                         } ]).then(confirm => {
                           if(confirm.confirmModelNF) {
                             resolve([true, []]);
@@ -187,7 +186,8 @@ class Generator {
               if (!this.special) {
                 resolve("\n[103m[90m Warning [0m[0m Please specify model name to update.");
               } else {
-                this.updateModel()
+                let noComment = this.noComment || false;
+                this.updateModel(noComment)
                   .then(res => resolve(res))
                   .catch(err => reject(err));
               }
@@ -471,7 +471,7 @@ class Generator {
     });
   }
 
-  updateModel() {
+  updateModel(noComment) {
     return new Promise((resolve, reject) => {
       try {
         this.fs.readFile("./global.config.js", 'utf8', (err, globalData) => {
@@ -479,9 +479,15 @@ class Generator {
           this.fs.readFile("./app.config.js", 'utf8', (appErr, appData) => {
             if (appErr) return resolve("\n[101m Fatal [0m Can't read `app.config.js` file.");
             const appConfig = eval(appData);
-            const modelName = this.special; // <table_name>
-            const modelFileName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
-            const modelPath = `./src/models/${modelFileName}.js`;
+            const rawSpecial = this.special; // "fruit/tropical/banana"
+            const pathParts = rawSpecial.split('/');
+            const modelNameRaw = pathParts[pathParts.length - 1];
+            const subFolder = pathParts.slice(0, pathParts.length - 1).join('/');
+            const folderPrefix = subFolder ? `${subFolder}/` : '';
+            const finalTargetName = this.customName || modelNameRaw;
+            const modelName = this.realTableName || modelNameRaw;
+            const modelFileName = finalTargetName.charAt(0).toUpperCase() + finalTargetName.slice(1);
+            const modelPath = `./src/models/${folderPrefix}${modelFileName}.js`;
             if (!this.fs.existsSync(modelPath)) {
               return resolve(`\n[103m[90m Warning [0m[0m Model file \`${modelFileName}\` not found.`);
             }
@@ -495,118 +501,167 @@ class Generator {
               const { connectForGenerateModel } = require("../databases/test");
               // pull new schema from database
               connectForGenerateModel(dbSelected.selectDbConnect, modelName, appConfig.database_config, (dbErr, tableSchema, tableName) => {
-                if (dbErr) return reject(dbErr);
-                // read current model file for AST
-                this.fs.readFile(modelPath, 'utf8', (readErr, code) => {
-                  if (readErr) return reject(readErr);
-                  const ast = recast.parse(code);
-                  let isUpdated = false;
-                  // Function for map raw database type to Sequelize DataTypes AST Node
-                  const getDataTypeNode = (rawType) => {
-                    const type = rawType.toUpperCase();
-                    if (type.includes('INT')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('INTEGER'));
-                    if (type.includes('BIGINT')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('BIGINT'));
-                    if (type.includes('FLOAT')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('FLOAT'));
-                    if (type.includes('DOUBLE')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('DOUBLE'));
-                    if (type.includes('DECIMAL')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('DECIMAL'));
-                    if (type.includes('BOOLEAN') || type === 'TINYINT(1)') return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('BOOLEAN'));
-                    if (type.includes('CHAR') || type.includes('VARCHAR')) {
-                      const match = type.match(/\((\d+)\)/);
-                      const length = match ? match[1] : '255';
-                      return builders.callExpression(
-                        builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('STRING')),
-                        [builders.literal(parseInt(length))]
-                      );
-                    }
-                    if (type.includes('TEXT')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('TEXT'));
-                    if (type.includes('DATE')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('DATE'));
-                    if (type.includes('TIME')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('TIME'));
-                    if (type.includes('JSON')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('JSON'));
-                    if (type.includes('UUID')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('UUID'));
-                    if (type.includes('BLOB')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('BLOB'));
-                    if (type.includes('ENUM')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('ENUM'));
-                    if (type.includes('GEOMETRY')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('GEOMETRY'));
-                    return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('STRING'));
-                  };
-                  // recast.visit for find position of Schema(...).define() and update fields
-                  recast.visit(ast, {
-                    visitCallExpression(path) {
-                      const node = path.node;
-                      if (node.callee.property && node.callee.property.name === 'define' && node.arguments[1] && node.arguments[1].type === 'ObjectExpression') {
-                        const fieldsObject = node.arguments[1];
-                        const newFieldNames = Object.keys(tableSchema);
-                        const updatedProperties = [];
-                        newFieldNames.forEach(dbFieldName => {
-                          const dbFieldData = tableSchema[dbFieldName];
-                          let existingProperty = fieldsObject.properties.find(p => {
-                            const propName = p.key.name || p.key.value;
-                            if (propName === dbFieldName) return true;
-                            if (p.value && p.value.properties) {
-                              const hasFieldMapping = p.value.properties.find(
-                                innerP => (innerP.key.name === 'field' || innerP.key.value === 'field') &&
-                                          (innerP.value.value === dbFieldName)
-                              );
-                              if (hasFieldMapping) return true;
-                            }
-                            return false;
-                          });
-                          const latestFieldProps = [];
-                          // Prepare properties from Table DB (Type, PK, AI, Default, etc.)
-                          latestFieldProps.push(builders.property('init', builders.identifier('type'), getDataTypeNode(dbFieldData.type)));
-                          latestFieldProps.push(builders.property('init', builders.identifier('allowNull'), builders.literal(dbFieldData.allowNull === 'YES' || dbFieldData.allowNull === true)));
-                          if (dbFieldData.primaryKey) latestFieldProps.push(builders.property('init', builders.identifier('primaryKey'), builders.literal(true)));
-                          if (dbFieldData.autoIncrement) latestFieldProps.push(builders.property('init', builders.identifier('autoIncrement'), builders.literal(true)));
-                          if (dbFieldData.unique) latestFieldProps.push(builders.property('init', builders.identifier('unique'), builders.literal(true)));
-                          if(this.extra != '--no-comment') {
-                            if (dbFieldData.comment) latestFieldProps.push(builders.property('init', builders.identifier('comment'), builders.literal(dbFieldData.comment)));
-                          }
-                          if (dbFieldData.defaultValue !== null && dbFieldData.defaultValue !== undefined) {
-                            const dVal = String(dbFieldData.defaultValue).toUpperCase();
-                            const defaultNode = (dVal === 'CURRENT_TIMESTAMP' || dVal === 'NOW()') 
-                              ? builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('NOW'))
-                              : builders.literal(dbFieldData.defaultValue);
-                            latestFieldProps.push(builders.property('init', builders.identifier('defaultValue'), defaultNode));
-                          }
-                          if (!existingProperty) {
-                            existingProperty = builders.property('init', builders.identifier(dbFieldName), builders.objectExpression(latestFieldProps));
-                            isUpdated = true;
-                          } else {
-                            const currentProps = existingProperty.value.properties;
-                            latestFieldProps.forEach(newProp => {
-                              const oldProp = currentProps.find(p => p.key.name === newProp.key.name);
-                              if (!oldProp || recast.print(oldProp.value).code !== recast.print(newProp.value).code) {
-                                isUpdated = true;
-                                if (!oldProp) currentProps.push(newProp); else oldProp.value = newProp.value;
+                if (dbErr) {
+                  console.log(dbErr);
+                  throw dbErr;
+                } else {
+                  inquirer.prompt([{
+                    type: "confirm",
+                    name: "confirmUpdateModel",
+                    message: "[93mDo you want to update the model with the latest database schema ?:[0m",
+                    default: false,
+                  }]).then(confirm => {
+                    if(confirm.confirmUpdateModel) {
+                      // read current model file for AST
+                      this.fs.readFile(modelPath, 'utf8', (readErr, code) => {
+                        if (readErr) return reject(readErr);
+                        const ast = recast.parse(code);
+                        let isUpdated = false;
+                        let definedTableName = null;
+                        // Check defined table name
+                        recast.visit(ast, {
+                          visitCallExpression(path) {
+                            const node = path.node;
+                            // Check is .define(...)
+                            if (node.callee.property && node.callee.property.name === 'define') {
+                              // Get table name from .define(...)
+                              if (node.arguments[0] && node.arguments[0].type === 'Literal') {
+                                definedTableName = node.arguments[0].value;
                               }
-                            });
-                            const latestPropNames = latestFieldProps.map(p => p.key.name);
-                            latestPropNames.push('field');
-                            existingProperty.value.properties = currentProps.filter(p => latestPropNames.includes(p.key.name));
+                            }
+                            return false; // End finding when found define
                           }
-                          updatedProperties.push(existingProperty);
                         });
-                        const currentOrder = fieldsObject.properties.map(p => p.key.name || p.key.value).join(',');
-                        const newOrder = updatedProperties.map(p => p.key.name || p.key.value).join(',');
-                        if (currentOrder !== newOrder || fieldsObject.properties.length !== updatedProperties.length) isUpdated = true;
-                        fieldsObject.properties = updatedProperties;
-                      }
-                      return false;
+                        // Check match table name between database and model file
+                        const targetTable = this.realTableName || this.special;
+                        if (definedTableName !== targetTable) {
+                          return resolve(`\n[101m Error [0m Table name mismatch! 
+                          \n - In File defined as: "${definedTableName}"
+                          \n - Your command requested: "${targetTable}"
+                          \n[36mNote:[0m Please ensure you are updating the correct model/table.`);
+                        } else {
+                          // Function for map raw database type to Sequelize DataTypes AST Node
+                          const getDataTypeNode = (rawType) => {
+                            const type = rawType.toUpperCase();
+                            if (type.includes('INT')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('INTEGER'));
+                            if (type.includes('BIGINT')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('BIGINT'));
+                            if (type.includes('FLOAT')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('FLOAT'));
+                            if (type.includes('DOUBLE')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('DOUBLE'));
+                            if (type.includes('DECIMAL')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('DECIMAL'));
+                            if (type.includes('BOOLEAN') || type === 'TINYINT(1)') return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('BOOLEAN'));
+                            if (type.includes('CHAR') || type.includes('VARCHAR')) {
+                              const match = type.match(/\((\d+)\)/);
+                              const length = match ? match[1] : '255';
+                              return builders.callExpression(
+                                builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('STRING')),
+                                [builders.literal(parseInt(length))]
+                              );
+                            }
+                            if (type.includes('TEXT')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('TEXT'));
+                            if (type.includes('DATE')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('DATE'));
+                            if (type.includes('TIME')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('TIME'));
+                            if (type.includes('JSON')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('JSON'));
+                            if (type.includes('UUID')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('UUID'));
+                            if (type.includes('BLOB')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('BLOB'));
+                            if (type.includes('ENUM')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('ENUM'));
+                            if (type.includes('GEOMETRY')) return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('GEOMETRY'));
+                            return builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('STRING'));
+                          };
+                          // recast.visit for find position of Schema(...).define() and update fields
+                          recast.visit(ast, {
+                            visitCallExpression(path) {
+                              const node = path.node;
+                              if (node.callee.property && node.callee.property.name === 'define' && node.arguments[1] && node.arguments[1].type === 'ObjectExpression') {
+                                const fieldsObject = node.arguments[1];
+                                const newFieldNames = Object.keys(tableSchema);
+                                const updatedProperties = [];
+                                newFieldNames.forEach(dbFieldName => {
+                                  const dbFieldData = tableSchema[dbFieldName];
+                                  let existingProperty = fieldsObject.properties.find(p => {
+                                    const propName = p.key.name || p.key.value;
+                                    if (propName === dbFieldName) return true;
+                                    if (p.value && p.value.properties) {
+                                      const hasFieldMapping = p.value.properties.find(innerP => (innerP.key.name === 'field' || innerP.key.value === 'field') && (innerP.value.value === dbFieldName));
+                                      if (hasFieldMapping) return true;
+                                    }
+                                    return false;
+                                  });
+                                  const latestFieldProps = [];
+                                  // Prepare properties from Table DB (Type, PK, AI, Default, etc.)
+                                  latestFieldProps.push(builders.property('init', builders.identifier('type'), getDataTypeNode(dbFieldData.type)));
+                                  latestFieldProps.push(builders.property('init', builders.identifier('allowNull'), builders.literal(dbFieldData.allowNull === 'YES' || dbFieldData.allowNull === true)));
+                                  if (dbFieldData.primaryKey) latestFieldProps.push(builders.property('init', builders.identifier('primaryKey'), builders.literal(true)));
+                                  if (dbFieldData.autoIncrement) latestFieldProps.push(builders.property('init', builders.identifier('autoIncrement'), builders.literal(true)));
+                                  if (dbFieldData.unique) latestFieldProps.push(builders.property('init', builders.identifier('unique'), builders.literal(true)));
+                                  // Check if not have variable noComment '--no-comment' to raw add comment
+                                  if (!noComment && dbFieldData.comment) {
+                                    latestFieldProps.push(builders.property('init', builders.identifier('comment'), builders.literal(dbFieldData.comment)));
+                                  }
+                                  if (dbFieldData.defaultValue !== null && dbFieldData.defaultValue !== undefined) {
+                                    const dVal = String(dbFieldData.defaultValue).toUpperCase();
+                                    const defaultNode = (dVal === 'CURRENT_TIMESTAMP' || dVal === 'NOW()') 
+                                      ? builders.memberExpression(builders.identifier('DataTypes'), builders.identifier('NOW'))
+                                      : builders.literal(dbFieldData.defaultValue);
+                                    latestFieldProps.push(builders.property('init', builders.identifier('defaultValue'), defaultNode));
+                                  }
+                                  if (!existingProperty) {
+                                    existingProperty = builders.property('init', builders.identifier(dbFieldName), builders.objectExpression(latestFieldProps));
+                                    isUpdated = true;
+                                  } else {
+                                    const currentProps = existingProperty.value.properties;
+                                    latestFieldProps.forEach(newProp => {
+                                      const oldProp = currentProps.find(p => p.key.name === newProp.key.name);
+                                      if (!oldProp || recast.print(oldProp.value).code !== recast.print(newProp.value).code) {
+                                        isUpdated = true;
+                                        if (!oldProp) currentProps.push(newProp); 
+                                        else oldProp.value = newProp.value;
+                                      }
+                                    });
+                                    let allowedPropNames = latestFieldProps.map(p => p.key.name);
+                                    allowedPropNames.push('field');
+                                    // remove comment from allowedPropNames if have noComment variable '--no-comment'
+                                    if (!noComment) {
+                                      allowedPropNames.push('comment');
+                                    }
+                                    const nextProps = currentProps.filter(p => allowedPropNames.includes(p.key.name));
+                                    if (nextProps.length !== currentProps.length) {
+                                        isUpdated = true;
+                                        existingProperty.value.properties = nextProps;
+                                    } else {
+                                      // Nothing.
+                                    }
+                                  }
+                                  updatedProperties.push(existingProperty);
+                                });
+                                const currentOrder = fieldsObject.properties.map(p => p.key.name || p.key.value).join(',');
+                                const newOrder = updatedProperties.map(p => p.key.name || p.key.value).join(',');
+                                if (currentOrder !== newOrder || fieldsObject.properties.length !== updatedProperties.length) isUpdated = true;
+                                fieldsObject.properties = updatedProperties;
+                              }
+                              return false;
+                            }
+                          });
+                          // Write back updated AST, Shout updated
+                          if (isUpdated) {
+                            // Write updated AST back to file
+                            const output = recast.print(ast).code;
+                            this.fs.writeFile(modelPath, output, 'utf8', (writeErr) => {
+                              if (writeErr) return reject(writeErr);
+                              resolve(`\n[102m[90m Updated [0m[0m The model \`${modelFileName}\` has been updated via AST.`);
+                            });
+                          } else {
+                            resolve(`\n[103m[90m Warning [0m[0m No new fields found to update for \`${modelFileName}\`.`);
+                          }
+                        }
+                      });
+                    } else {
+                      // Nothing.
+                      resolve(": Say no.");
                     }
                   });
-                  // Write back updated AST, Shout updated
-                  if (isUpdated) {
-                    // Write updated AST back to file
-                    const output = recast.print(ast).code;
-                    this.fs.writeFile(modelPath, output, 'utf8', (writeErr) => {
-                      if (writeErr) return reject(writeErr);
-                      resolve(`\n[102m[90m Updated [0m[0m The model \`${modelFileName}\` has been updated via AST.`);
-                    });
-                  } else {
-                    resolve(`\n[103m[90m Warning [0m[0m No new fields found to update for \`${modelFileName}\`.`);
-                  }
-                });
+                }
               });
-            });
+            }).catch(console.log);
           });
         });
       } catch (error) {
@@ -632,13 +687,18 @@ class Generator {
         // Argument join `slash`
         let arg = this.argument.replace(/^\/+|\/+$/g, '');
         arg = arg.split('/');
+        // New can custom model name using --name <rename_model_name>
         let models = arg.pop();
+        let modelsChangeName = this.customModelName || models;
         let oriModelsName = models.slice(0);
         models = models.charAt(0).toUpperCase() + models.slice(1);
-        let newModel = models.split("_").map(e => e.charAt(0).toUpperCase() + e.slice(1)).join("");
+        let oriModelsChangeName = modelsChangeName.slice(0);
+        modelsChangeName = oriModelsChangeName.charAt(0).toUpperCase() + modelsChangeName.slice(1);
+        // New model name with upper case and remove underscore for first letter of each word
+        let newModel = modelsChangeName.split(/[-_]/).map(e => e.charAt(0).toUpperCase() + e.slice(1)).join("");
         let subFolder = arg.join('/');
         // Declare models
-        let fullModels = modelPath + subFolder.concat('/') + models.concat('.js');
+        let fullModels = modelPath + subFolder.concat('/') + modelsChangeName.concat('.js');
 
         /**
          * All properties
@@ -690,7 +750,7 @@ class Generator {
                 throw logUpdate("\n[101m Fatal [0m", String(err), "\n");
               } else {
                 // Raw model schema
-                this.rawSchemaTable(dbSelected, newModel, tableName, tableSchema, (SchemaErr, rawSchema) => {
+                this.rawSchemaTable(dbSelected, newModel, tableName, tableSchema, this.noComment || undefined, (SchemaErr, rawSchema) => {
                   if(err) {
                     throw logUpdate("\n[101m Fatal [0m RAW Schema ERR:", String(SchemaErr), "\n");
                   } else {
@@ -724,7 +784,7 @@ class Generator {
             resolve("\n[101m Fatal [0m The pool_base in `global.config.js` file does not match the specific.");
           }
         } else {
-          resolve("\n[103m[90m Warning [0m[0m The model `" + models + "` it's duplicated.");
+          resolve("\n[103m[90m Warning [0m[0m The model `" + modelsChangeName + "` it's duplicated.");
         }
       } catch (error) {
         reject(error);
@@ -732,7 +792,7 @@ class Generator {
     });
   }
 
-  rawSchemaTable(dbNameSelected, newModelName, tableName, modelSchema, cb) {
+  rawSchemaTable(dbNameSelected, newModelName, tableName, modelSchema, noComment, cb) {
     try {
       // Function map type
       const mapToSequelizeType = (rawType) => {
@@ -775,8 +835,8 @@ class Generator {
         // Check is primary key
         if (props.primaryKey) lines.push(`    primaryKey: true,`);
         if (props.autoIncrement) lines.push(`    autoIncrement: true,`);
-        // Check <extra> for comment, because some database have extra comment in field but it's not comment for field, so we need to check it first before assign to comment
-        if(this.extra != '--no-comment') {
+        // Check <noComment> for comment, because some database have noComment comment in field but it's not comment for field, so we need to check it first before assign to comment
+        if(!noComment) {
           if (props.comment) lines.push(`    comment: "${props.comment}",`);
         }
         // Handle defaultValue
@@ -1054,6 +1114,53 @@ class Generator {
     });
   }
 
+  findClosestOption(input, options) {
+    let closest = null;
+    let minDistance = Infinity;
+    options.forEach(opt => {
+      const distance = this.levenshteinDistance(input, opt);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = opt;
+      }
+    });
+    return minDistance <= 3 ? closest : null;
+  }
+
+  levenshteinDistance(a, b) {
+    const tmp = [];
+    for (let i = 0; i <= a.length; i++) tmp[i] = [i];
+    for (let j = 0; j <= b.length; j++) tmp[0][j] = j;
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+        tmp[i][j] = Math.min(
+          tmp[i - 1][j] + 1,
+          tmp[i][j - 1] + 1,
+          tmp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+        );
+      }
+    }
+    return tmp[a.length][b.length];
+  }
+
+  validateModelName(name, nextArg, cb) {
+    // role: 
+    // 1. Only first text with (a-z, A-Z) or _ not number first charecter
+    // 2. Then only text with (a-z, A-Z), number (0-9), - or _ allowed for next characters
+    // 3. No space allowed
+    if (name.includes(' ')) {
+      return cb("Error: Model name cannot contain spaces.", false);
+    }
+    const regex = /^[a-zA-Z_][a-zA-Z0-9-_]*$/;
+    if (!regex.test(name)) {
+      return cb("Error: Invalid characters in model name.", false);
+    } else if (nextArg && !nextArg.startsWith('--')) {
+      cb("Error model name not space allowed.", null);
+    } else {
+      cb(null, true);
+    }
+  }
+
   embed(argv) {
     return new Promise((resolve, reject) => {
       try {
@@ -1063,7 +1170,55 @@ class Generator {
         this.option = argv[ 2 ];
         this.argument = argv[ 3 ];
         this.special = argv[ 4 ];
-        this.extra = argv[ 5 ];
+        // Validate argument with Whitelist `--`
+        const validOptions = ['--model', '--name', '--no-comment', '--inject', '--require', '--version', '--help', '--helper'];
+        const providedOptions = argv.filter(arg => arg.startsWith('--'));
+        for (const opt of providedOptions) {
+          if (!validOptions.includes(opt)) {
+            const suggestion = this.findClosestOption(opt, validOptions);
+            let errorMessage = `\n[101m Error [0m Unknown option: "${opt}".`;
+            if (suggestion) {
+              errorMessage += ` \nDid you mean to use "${suggestion}" ?`;
+            }
+            return reject(errorMessage);
+          }
+        }
+        // Check for noComment variable with `--no-comment`, `--name`, `--inject`  flag
+        this.noComment = argv.includes('--no-comment');
+        this.customModelName = null;
+        this.realTableName = null;
+        // Check for custom model name with `--name` flag
+        const nameIndex = argv.indexOf('--name');
+        if (nameIndex !== -1 && argv[nameIndex + 1]) {
+          const inputName = argv[nameIndex + 1];
+          this.validateModelName(inputName, argv[nameIndex + 2], (err, isValid) => {
+            if (isValid && !err) {
+              this.customModelName = argv[nameIndex + 1];
+            } else {
+              reject("\n[103m[90m Warning [0m[0m Invalid model name format: '" + inputName + " ...' Model name must start with a letter/underscore and contain only letters, numbers, '-', or '_' & no space.");
+            }
+          });
+        } else if (nameIndex > 2) {
+          reject("\n[103m[90m Warning [0m[0m Custom model name flag `--name` found but no name provided. Usage: `--name <custom_model_name>`");
+        } else {
+          if(nameIndex !== -1) {
+            reject("\n[36mNote:[0m You can specify a custom model name with the `--name` flag. Example: `--name fruit` to generate `Fruit.js` instead of default model name.");
+          }
+        }
+        // Check for inject table to update schema to latest with `--inject` flag
+        const injectIndex = argv.indexOf('--inject');
+        if (injectIndex !== -1) {
+          if (!argv[injectIndex + 1] || argv[injectIndex + 1].startsWith('--')) {
+            return reject(`\n[103m Warning [0m Option "--inject" requires a value. Usage: "--inject <table_name>"`);
+          }
+          if (injectIndex !== -1 && argv[injectIndex + 1]) {
+            this.realTableName = argv[injectIndex + 1];
+          } else {
+            if(injectIndex !== -1) {
+              reject("\n[103m[90m Warning [0m[0m Inject table name flag `--inject` found but no table name provided. Usage: `--inject <table_name>`");
+            }
+          }
+        }
         resolve(this);
       } catch (error) {
         reject(err);
