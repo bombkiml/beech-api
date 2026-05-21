@@ -1,23 +1,167 @@
 module.exports = {
-
+  // --- 1. Text & String Utilities ---
   textLowerCase(text) {
-   return text.toLowerCase();
+    return text ? text.toLowerCase() : '';
   },
 
   textUpperCase(text) {
-   return text.toUpperCase();
+    return text ? text.toUpperCase() : '';
   },
 
+  capitalize(text) {
+    if (!text) return '';
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  },
+
+  slugify(text) {
+    return text
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]+/g, '')
+      .replace(/--+/g, '-');
+  },
+
+  stripHtmlTags(str) {
+    if (!str) return '';
+    return str.replace(/<[^>]*>?/gm, '');
+  },
+
+  // --- 2. Number & ID Utilities ---
   digit9(number) {
     return ('000000000' + number).slice(-9);
   },
 
+  formatCurrency(number) {
+    return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(number);
+  },
+
+  toNumber(value, defaultValue = 0) {
+    const num = Number(value);
+    return isNaN(num) ? defaultValue : num;
+  },
+
+  formatBytes(bytes, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
+  },
+
+  // --- 3. Date & Time Utilities ---
   dateToThai(date) {
-    return result = date.toLocaleDateString('th-TH', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    const d = new Date(date);
+    return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+  },
+
+  formatDateISO(date = new Date()) {
+    return new Date(date).toISOString().split('T')[0];
+  },
+
+  calculateAge(birthDate) {
+    const birth = new Date(birthDate);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  },
+
+  addDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+  },
+
+  isWeekend(date) {
+    const day = new Date(date).getDay();
+    return day === 0 || day === 6;
+  },
+
+  getTimestamp() {
+    return new Date().toISOString();
+  },
+
+  // --- 4. Object & Logic Utilities ---
+  isEmpty(value) {
+    return (
+      value === null ||
+      value === undefined ||
+      (typeof value === 'string' && value.trim() === '') ||
+      (Array.isArray(value) && value.length === 0) ||
+      (typeof value === 'object' && Object.keys(value).length === 0)
+    );
+  },
+
+  removeEmptyFields(obj) {
+    return Object.fromEntries(
+      Object.entries(obj).filter(([_, v]) => v != null)
+    );
+  },
+
+  pick(obj, keys) {
+    return keys.reduce((acc, key) => {
+      if (obj && Object.prototype.hasOwnProperty.call(obj, key)) {
+        acc[key] = obj[key];
+      }
+      return acc;
+    }, {});
+  },
+
+  safeJsonParse(jsonString, defaultValue = {}) {
+    try {
+      return JSON.parse(jsonString);
+    } catch (e) {
+      return defaultValue;
+    }
+  },
+
+  delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  },
+
+  // --- 5. Web & API Utilities ---
+  jsonResponse(res, statusCode, message, data = null) {
+    return res.status(statusCode).json({
+      success: statusCode >= 200 && statusCode < 300,
+      message,
+      data,
+      timestamp: new Date().toISOString()
     });
   },
 
+  getQueryParam(req, key, defaultValue = null) {
+    return req.query[key] || defaultValue;
+  },
+
+  isEmail(email) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  },
+
+  toBoolean(value) {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+      return ['true', '1', 'yes', 'on'].includes(value.toLowerCase());
+    }
+    return !!value;
+  },
+
+  generateRandomString(length = 16) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  },
+
+  isImageFile(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+  }
 };

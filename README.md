@@ -142,25 +142,27 @@ Options:
   ?, -h, --help                       Display this help message.
   -v, --version                       Display the application version.
 
-The following commands are available:
+Commands:
+  $ beech make <endpoint>             Create a new Endpoints and unit test file.
+                                      Use [special] `-R, --require` to select Model(s).
 
-  $ beech make <endpoint>             Create a new Endpoints and unit test file,
-                                      You might using [special] `-R, --require`
-                                      for choose Model(s) used to endpoint file.
+  $ beech make <model> --model, -M    Create a new Models file.
+                                      Options:
+                                      --no-comment   Ignore property comments in Schema.
+                                      --name <custom_name>  Rename for the Model file.
 
-  $ beech make <model> -M, --model    Create a new Models file, You might using
-                                      [special] `--no-comment` for ignore comment
-                                      Table Property in your Schema.
-
-  $ beech update model <model_name>   Update new Table Structure for latest, You
-                                      might using [special] `--no-comment` for 
-                                      ignore comment Table Property in your Schema.
+  $ beech update model <model_name>   Update existing Model with latest DB structure.
+                                      Options:
+                                      --no-comment   Ignore property comments in Schema.
+                                      --name <custom_name>   Rename for the Model file.
+                                      --inject <table_name>  Update schema to latest,
+                                                             from a specific table name.
 
   $ beech make <helper> --helper      Create a new Helpers file.
   $ beech passport init               Initialize authentication with passport-jwt.
   $ beech skd init                    Initialize Job Scheduler file.
   $ beech key:generate, key:gen       Re-Generate application key (Dangerous!).
-  $ beech hash:<text>                 Hash text for Access to Database connection.
+  $ beech hash:<text>                 Hash text for Database connection access.
 ```
 ❓ **Note:** Every to create new project will be generated new ``app_key`` in ``app.config.js`` file.
 
@@ -282,7 +284,7 @@ module.exports = {
 
   Sequelize is a promise-based Node.js ORM tool for Postgres, MySQL, MariaDB, SQLite, Microsoft SQL Server, Oracle Database, Amazon Redshift and Snowflake’s Data Cloud. It features solid transaction support, relations, eager and lazy loading, read replication and more. <br/>You can learn more: [Sequelize docs](https://sequelize.org/docs/v6)
   
-  You can asign more DataTypes, Learn more : [Sequelize docs](https://sequelize.org/docs/v6/core-concepts/model-basics/#data-types)
+  You can asign more DataTypes, Learn more : [Sequelize Data Types](https://sequelize.org/docs/v6/core-concepts/model-basics/#data-types)
 
   ❓ **Note:** When you generate a model it's create table structure for automatically for you.
 

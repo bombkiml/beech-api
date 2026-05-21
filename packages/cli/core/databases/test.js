@@ -244,7 +244,7 @@ async function getTableSchema(sq, tableName, cb) {
     const schema = await queryInterface.describeTable(tableName);
     cb(null, schema);
   } catch (error) {
-    cb("Fetching table schema " + error, null);
+    cb("[101m Fetching table schema [0m Check " + error, null);
   }
 }
 
