@@ -18,7 +18,6 @@ Commands:
   $ beech update model <model_name>   Update existing Model with latest DB structure.
                                       Options:
                                       --no-comment   Ignore property comments in Schema.
-                                      --name <custom_name>   Rename for the Model file.
                                       --inject <table_name>  Update schema to latest,
                                                              from a specific table name.
 
